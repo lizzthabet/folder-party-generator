@@ -6,10 +6,13 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
-    "start": "npm run build && node dist/index.js"
+    "dev": "PARTY_FOLDER=test/testdata npm run start",
+    "serve": "node dist/index.js",
+    "start": "npm run build && npm run serve"
   },
   "author": "lizz thabet",
   "devDependencies": {
+    "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
     "eslint": "^8.56.0",

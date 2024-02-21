@@ -293,8 +293,7 @@ function createBody(input: TemplateInput): string {
   return `
   <body>
     <main>${input.files.map((file) => {
-        return `
-      ${createButton(file)}
+        return `      ${createButton(file)}
       ${createDialog(file)}`
       }).join("\n")}
       ${createFurniture(input.furniture)}
@@ -333,7 +332,7 @@ function createFurniture(furniture: FileData[]) {
   return `<section aria-label="furniture">
         ${furniture.map(item => {
           return `<img src="${item.path}" draggable="false" data-draggable />`
-        }).join("\n")}
+        }).join("\n        ")}
       </section>`
 }
 

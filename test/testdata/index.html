@@ -6,15 +6,188 @@
     <title>welcome to a place on my computer i've created just for you</title>
 
     <style>
-      html { background-color: pink; }
+      html {
+        background-color: #d3d3d3;
+      }
+
+      .nav-link {
+        font-size: 1.5rem;
+        color: white;
+        text-shadow: 5px 5px 5px #333333;
+      }
+
+      /* dialogs should manage their own display */
+      [data-draggable]:not(dialog) {
+        display: inline-block;
+      }
+
+      [data-draggable] {
+        user-select: none;
+        margin: 0;
+        padding: 1rem;
+      }
+
+      [data-draggable]:hover {
+        cursor: move;
+      }
+
+      header {
+        padding: 1rem;
+        z-index: 1;
+      }
+
+      header > h1 {
+        font-family: monospace;
+        font-style: italic;
+        color: blue;
+        text-shadow: 5px 5px 5px rgb(51, 51, 51, 0.50);
+      }
+
+      menu {
+        list-style: none;
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin: 8px;
+      }
+
+      button.filename {
+        background-color: #d2d2d2;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
+        color: blue;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 1rem;
+        max-width: 250px;
+        padding: 5px;
+        overflow-wrap: anywhere;
+        text-align: center;
+        text-decoration: underline;
+        width: max-content;
+      }
+
+      button.filename:focus {
+        background-color: purple;
+        color: white;
+        outline: none;
+        text-decoration: none;
+      }
+
+      button.close-fileviewer {
+        background-color: unset;
+        border: none;
+        color: #333333;
+        font-family: monospace;
+        float: right;
+        margin: 0.5rem -0.5rem -0.5rem 0.5rem;
+        text-transform: uppercase;
+      }
+
+      button.close-fileviewer:active,
+      button.close-fileviewer:focus {
+        background-color: purple;
+        border-radius: 5px;
+        color: white;
+        outline: none;
+      }
+
+      dialog.fileviewer[open] {
+        background-color: #dfdfdf;
+        box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
+        border-radius: 8px;
+        border: 2px dotted #333333;
+        z-index: 2;
+      }
     </style>
 
-    <script>console.log("TODO")</script>
+    <script>
+    function positionInPlace(element) {
+      const { top, left } = element.getBoundingClientRect()
+      const { scrollX, scrollY } = window
+      setTopLeft(element, top + scrollY, left + scrollX)
+    }
+
+    function setTopLeft(element, top, left) {
+      element.style.setProperty("top", top + "px")
+      element.style.setProperty("left", left + "px")
+    }
+
+    function setPositionAbsolute(element) {
+      element.style.setProperty("position", "absolute")
+    }
+
+    function onMouseDown(event) {
+      event.stopPropagation()
+      const { currentTarget, target, pageX, pageY, clientX, clientY } = event
+      const { left, top } = currentTarget.getBoundingClientRect()
+      const shiftX = clientX - left
+      const shiftY = clientY - top
+
+      function moveTo(pageX, pageY) {
+        const newLeft = pageX - shiftX + "px"
+        const newTop = pageY - shiftY + "px"
+        currentTarget.style.setProperty("left", newLeft)
+        currentTarget.style.setProperty("top", newTop)
+      }
+
+      function onMouseMove(event) {
+        moveTo(event.pageX, event.pageY)
+      }
+
+      function onMouseUp() {
+        document.removeEventListener("mousemove", onMouseMove)
+        document.removeEventListener("mouseup", onMouseUp)
+      }
+
+      document.addEventListener("mousemove", onMouseMove)
+      document.addEventListener("mouseup", onMouseUp)
+    }
+
+    const DOUBLE_CLICK = 2
+    function onDoubleClick(e) {
+      if (e.detail === DOUBLE_CLICK) {
+        const dialogId = e.currentTarget.getAttribute("aria-controls")
+        if (!dialogId) {
+          return
+        }
+        const dialog = document.getElementById(dialogId)
+        if (!dialog) {
+          return
+        }
+        if (dialog.open === false) {
+          const { top, left, height, width } = e.currentTarget.getBoundingClientRect()
+          const { scrollX, scrollY } = window
+          setTopLeft(dialog, top + height + scrollY + 10, left + scrollX)
+          setPositionAbsolute(dialog)
+          dialog.show()
+        }
+      }
+    }
+
+    window.addEventListener("load", (event) => {
+      const elements = document.querySelectorAll("[data-draggable]")
+      // Position each element absolutely so document flow isn't changed
+      // when one element is moved
+      elements.forEach(positionInPlace)
+      elements.forEach(setPositionAbsolute)
+
+      // Add drag-to-move functionality
+      elements.forEach((ele) =>
+        ele.addEventListener("mousedown", onMouseDown)
+      )
+
+      // Add double-click listener to open up fileviewer
+      const fileviewers = document.querySelectorAll("[data-fileviewer]")
+      fileviewers.forEach((ele) => {
+        ele.addEventListener("click", onDoubleClick)
+      })
+    })
+    </script>
   </head>
 
   <body>
-    <main>
-      <button
+    <main>      <button
         class="filename"
         aria-haspopup="dialog"
         aria-controls="Screen Shot 2021-03-09 at 10.19.53 PM.png"
@@ -23,9 +196,21 @@
         Screen Shot 2021-03-09 at 10.19.53 PM.png
       </button>
       <dialog id="Screen Shot 2021-03-09 at 10.19.53 PM.png" class="fileviewer" data-draggable>
-        <object class="file" data="Screen Shot 2021-03-09 at 10.19.53 PM.png"></object>
+        <object class="file" data="Screen Shot 2021-03-09 at 10.19.53 PM.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="furniture"
+        data-fileviewer
+        data-draggable>
+        furniture/
+      </button>
+      <dialog id="furniture" class="fileviewer" data-draggable>
+        <pre>furniture/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
       <button
         class="filename"
         aria-haspopup="dialog"
@@ -35,21 +220,21 @@
         future-feelings.txt
       </button>
       <dialog id="future-feelings.txt" class="fileviewer" data-draggable>
-        <object class="file" data="future-feelings.txt"></object>
+        <object class="file" data="future-feelings.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
       <button
         class="filename"
         aria-haspopup="dialog"
         aria-controls="hm"
         data-fileviewer
         data-draggable>
-        hm
+        hm/
       </button>
       <dialog id="hm" class="fileviewer" data-draggable>
-        <object class="file" data="hm"></object>
+        <pre>hm/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
       <button
         class="filename"
         aria-haspopup="dialog"
@@ -59,9 +244,9 @@
         homegrown-sample.pdf
       </button>
       <dialog id="homegrown-sample.pdf" class="fileviewer" data-draggable>
-        <object class="file" data="homegrown-sample.pdf"></object>
+        <object class="file" data="homegrown-sample.pdf" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
       <button
         class="filename"
         aria-haspopup="dialog"
@@ -71,21 +256,9 @@
         i-am-an-aspiring-teacher.png
       </button>
       <dialog id="i-am-an-aspiring-teacher.png" class="fileviewer" data-draggable>
-        <object class="file" data="i-am-an-aspiring-teacher.png"></object>
+        <object class="file" data="i-am-an-aspiring-teacher.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
-      <button
-        class="filename"
-        aria-haspopup="dialog"
-        aria-controls="index.html"
-        data-fileviewer
-        data-draggable>
-        index.html
-      </button>
-      <dialog id="index.html" class="fileviewer" data-draggable>
-        <object class="file" data="index.html"></object>
-      </dialog>
-
       <button
         class="filename"
         aria-haspopup="dialog"
@@ -95,33 +268,33 @@
         not-all-features.png
       </button>
       <dialog id="not-all-features.png" class="fileviewer" data-draggable>
-        <object class="file" data="not-all-features.png"></object>
+        <object class="file" data="not-all-features.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
       <button
         class="filename"
         aria-haspopup="dialog"
         aria-controls="welcome"
         data-fileviewer
         data-draggable>
-        welcome
+        welcome/
       </button>
       <dialog id="welcome" class="fileviewer" data-draggable>
-        <object class="file" data="welcome"></object>
+        <pre>welcome/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
       <button
         class="filename"
         aria-haspopup="dialog"
         aria-controls="would-you-like-to"
         data-fileviewer
         data-draggable>
-        would-you-like-to
+        would-you-like-to/
       </button>
       <dialog id="would-you-like-to" class="fileviewer" data-draggable>
-        <object class="file" data="would-you-like-to"></object>
+        <pre>would-you-like-to/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
       <button
         class="filename"
         aria-haspopup="dialog"
@@ -131,9 +304,9 @@
         you-deserve-a.png
       </button>
       <dialog id="you-deserve-a.png" class="fileviewer" data-draggable>
-        <object class="file" data="you-deserve-a.png"></object>
+        <object class="file" data="you-deserve-a.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
       <button
         class="filename"
         aria-haspopup="dialog"
@@ -143,9 +316,21 @@
         welcome/hello,goodday!!!!.png
       </button>
       <dialog id="welcome/hello,goodday!!!!.png" class="fileviewer" data-draggable>
-        <object class="file" data="welcome/hello,goodday!!!!.png"></object>
+        <object class="file" data="welcome/hello,goodday!!!!.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="welcome/to"
+        data-fileviewer
+        data-draggable>
+        welcome/to/
+      </button>
+      <dialog id="welcome/to" class="fileviewer" data-draggable>
+        <pre>welcome/to/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
       <button
         class="filename"
         aria-haspopup="dialog"
@@ -155,9 +340,74 @@
         would-you-like-to/find-out.jpeg
       </button>
       <dialog id="would-you-like-to/find-out.jpeg" class="fileviewer" data-draggable>
-        <object class="file" data="would-you-like-to/find-out.jpeg"></object>
+        <object class="file" data="would-you-like-to/find-out.jpeg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-      <p>TODO: furniture</p>
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="welcome/to/my"
+        data-fileviewer
+        data-draggable>
+        welcome/to/my/
+      </button>
+      <dialog id="welcome/to/my" class="fileviewer" data-draggable>
+        <pre>welcome/to/my/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="welcome/to/my/computer"
+        data-fileviewer
+        data-draggable>
+        welcome/to/my/computer/
+      </button>
+      <dialog id="welcome/to/my/computer" class="fileviewer" data-draggable>
+        <pre>welcome/to/my/computer/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+      <section aria-label="furniture">
+        <img src="furniture/arm-chair-1.png" draggable="false" data-draggable />
+        <img src="furniture/banner-1.png" draggable="false" data-draggable />
+        <img src="furniture/banner-2.png" draggable="false" data-draggable />
+        <img src="furniture/bean-bag.png" draggable="false" data-draggable />
+        <img src="furniture/bench-1.png" draggable="false" data-draggable />
+        <img src="furniture/book-1.png" draggable="false" data-draggable />
+        <img src="furniture/book-2.png" draggable="false" data-draggable />
+        <img src="furniture/bookcase-1.png" draggable="false" data-draggable />
+        <img src="furniture/chair-1.png" draggable="false" data-draggable />
+        <img src="furniture/chair-2.png" draggable="false" data-draggable />
+        <img src="furniture/chair-3.png" draggable="false" data-draggable />
+        <img src="furniture/chair-4.png" draggable="false" data-draggable />
+        <img src="furniture/chair-5.png" draggable="false" data-draggable />
+        <img src="furniture/coffee-table-1.png" draggable="false" data-draggable />
+        <img src="furniture/coffee-table-2.png" draggable="false" data-draggable />
+        <img src="furniture/couch.png" draggable="false" data-draggable />
+        <img src="furniture/flowers.png" draggable="false" data-draggable />
+        <img src="furniture/house-document.png" draggable="false" data-draggable />
+        <img src="furniture/house-map-1.png" draggable="false" data-draggable />
+        <img src="furniture/house-map-2.png" draggable="false" data-draggable />
+        <img src="furniture/lamp-1.png" draggable="false" data-draggable />
+        <img src="furniture/lamp-2.png" draggable="false" data-draggable />
+        <img src="furniture/lounge-chair.png" draggable="false" data-draggable />
+        <img src="furniture/picture-wall.png" draggable="false" data-draggable />
+        <img src="furniture/plant-1.png" draggable="false" data-draggable />
+        <img src="furniture/rocking-chair.png" draggable="false" data-draggable />
+        <img src="furniture/rug-1.png" draggable="false" data-draggable />
+        <img src="furniture/rug-2.png" draggable="false" data-draggable />
+        <img src="furniture/sad-face-tray.png" draggable="false" data-draggable />
+        <img src="furniture/shelf-1.png" draggable="false" data-draggable />
+        <img src="furniture/side-table-1.png" draggable="false" data-draggable />
+        <img src="furniture/side-table-2.png" draggable="false" data-draggable />
+        <img src="furniture/side-table-3.png" draggable="false" data-draggable />
+        <img src="furniture/side-table-4.png" draggable="false" data-draggable />
+        <img src="furniture/stool.png" draggable="false" data-draggable />
+        <img src="furniture/table-1.png" draggable="false" data-draggable />
+        <img src="furniture/tea-cups.png" draggable="false" data-draggable />
+        <img src="furniture/tea-kettle.png" draggable="false" data-draggable />
+        <img src="furniture/tray.png" draggable="false" data-draggable />
+      </section>
     </main>
   </body>
 </html>

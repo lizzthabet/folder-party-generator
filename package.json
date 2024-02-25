@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
-    "dev": "PARTY_FOLDER=test/testdata npm run start",
+    "dev": "FOLDER=test/testdata npm run start",
     "serve": "node dist/index.js",
     "start": "npm run build && npm run serve"
   },

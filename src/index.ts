@@ -8,7 +8,7 @@ type FileData = {
 }
 
 const CURRENT_DIRECTORY = '.'
-const FOLDER_ENV_VAR = 'PARTY_FOLDER'
+const FOLDER_ENV_VAR = 'FOLDER'
 const FILES_TO_IGNORE = new Set(['.DS_Store'])
 const FURNITURE_FOLDER = 'furniture'
 const OUTPUT_FILENAME = "index.html"

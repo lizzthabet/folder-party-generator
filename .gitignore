@@ -67,3 +67,6 @@ jspm_packages/
 
 # silly mac
 **/.DS_Store
+
+# don't include map file in dist
+dist/*.map

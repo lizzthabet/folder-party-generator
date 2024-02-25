@@ -7,8 +7,8 @@
     "lint": "eslint . --ext .ts",
     "build": "tsc",
     "dev": "FOLDER=test/testdata npm run start",
-    "run": "node dist/index.js",
-    "start": "npm run build && npm run run"
+    "generate": "node dist/index.js",
+    "start": "npm run build && npm run generate"
   },
   "author": "lizz thabet",
   "devDependencies": {

@@ -240,12 +240,8 @@
         }
       }
 
-      document.addEventListener("DOMContentLoaded", (event) => {
+      document.addEventListener("DOMContentLoaded", (_event) => {
         const draggable = document.querySelectorAll("[data-draggable]")
-        // Position each element absolutely so document flow isn't changed
-        // when one element is moved
-        draggable.forEach(positionInPlace)
-        draggable.forEach(setPositionAbsolute)
         // Add drag-to-move functionality
         draggable.forEach((ele) => ele.addEventListener("mousedown", moveOnMouseDown))
         
@@ -261,6 +257,24 @@
         // extra logic to _not_ open the file viewer when the element is dragged
         const staticFileViewers = document.querySelectorAll("[data-fileviewer]:not([data-draggable])")
         staticFileViewers.forEach((ele) => ele.addEventListener("click", onClick))
+      })
+
+      // The following code needs to wait for all resources (especially images) to
+      // be loaded on the page to position them propertly; if a resource isn't loaded,
+      // it can't be positioned on the page with its height and width.
+      //
+      // This code is *only* needed if each draggable item doesn't already have a
+      // "top", "left", and "position: absolute" set in its inline style, like:
+      // `style="top: 575px; left: 413px; position: absolute;"`.
+      //
+      // If each draggable element on the page already has an inline position,
+      // it can be removed.
+      window.addEventListener("load", (_event) => {
+        const draggable = document.querySelectorAll("[data-draggable]")
+        // Position each element absolutely so document flow isn't changed
+        // when one element is moved
+        draggable.forEach(positionInPlace)
+        draggable.forEach(setPositionAbsolute)
       })
     </script>
   </head>
@@ -448,6 +462,20 @@
         <pre>welcome/to/my/computer/ folder</pre>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="new-file.txt"
+        data-fileviewer
+        data-draggable>
+        new-file.txt
+      </button>
+      <dialog id="new-file.txt" class="fileviewer" data-draggable>
+        <object class="file" data="new-file.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
       <section aria-label="furniture">
         <img src="furniture/arm-chair.png" draggable="false" data-draggable />
         <img src="furniture/banner.png" draggable="false" data-draggable />

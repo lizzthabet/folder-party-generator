@@ -20,13 +20,27 @@ This website will let you browse all the files in the folder. You can include yo
 
 ## Host your own folder party
 
-```bash
-FOLDER=your-party-folder node dist/index.js
-```
+1. Curate a tiny (or big!) folder party in a directory on your computer.
 
-## Environment variables
+2. *(optional)* Add a folder called `furniture/` to your folder party and put whatever images you'd like in it. Optionally, you can download the furniture drawings in `dist/furniture` to use.
+
+3. Download the script `dist/index.js`, so you can run it locally with the directory of your folder party:
+   ```bash
+   FOLDER=./my-party node dist/index.js
+   ```
+   It will generate an HTML file that includes all the files in that folder.
+
+4. *(optional)* Open the `index.html` file in your browser and rearrange the items to your liking. When you're done rearranging, save the file back to your folder party directory by either right-clicking and choosing "Save As" or by using the browser's menu "File > Save Page As."
+
+Tada! That's it. Now you're ready to have your friends over.
+
+## Configure how the folder party generates
 
 `FOLDER`: the path to the files that should be used to generate your folder party, relative to the directory where the script run; defaults to the current directory
+
+`OVERWRITE`: option to overwrite an existing `index.html` file in your folder party, `true` / `1` or `false` / `0`, defaults to `false`
+
+`APPEND`: option to append new files to an existing `index.html` file in your folder party, `true` / `1` or `false` / `0`, defaults to `false`. If you want to both overwrite and append to the existing `index.html` file, you'll need to set both `OVERWRITE=1 APPEND=1` when running the script.
 
 ## Development
 

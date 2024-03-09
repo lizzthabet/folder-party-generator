@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
-    "dev": "FOLDER=test/testdata npm run start",
+    "dev": "OVERWRITE=true FOLDER=test/testdata npm run start",
     "generate": "node dist/index.js",
     "start": "npm run build && npm run generate"
   },

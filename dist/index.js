@@ -4,17 +4,34 @@ const node_fs_1 = require("node:fs");
 const node_path_1 = require("node:path");
 const node_process_1 = require("node:process");
 const CURRENT_DIRECTORY = '.';
-const FOLDER_ENV_VAR = 'FOLDER';
 const FILES_TO_IGNORE = new Set(['.DS_Store', 'furniture']);
 const FURNITURE_FOLDER = 'furniture';
-const OUTPUT_FILENAME = "index.html";
+const DEFAULT_OUTPUT_FILENAME = "index";
 const HTML_TITLE = "welcome to a place on my computer i've created just for you";
-function getDirFromEnv(e) {
+// Environment variables that can be set
+// to configure folder party generation
+const FOLDER_ENV_VAR = 'FOLDER';
+const OVERWRITE_INDEX_ENV_VAR = 'OVERWRITE';
+const APPEND_INDEX_ENV_VAR = 'APPEND';
+function getOptionsFromEnv(e) {
+    const options = {
+        directory: CURRENT_DIRECTORY,
+        overwriteIndex: false,
+        appendIndex: false,
+    };
     const folderName = e[FOLDER_ENV_VAR];
     if (folderName && typeof folderName == "string") {
-        return (0, node_path_1.normalize)(folderName);
+        options.directory = (0, node_path_1.normalize)(folderName);
     }
-    return CURRENT_DIRECTORY;
+    const overwrite = e[OVERWRITE_INDEX_ENV_VAR];
+    if (overwrite && typeof overwrite == "string") {
+        options.overwriteIndex = overwrite === "0" ? false : true;
+    }
+    const append = e[APPEND_INDEX_ENV_VAR];
+    if (append && typeof append == "string") {
+        options.appendIndex = append === "0" ? false : true;
+    }
+    return options;
 }
 function listFilesInDir(dir) {
     return (0, node_fs_1.readdirSync)(dir, { encoding: 'utf-8', recursive: true });
@@ -32,7 +49,7 @@ function sortFiles(files) {
         if (file.parsed.dir === FURNITURE_FOLDER) {
             input.furniture.push(file);
         }
-        else if (file.path === OUTPUT_FILENAME) {
+        else if (file.path === `${DEFAULT_OUTPUT_FILENAME}.html`) {
             input.existingIndex = file;
         }
         else {
@@ -41,21 +58,38 @@ function sortFiles(files) {
     }
     return input;
 }
-function template(files) {
+function template(files, options) {
     const data = files.map(f => ({ path: f, parsed: (0, node_path_1.parse)(f) }));
     const templateInput = sortFiles(data);
-    return generateTemplate(templateInput);
+    console.log('using env options', options);
+    return { templateInput, content: generateTemplate(templateInput) };
+}
+function websiteFilePath({ directory, options, }) {
+    let filename = DEFAULT_OUTPUT_FILENAME;
+    // Generate a unique filename if the option to overwrite the existing file
+    // isn't explicitly set
+    if (!options.overwriteIndex) {
+        const pathSeparator = new RegExp(node_path_1.sep, "g");
+        const spaces = new RegExp(/\s+/, "g");
+        const now = new Date();
+        const date = now.toLocaleDateString().replace(pathSeparator, ".").replace(spaces, "-");
+        const time = now.toLocaleTimeString().replace(pathSeparator, ".").replace(spaces, "-");
+        filename += `_${date}_${time}`;
+    }
+    return `${directory}/${filename}.html`;
 }
 (function main() {
     try {
-        const directory = getDirFromEnv(node_process_1.env);
+        const options = getOptionsFromEnv(node_process_1.env);
+        const { directory } = options;
         console.log(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
             "current directory" : directory}`);
         const files = listFilesInDir(directory);
-        console.log(`> > found ${files.length} files to add to folder party`);
-        // TODO: make sure not to overwrite files or get confirmation?
-        (0, node_fs_1.writeFileSync)(`${directory}/${OUTPUT_FILENAME}`, template(files), { encoding: 'utf-8' });
-        console.log(`> > creating folder party website file: ${directory}/${OUTPUT_FILENAME}`);
+        console.log(`> > found ${files.length} files for folder party`);
+        const { content } = template(files, options);
+        const filePath = websiteFilePath({ directory, options });
+        (0, node_fs_1.writeFileSync)(filePath, content, { encoding: 'utf-8' });
+        console.log(`> > creating folder party website file: ${filePath}`);
     }
     catch (err) {
         console.error("folder party creation failed:", err);
@@ -87,7 +121,7 @@ function createStyle() {
     return `
     <style>
       html {
-        background-color: pink;
+        background-color: #d2d2d2;
       }
 
       /* Styles for draggable elements */
@@ -218,52 +252,94 @@ function createStyle() {
 function createScript() {
     return `
     <script>
-    function positionInPlace(element) {
-      const { top, left } = element.getBoundingClientRect()
-      const { scrollX, scrollY } = window
-      setTopLeft(element, top + scrollY, left + scrollX)
-    }
-
-    function setTopLeft(element, top, left) {
-      element.style.setProperty("top", top + "px")
-      element.style.setProperty("left", left + "px")
-    }
-
-    function setPositionAbsolute(element) {
-      element.style.setProperty("position", "absolute")
-    }
-
-    function onMouseDown(event) {
-      event.stopPropagation()
-      const { currentTarget, target, pageX, pageY, clientX, clientY } = event
-      const { left, top } = currentTarget.getBoundingClientRect()
-      const shiftX = clientX - left
-      const shiftY = clientY - top
-
-      function moveTo(pageX, pageY) {
-        const newLeft = pageX - shiftX + "px"
-        const newTop = pageY - shiftY + "px"
-        currentTarget.style.setProperty("left", newLeft)
-        currentTarget.style.setProperty("top", newTop)
+      function positionInPlace(element) {
+        const { top, left } = element.getBoundingClientRect()
+        const { scrollX, scrollY } = window
+        setTopLeft(element, top + scrollY, left + scrollX)
       }
 
-      function onMouseMove(event) {
-        moveTo(event.pageX, event.pageY)
+      function setTopLeft(element, top, left) {
+        element.style.setProperty("top", top + "px")
+        element.style.setProperty("left", left + "px")
       }
 
-      function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove)
-        document.removeEventListener("mouseup", onMouseUp)
+      function setPositionAbsolute(element) {
+        element.style.setProperty("position", "absolute")
       }
 
-      document.addEventListener("mousemove", onMouseMove)
-      document.addEventListener("mouseup", onMouseUp)
-    }
+      const MOUSE_BUTTON_MAIN = 0
+      function moveOnMouseDown(event) {
+        // Use the currentTarget for calculating position, because it's the
+        // element that has the "data-draggable" property on it. The target
+        // may be another element inside of it.
+        const { currentTarget, pageX, pageY, clientX, clientY, button } = event
+        // Don't continue if the main mouse button (left click) is not used;
+        // this prevents funny behavior on right or middle click
+        if (button !== undefined && button !== MOUSE_BUTTON_MAIN) {
+          return
+        }
+        const { left, top } = currentTarget.getBoundingClientRect()
+        const shiftX = clientX - left
+        const shiftY = clientY - top
 
-    const DOUBLE_CLICK = 2
-    function onDoubleClick(e) {
-      if (e.detail === DOUBLE_CLICK) {
-        const dialogId = e.currentTarget.getAttribute("aria-controls")
+        function moveTo(pageX, pageY) {
+          const newLeft = pageX - shiftX + "px"
+          const newTop = pageY - shiftY + "px"
+          currentTarget.style.setProperty("left", newLeft)
+          currentTarget.style.setProperty("top", newTop)
+        }
+
+        function onMouseMove(event) {
+          moveTo(event.pageX, event.pageY)
+        }
+
+        function onMouseUp(event) {
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      // To distinguish between moving an element and clicking an element,
+      // this handler is triggered by the "mousedown" instead of "click" event,
+      // so it can listen for "mousemove" events and ignore them.
+      function openViewerOnMouseDown(event) {
+        // Don't continue if the main mouse button (left click) is not used;
+        // this prevents funny behavior on right or middle click
+        if (event.button !== undefined && event.button !== MOUSE_BUTTON_MAIN) {
+          return
+        }
+
+        let elementHasMoved = false
+        function onMouseMove(event) {
+          elementHasMoved = true
+        }
+
+        function onMouseUp(event) {
+          if (elementHasMoved !== true) {
+            onClick(event)
+          }
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      // Because click events are handled through the "mousedown" trigger,
+      // the default button behavior of space and enter keys triggering a
+      // click need to be added manually
+      function openViewerOnKeyPress(event) {
+        if (event.code === 'Enter' || event.code === 'Space') {
+          onClick(event)
+        }
+      }
+
+      function onClick(event) {
+        const dialogId = event.target.getAttribute("aria-controls")
         if (!dialogId) {
           return
         }
@@ -272,40 +348,43 @@ function createScript() {
           return
         }
         if (dialog.open === false) {
-          const { top, left, height, width } = e.currentTarget.getBoundingClientRect()
+          const { top, left, height, width } = event.target.getBoundingClientRect()
           const { scrollX, scrollY } = window
           setTopLeft(dialog, top + height + scrollY + 10, left + scrollX)
           setPositionAbsolute(dialog)
           dialog.show()
         }
       }
-    }
 
-    window.addEventListener("load", (event) => {
-      const elements = document.querySelectorAll("[data-draggable]")
-      // Position each element absolutely so document flow isn't changed
-      // when one element is moved
-      elements.forEach(positionInPlace)
-      elements.forEach(setPositionAbsolute)
+      document.addEventListener("DOMContentLoaded", (event) => {
+        const draggable = document.querySelectorAll("[data-draggable]")
+        // Position each element absolutely so document flow isn't changed
+        // when one element is moved
+        draggable.forEach(positionInPlace)
+        draggable.forEach(setPositionAbsolute)
+        // Add drag-to-move functionality
+        draggable.forEach((ele) => ele.addEventListener("mousedown", moveOnMouseDown))
+        
+        // Add file viewer functionality to draggable elements
+        const fileViewers = document.querySelectorAll("[data-fileviewer][data-draggable]")
+        fileViewers.forEach((ele) => {
+          ele.addEventListener("mousedown", openViewerOnMouseDown)
+          ele.addEventListener("keypress", openViewerOnKeyPress)
+        })
 
-      // Add drag-to-move functionality
-      elements.forEach((ele) =>
-        ele.addEventListener("mousedown", onMouseDown)
-      )
-
-      // Add double-click listener to open up fileviewer
-      const fileviewers = document.querySelectorAll("[data-fileviewer]")
-      fileviewers.forEach((ele) => {
-        ele.addEventListener("click", onDoubleClick)
+        // Add file viewer functionality to non-draggable elements;
+        // this is done separately from draggable elements, since there's
+        // extra logic to _not_ open the file viewer when the element is dragged
+        const staticFileViewers = document.querySelectorAll("[data-fileviewer]:not([data-draggable])")
+        staticFileViewers.forEach((ele) => ele.addEventListener("click", onClick))
       })
-    })
     </script>`;
 }
 function createBody(input) {
     return `
   <body>
     <main>${input.files.map((file) => {
-        return `      ${createButton(file)}
+        return `\n      ${createButton(file)}
       ${createDialog(file)}`;
     }).join("\n")}
       ${createFurniture(input.furniture)}

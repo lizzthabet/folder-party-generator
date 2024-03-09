@@ -1,5 +1,5 @@
 import { readdirSync, writeFileSync } from 'node:fs'
-import { normalize, parse, ParsedPath } from 'node:path'
+import { normalize, parse, ParsedPath, sep } from 'node:path'
 import { env } from 'node:process'
 
 type FileData = {
@@ -7,20 +7,45 @@ type FileData = {
   parsed: ParsedPath
 }
 
+type Options = {
+  directory: string
+  overwriteIndex: boolean
+  appendIndex: boolean
+}
+
 const CURRENT_DIRECTORY = '.'
-const FOLDER_ENV_VAR = 'FOLDER'
 const FILES_TO_IGNORE = new Set(['.DS_Store', 'furniture'])
 const FURNITURE_FOLDER = 'furniture'
-const OUTPUT_FILENAME = "index.html"
+const DEFAULT_OUTPUT_FILENAME = "index"
 const HTML_TITLE = "welcome to a place on my computer i've created just for you"
+// Environment variables that can be set
+// to configure folder party generation
+const FOLDER_ENV_VAR = 'FOLDER'
+const OVERWRITE_INDEX_ENV_VAR = 'OVERWRITE'
+const APPEND_INDEX_ENV_VAR = 'APPEND'
 
-function getDirFromEnv(e: NodeJS.ProcessEnv): string {
+function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
+  const options: Options = {
+    directory: CURRENT_DIRECTORY,
+    overwriteIndex: false,
+    appendIndex: false,
+  }
   const folderName: string | undefined = e[FOLDER_ENV_VAR]
   if (folderName && typeof folderName == "string") {
-    return normalize(folderName)
+    options.directory = normalize(folderName)
   }
 
-  return CURRENT_DIRECTORY
+  const overwrite: string | undefined = e[OVERWRITE_INDEX_ENV_VAR]
+  if (overwrite && typeof overwrite == "string") {
+    options.overwriteIndex = overwrite === "0" ? false : true
+  }
+
+  const append: string | undefined = e[APPEND_INDEX_ENV_VAR]
+  if (append && typeof append == "string") {
+    options.appendIndex = append === "0" ? false : true
+  }
+
+  return options
 }
 
 function listFilesInDir(dir: string): string[] {
@@ -31,7 +56,6 @@ type TemplateInput = {
   files: FileData[]
   furniture: FileData[]
   existingIndex?: FileData
-  // maybe option to add to index or replace or rename
 }
 
 function sortFiles(files: FileData[]): TemplateInput {
@@ -47,7 +71,7 @@ function sortFiles(files: FileData[]): TemplateInput {
 
     if (file.parsed.dir === FURNITURE_FOLDER) {
       input.furniture.push(file)
-    } else if (file.path === OUTPUT_FILENAME) {
+    } else if (file.path === `${DEFAULT_OUTPUT_FILENAME}.html`) {
       input.existingIndex = file
     } else {
       input.files.push(file)
@@ -57,22 +81,47 @@ function sortFiles(files: FileData[]): TemplateInput {
   return input
 }
 
-function template(files: string[]): string {
+function template(files: string[], options: Options): { content: string, templateInput: TemplateInput } {
   const data: FileData[] = files.map(f => ({ path: f, parsed: parse(f) }))
   const templateInput = sortFiles(data)
-  return generateTemplate(templateInput)
+  console.log('using env options', options)
+  return { templateInput, content: generateTemplate(templateInput) }
+}
+
+function websiteFilePath({
+  directory,
+  options,
+}: {
+  directory: string,
+  options: Options
+ }): string {
+  let filename = DEFAULT_OUTPUT_FILENAME
+  // Generate a unique filename if the option to overwrite the existing file
+  // isn't explicitly set
+  if (!options.overwriteIndex) {
+    const pathSeparator = new RegExp(sep, "g")
+    const spaces = new RegExp(/\s+/, "g")
+    const now = new Date()
+    const date = now.toLocaleDateString().replace(pathSeparator, ".").replace(spaces, "-")
+    const time = now.toLocaleTimeString().replace(pathSeparator, ".").replace(spaces, "-")
+    filename += `_${date}_${time}`
+  }
+
+  return `${directory}/${filename}.html`
 }
 
 (function main() {
   try {
-    const directory = getDirFromEnv(env)
+    const options = getOptionsFromEnv(env)
+    const { directory } = options
     console.log(`> > generating folder party from ${directory === CURRENT_DIRECTORY ? 
       "current directory": directory}`)
     const files = listFilesInDir(directory)
-    console.log(`> > found ${files.length} files to add to folder party`)
-    // TODO: make sure not to overwrite files or get confirmation?
-    writeFileSync(`${directory}/${OUTPUT_FILENAME}`, template(files), { encoding: 'utf-8' })
-    console.log(`> > creating folder party website file: ${directory}/${OUTPUT_FILENAME}`)
+    console.log(`> > found ${files.length} files for folder party`)
+    const { content } = template(files, options)
+    const filePath = websiteFilePath({ directory, options })
+    writeFileSync(filePath, content, { encoding: 'utf-8' })
+    console.log(`> > creating folder party website file: ${filePath}`)
   } catch (err) {
     console.error("folder party creation failed:", err)
     process.exit(1)
@@ -372,7 +421,7 @@ function createBody(input: TemplateInput): string {
   return `
   <body>
     <main>${input.files.map((file) => {
-        return `      ${createButton(file)}
+        return `\n      ${createButton(file)}
       ${createDialog(file)}`
       }).join("\n")}
       ${createFurniture(input.furniture)}

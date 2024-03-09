@@ -5,7 +5,7 @@ const node_path_1 = require("node:path");
 const node_process_1 = require("node:process");
 const CURRENT_DIRECTORY = '.';
 const FOLDER_ENV_VAR = 'FOLDER';
-const FILES_TO_IGNORE = new Set(['.DS_Store']);
+const FILES_TO_IGNORE = new Set(['.DS_Store', 'furniture']);
 const FURNITURE_FOLDER = 'furniture';
 const OUTPUT_FILENAME = "index.html";
 const HTML_TITLE = "welcome to a place on my computer i've created just for you";
@@ -87,16 +87,15 @@ function createStyle() {
     return `
     <style>
       html {
-        background-color: #d3d3d3;
+        background-color: pink;
       }
 
-      .nav-link {
-        font-size: 1.5rem;
-        color: white;
-        text-shadow: 5px 5px 5px #333333;
-      }
+      /* Styles for draggable elements */
 
-      /* dialogs should manage their own display */
+      /* display inline-block so that elements are
+      positioned absolutely next to each other when
+      the document loads EXCEPT for dialog elements
+      which manage their own display + visibility */
       [data-draggable]:not(dialog) {
         display: inline-block;
       }
@@ -111,26 +110,7 @@ function createStyle() {
         cursor: move;
       }
 
-      header {
-        padding: 1rem;
-        z-index: 1;
-      }
-
-      header > h1 {
-        font-family: monospace;
-        font-style: italic;
-        color: blue;
-        text-shadow: 5px 5px 5px rgb(51, 51, 51, 0.50);
-      }
-
-      menu {
-        list-style: none;
-        position: absolute;
-        top: 0;
-        right: 0;
-        margin: 8px;
-      }
-
+      /* Styles for filenames */
       button.filename {
         background-color: #d2d2d2;
         border: none;
@@ -164,6 +144,17 @@ function createStyle() {
         text-transform: uppercase;
       }
 
+      /* Styles for dialogs and dialog buttons */
+      dialog.fileviewer[open] {
+        background-color: #dfdfdf;
+        box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
+        border-radius: 8px;
+        border: 2px dotted #333333;
+        /* Needed to size dialogs in Firefox to fit their content */
+        width: max-content;
+        z-index: 2;
+      }
+
       button.close-fileviewer:active,
       button.close-fileviewer:focus {
         background-color: purple;
@@ -172,12 +163,55 @@ function createStyle() {
         outline: none;
       }
 
-      dialog.fileviewer[open] {
-        background-color: #dfdfdf;
-        box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
-        border-radius: 8px;
-        border: 2px dotted #333333;
-        z-index: 2;
+      /* Styles for embedded media */
+      /* Note: the *-text classes are useful for content
+      that browsers won't expand to fit the max sizes,
+      like text and html */
+      object {
+        /* Set a global max size so content
+        isn't TOO big */
+        max-width: 600px;
+        max-height: 600px;
+      }
+
+      object.tiny {
+        max-height: 60px;
+        max-width: 175px;
+      }
+
+      object.tiny-text {
+        height: 60px;
+        width: 175px;
+      }
+
+      object.small {
+        max-height: 250px;
+        max-width: 150px;
+      }
+
+      object.small-text {
+        height: 100px;
+        width: 150px;
+      }
+
+      object.medium {
+        max-height: 300px;
+        max-width: 400px;
+      }
+
+      object.medium-text {
+        height: 300px;
+        width: 400px;
+      }
+
+      object.large {
+        max-width: 500px;
+        max-height: 500px;
+      }
+
+      object.large-text {
+        width: 500px;
+        height: 500px;
       }
     </style>`;
 }
@@ -312,8 +346,4 @@ function createFurniture(furniture) {
 function randomInt(min, max) {
     return Math.round(Math.random() * (max - min) + min);
 }
-// Nice-to-haves:
-// furniture folder
-// party-config.json
-// custom.css detection + insertion
 //# sourceMappingURL=index.js.map

@@ -1,5 +1,5 @@
-import { readdirSync, writeFileSync } from 'node:fs'
-import { normalize, parse, ParsedPath, sep } from 'node:path'
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { normalize, parse, ParsedPath, sep, join } from 'node:path'
 import { env } from 'node:process'
 
 type FileData = {
@@ -15,6 +15,7 @@ type Options = {
 
 const CURRENT_DIRECTORY = '.'
 const FILES_TO_IGNORE = new Set(['.DS_Store', 'furniture'])
+const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g
 const FURNITURE_FOLDER = 'furniture'
 const DEFAULT_OUTPUT_FILENAME = "index"
 const HTML_TITLE = "welcome to a place on my computer i've created just for you"
@@ -52,20 +53,81 @@ function listFilesInDir(dir: string): string[] {
   return readdirSync(dir, { encoding: 'utf-8', recursive: true })
 }
 
+function readFileContent(path: string): string {
+  return readFileSync(path, { encoding: 'utf-8' })
+}
+
+function parseFilesFromHtml(content: string): Set<string> {
+  const existingFiles = new Set<string>()
+  const idMatches = content.matchAll(DIALOG_IDS_REGEX)
+  for (const match of idMatches) {
+    const filenameInId = match[1]
+    if (filenameInId && typeof filenameInId === "string") {
+      existingFiles.add(filenameInId)
+    }
+  }
+
+  return existingFiles
+}
+
+function getAppendIndex(content: string): number {
+  // Append files before furniture if there's a furniture section
+  const furnitureOpenTagIndex = content.indexOf('<section aria-label="furniture">')
+  if (furnitureOpenTagIndex > 0) {
+    return furnitureOpenTagIndex - 1
+  }
+  
+  // Append files at the end of the body
+  const bodyCloseTagIndex = content.indexOf('</body>')
+  if (bodyCloseTagIndex > 0) {
+    return bodyCloseTagIndex - 1
+  }
+
+  // Otherwise append files at the end of the document
+  return content.length - 1
+}
+
 type TemplateInput = {
   files: FileData[]
   furniture: FileData[]
   existingIndex?: FileData
+  existingFiles?: Set<string>
+  existingFileContent?: string
+  appendToIndex?: number
 }
 
-function sortFiles(files: FileData[]): TemplateInput {
+function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput {
   const input: TemplateInput = {
     files: [],
     furniture: [],
   }
+
+  // If new files should be appended to the existing html file,
+  // get the file contents and a list of files already included in it
+  if (options.appendIndex) {
+    try {
+      const fullPath = join(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`)
+      input.existingFileContent = readFileContent(fullPath)
+      input.existingFiles = parseFilesFromHtml(input.existingFileContent)
+      input.appendToIndex = getAppendIndex(input.existingFileContent)
+    } catch (error) {
+      console.warn("> > unable to append new files to existing index.html:", error)
+      console.warn("> > creating new file instead of appending")
+    }
+  }
+
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
+    // Skip file if it's ignored globally
     if (FILES_TO_IGNORE.has(file.parsed.name)) {
+      continue
+    }
+    // Skip file if it's already been included in the existing html
+    if (
+      options.appendIndex &&
+      input.existingFiles &&
+      input.existingFiles.has(file.path)
+    ) {
       continue
     }
 
@@ -83,8 +145,11 @@ function sortFiles(files: FileData[]): TemplateInput {
 
 function template(files: string[], options: Options): { content: string, templateInput: TemplateInput } {
   const data: FileData[] = files.map(f => ({ path: f, parsed: parse(f) }))
-  const templateInput = sortFiles(data)
-  console.log('using env options', options)
+  const templateInput = sortFilesIntoInput(data, options)
+  if (options.appendIndex) {
+    const newFiles = templateInput.files.length
+    console.log(`> > adding ${newFiles} file${newFiles === 1 ? '': 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`)
+  }
   return { templateInput, content: generateTemplate(templateInput) }
 }
 
@@ -130,6 +195,15 @@ function websiteFilePath({
 
 // Template logic * ~ * ~ *
 function generateTemplate(input: TemplateInput): string {
+  // If there's an index to append new content to,
+  // do that instead of generating a new html document
+  if (typeof input.appendToIndex === "number") {
+    const beforeNewContent = input.existingFileContent.slice(0, input.appendToIndex + 1)
+    const afterNewContent = input.existingFileContent.slice(input.appendToIndex + 1)
+    const newContent = input.files.map(createButtonDialogPair).join("\n") + "\n      "
+    return beforeNewContent + newContent + afterNewContent
+  }
+
   return createHtmlDocument(input)
 }
 
@@ -392,13 +466,9 @@ function createScript(): string {
         }
       }
 
-      document.addEventListener("DOMContentLoaded", (event) => {
-        const draggable = document.querySelectorAll("[data-draggable]")
-        // Position each element absolutely so document flow isn't changed
-        // when one element is moved
-        draggable.forEach(positionInPlace)
-        draggable.forEach(setPositionAbsolute)
+      document.addEventListener("DOMContentLoaded", (_event) => {
         // Add drag-to-move functionality
+        const draggable = document.querySelectorAll("[data-draggable]")
         draggable.forEach((ele) => ele.addEventListener("mousedown", moveOnMouseDown))
         
         // Add file viewer functionality to draggable elements
@@ -414,19 +484,40 @@ function createScript(): string {
         const staticFileViewers = document.querySelectorAll("[data-fileviewer]:not([data-draggable])")
         staticFileViewers.forEach((ele) => ele.addEventListener("click", onClick))
       })
+
+      // The following code needs to wait for all resources (especially images) to
+      // be loaded on the page to position them propertly; if a resource isn't loaded,
+      // it can't be positioned on the page with its height and width.
+      //
+      // This code is *only* needed if each draggable item doesn't already have a
+      // "top", "left", and "position: absolute" set in its inline style, like:
+      // \`style="top: 575px; left: 413px; position: absolute;"\`.
+      //
+      // If each draggable element on the page already has an inline position,
+      // it can be removed.
+      window.addEventListener("load", (_event) => {
+        const draggable = document.querySelectorAll("[data-draggable]")
+        // Position each element absolutely so document flow isn't changed
+        // when one element is moved
+        draggable.forEach(positionInPlace)
+        draggable.forEach(setPositionAbsolute)
+      })
     </script>`
 }
 
 function createBody(input: TemplateInput): string {
   return `
   <body>
-    <main>${input.files.map((file) => {
-        return `\n      ${createButton(file)}
-      ${createDialog(file)}`
-      }).join("\n")}
+    <main>${input.files.map(createButtonDialogPair).join("\n")}
       ${createFurniture(input.furniture)}
     </main>
   </body>`
+}
+
+function createButtonDialogPair(file: FileData): string {
+  return `
+      ${createButton(file)}
+      ${createDialog(file)}`
 }
 
 function isFolder(file: FileData) {

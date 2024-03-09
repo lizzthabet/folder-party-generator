@@ -107,7 +107,7 @@ function createStyle(): string {
   return `
     <style>
       html {
-        background-color: pink;
+        background-color: #d2d2d2;
       }
 
       /* Styles for draggable elements */
@@ -239,52 +239,94 @@ function createStyle(): string {
 function createScript(): string {
   return `
     <script>
-    function positionInPlace(element) {
-      const { top, left } = element.getBoundingClientRect()
-      const { scrollX, scrollY } = window
-      setTopLeft(element, top + scrollY, left + scrollX)
-    }
-
-    function setTopLeft(element, top, left) {
-      element.style.setProperty("top", top + "px")
-      element.style.setProperty("left", left + "px")
-    }
-
-    function setPositionAbsolute(element) {
-      element.style.setProperty("position", "absolute")
-    }
-
-    function onMouseDown(event) {
-      event.stopPropagation()
-      const { currentTarget, target, pageX, pageY, clientX, clientY } = event
-      const { left, top } = currentTarget.getBoundingClientRect()
-      const shiftX = clientX - left
-      const shiftY = clientY - top
-
-      function moveTo(pageX, pageY) {
-        const newLeft = pageX - shiftX + "px"
-        const newTop = pageY - shiftY + "px"
-        currentTarget.style.setProperty("left", newLeft)
-        currentTarget.style.setProperty("top", newTop)
+      function positionInPlace(element) {
+        const { top, left } = element.getBoundingClientRect()
+        const { scrollX, scrollY } = window
+        setTopLeft(element, top + scrollY, left + scrollX)
       }
 
-      function onMouseMove(event) {
-        moveTo(event.pageX, event.pageY)
+      function setTopLeft(element, top, left) {
+        element.style.setProperty("top", top + "px")
+        element.style.setProperty("left", left + "px")
       }
 
-      function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove)
-        document.removeEventListener("mouseup", onMouseUp)
+      function setPositionAbsolute(element) {
+        element.style.setProperty("position", "absolute")
       }
 
-      document.addEventListener("mousemove", onMouseMove)
-      document.addEventListener("mouseup", onMouseUp)
-    }
+      const MOUSE_BUTTON_MAIN = 0
+      function moveOnMouseDown(event) {
+        // Use the currentTarget for calculating position, because it's the
+        // element that has the "data-draggable" property on it. The target
+        // may be another element inside of it.
+        const { currentTarget, pageX, pageY, clientX, clientY, button } = event
+        // Don't continue if the main mouse button (left click) is not used;
+        // this prevents funny behavior on right or middle click
+        if (button !== undefined && button !== MOUSE_BUTTON_MAIN) {
+          return
+        }
+        const { left, top } = currentTarget.getBoundingClientRect()
+        const shiftX = clientX - left
+        const shiftY = clientY - top
 
-    const DOUBLE_CLICK = 2
-    function onDoubleClick(e) {
-      if (e.detail === DOUBLE_CLICK) {
-        const dialogId = e.currentTarget.getAttribute("aria-controls")
+        function moveTo(pageX, pageY) {
+          const newLeft = pageX - shiftX + "px"
+          const newTop = pageY - shiftY + "px"
+          currentTarget.style.setProperty("left", newLeft)
+          currentTarget.style.setProperty("top", newTop)
+        }
+
+        function onMouseMove(event) {
+          moveTo(event.pageX, event.pageY)
+        }
+
+        function onMouseUp(event) {
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      // To distinguish between moving an element and clicking an element,
+      // this handler is triggered by the "mousedown" instead of "click" event,
+      // so it can listen for "mousemove" events and ignore them.
+      function openViewerOnMouseDown(event) {
+        // Don't continue if the main mouse button (left click) is not used;
+        // this prevents funny behavior on right or middle click
+        if (event.button !== undefined && event.button !== MOUSE_BUTTON_MAIN) {
+          return
+        }
+
+        let elementHasMoved = false
+        function onMouseMove(event) {
+          elementHasMoved = true
+        }
+
+        function onMouseUp(event) {
+          if (elementHasMoved !== true) {
+            onClick(event)
+          }
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      // Because click events are handled through the "mousedown" trigger,
+      // the default button behavior of space and enter keys triggering a
+      // click need to be added manually
+      function openViewerOnKeyPress(event) {
+        if (event.code === 'Enter' || event.code === 'Space') {
+          onClick(event)
+        }
+      }
+
+      function onClick(event) {
+        const dialogId = event.target.getAttribute("aria-controls")
         if (!dialogId) {
           return
         }
@@ -293,33 +335,36 @@ function createScript(): string {
           return
         }
         if (dialog.open === false) {
-          const { top, left, height, width } = e.currentTarget.getBoundingClientRect()
+          const { top, left, height, width } = event.target.getBoundingClientRect()
           const { scrollX, scrollY } = window
           setTopLeft(dialog, top + height + scrollY + 10, left + scrollX)
           setPositionAbsolute(dialog)
           dialog.show()
         }
       }
-    }
 
-    window.addEventListener("load", (event) => {
-      const elements = document.querySelectorAll("[data-draggable]")
-      // Position each element absolutely so document flow isn't changed
-      // when one element is moved
-      elements.forEach(positionInPlace)
-      elements.forEach(setPositionAbsolute)
+      document.addEventListener("DOMContentLoaded", (event) => {
+        const draggable = document.querySelectorAll("[data-draggable]")
+        // Position each element absolutely so document flow isn't changed
+        // when one element is moved
+        draggable.forEach(positionInPlace)
+        draggable.forEach(setPositionAbsolute)
+        // Add drag-to-move functionality
+        draggable.forEach((ele) => ele.addEventListener("mousedown", moveOnMouseDown))
+        
+        // Add file viewer functionality to draggable elements
+        const fileViewers = document.querySelectorAll("[data-fileviewer][data-draggable]")
+        fileViewers.forEach((ele) => {
+          ele.addEventListener("mousedown", openViewerOnMouseDown)
+          ele.addEventListener("keypress", openViewerOnKeyPress)
+        })
 
-      // Add drag-to-move functionality
-      elements.forEach((ele) =>
-        ele.addEventListener("mousedown", onMouseDown)
-      )
-
-      // Add double-click listener to open up fileviewer
-      const fileviewers = document.querySelectorAll("[data-fileviewer]")
-      fileviewers.forEach((ele) => {
-        ele.addEventListener("click", onDoubleClick)
+        // Add file viewer functionality to non-draggable elements;
+        // this is done separately from draggable elements, since there's
+        // extra logic to _not_ open the file viewer when the element is dragged
+        const staticFileViewers = document.querySelectorAll("[data-fileviewer]:not([data-draggable])")
+        staticFileViewers.forEach((ele) => ele.addEventListener("click", onClick))
       })
-    })
     </script>`
 }
 

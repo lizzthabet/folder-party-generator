@@ -133,6 +133,11 @@
         width: 500px;
         height: 500px;
       }
+
+      /* Styles for furniture */
+      section[aria-label="furniture"] > img {
+        z-index: -1;
+      }
     </style>
 
     <script>
@@ -241,8 +246,8 @@
       }
 
       document.addEventListener("DOMContentLoaded", (_event) => {
-        const draggable = document.querySelectorAll("[data-draggable]")
         // Add drag-to-move functionality
+        const draggable = document.querySelectorAll("[data-draggable]")
         draggable.forEach((ele) => ele.addEventListener("mousedown", moveOnMouseDown))
         
         // Add file viewer functionality to draggable elements
@@ -343,6 +348,19 @@
       </button>
       <dialog id="i-am-an-aspiring-teacher.png" class="fileviewer" data-draggable>
         <object class="file" data="i-am-an-aspiring-teacher.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="new-file.txt"
+        data-fileviewer
+        data-draggable>
+        new-file.txt
+      </button>
+      <dialog id="new-file.txt" class="fileviewer" data-draggable>
+        <object class="file" data="new-file.txt" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
@@ -462,59 +480,31 @@
         <pre>welcome/to/my/computer/ folder</pre>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
-
-      <button
-        class="filename"
-        aria-haspopup="dialog"
-        aria-controls="new-file.txt"
-        data-fileviewer
-        data-draggable>
-        new-file.txt
-      </button>
-      <dialog id="new-file.txt" class="fileviewer" data-draggable>
-        <object class="file" data="new-file.txt" draggable="false"></object>
-        <form method="dialog"><button class="close-fileviewer">close</button></form>
-      </dialog>
-
       <section aria-label="furniture">
-        <img src="furniture/arm-chair.png" draggable="false" data-draggable />
-        <img src="furniture/banner.png" draggable="false" data-draggable />
-        <img src="furniture/bean-bag.png" draggable="false" data-draggable />
-        <img src="furniture/bench.png" draggable="false" data-draggable />
-        <img src="furniture/book-with-pencil.png" draggable="false" data-draggable />
-        <img src="furniture/book.png" draggable="false" data-draggable />
-        <img src="furniture/bookcase.png" draggable="false" data-draggable />
-        <img src="furniture/bookshelf.png" draggable="false" data-draggable />
-        <img src="furniture/chair-1.png" draggable="false" data-draggable />
-        <img src="furniture/chair-2.png" draggable="false" data-draggable />
-        <img src="furniture/chair-3.png" draggable="false" data-draggable />
-        <img src="furniture/chair-4.png" draggable="false" data-draggable />
-        <img src="furniture/chair-5.png" draggable="false" data-draggable />
-        <img src="furniture/couch.png" draggable="false" data-draggable />
-        <img src="furniture/flowers.png" draggable="false" data-draggable />
-        <img src="furniture/house-document.png" draggable="false" data-draggable />
-        <img src="furniture/house-map-1.png" draggable="false" data-draggable />
-        <img src="furniture/house-map-2.png" draggable="false" data-draggable />
-        <img src="furniture/lamp-1.png" draggable="false" data-draggable />
-        <img src="furniture/lamp-2.png" draggable="false" data-draggable />
-        <img src="furniture/lounge-chair.png" draggable="false" data-draggable />
-        <img src="furniture/picture-wall.png" draggable="false" data-draggable />
-        <img src="furniture/plant.png" draggable="false" data-draggable />
-        <img src="furniture/rocking-chair.png" draggable="false" data-draggable />
-        <img src="furniture/round-coffee-table.png" draggable="false" data-draggable />
-        <img src="furniture/rug-with-spirals.png" draggable="false" data-draggable />
-        <img src="furniture/rug-with-tassles.png" draggable="false" data-draggable />
-        <img src="furniture/sad-face-tray.png" draggable="false" data-draggable />
-        <img src="furniture/side-table-1.png" draggable="false" data-draggable />
-        <img src="furniture/side-table-2.png" draggable="false" data-draggable />
-        <img src="furniture/side-table-3.png" draggable="false" data-draggable />
-        <img src="furniture/side-table-4.png" draggable="false" data-draggable />
-        <img src="furniture/square-coffee-table.png" draggable="false" data-draggable />
-        <img src="furniture/stool.png" draggable="false" data-draggable />
-        <img src="furniture/table.png" draggable="false" data-draggable />
-        <img src="furniture/tea-cups.png" draggable="false" data-draggable />
-        <img src="furniture/tea-kettle.png" draggable="false" data-draggable />
-        <img src="furniture/tray.png" draggable="false" data-draggable />
+        <img src="furniture/arm-chair.png"  draggable="false" data-draggable />
+        <img src="furniture/banner.png"  draggable="false" data-draggable />
+        <img src="furniture/book-with-pencil.png"  draggable="false" data-draggable />
+        <img src="furniture/bookcase.png"  draggable="false" data-draggable />
+        <img src="furniture/chair-2.png"  draggable="false" data-draggable />
+        <img src="furniture/chair-5.png"  draggable="false" data-draggable />
+        <img src="furniture/couch.png"  draggable="false" data-draggable />
+        <img src="furniture/flowers.png"  draggable="false" data-draggable />
+        <img src="furniture/house-document.png"  draggable="false" data-draggable />
+        <img src="furniture/lamp-1.png"  draggable="false" data-draggable />
+        <img src="furniture/lamp-2.png"  draggable="false" data-draggable />
+        <img src="furniture/lounge-chair.png"  draggable="false" data-draggable />
+        <img src="furniture/picture-wall.png"  draggable="false" data-draggable />
+        <img src="furniture/plant.png"  draggable="false" data-draggable />
+        <img src="furniture/round-coffee-table.png"  draggable="false" data-draggable />
+        <img src="furniture/rug-with-spirals.png"  draggable="false" data-draggable />
+        <img src="furniture/rug-with-tassles.png"  draggable="false" data-draggable />
+        <img src="furniture/side-table-2.png"  draggable="false" data-draggable />
+        <img src="furniture/side-table-3.png"  draggable="false" data-draggable />
+        <img src="furniture/side-table-4.png"  draggable="false" data-draggable />
+        <img src="furniture/stool.png"  draggable="false" data-draggable />
+        <img src="furniture/table.png"  draggable="false" data-draggable />
+        <img src="furniture/tea-cups.png"  draggable="false" data-draggable />
+        <img src="furniture/tea-kettle.png"  draggable="false" data-draggable />
       </section>
     </main>
   </body>

@@ -18,6 +18,10 @@ This script will generate a _folder party website_ from a folder of files.
 
 This website will let you browse all the files in the folder. You can include your own furniture and styles or directly edit the `index.html` file that gets created.
 
+![screenshot of a folder with files next to a terminal window](./demo-screenshot-1.png)
+
+![screenshot of a webpage generated from the folder files](./demo-screenshot-2.png)
+
 ## Host your own folder party
 
 1. Curate a tiny (or big!) folder party in a directory on your computer.

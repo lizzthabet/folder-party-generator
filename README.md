@@ -36,13 +36,17 @@ Tada! That's it. Now you're ready to have your friends over.
 
 ## Configure how the folder party generates
 
+There are a few environment variables you can define before running the script like `KEY=VALUE node dist/index.js` that will tweak the behavior of the folder party generator.
+
 `FOLDER`: the path to the files that should be used to generate your folder party, relative to the directory where the script run; defaults to the current directory
 
 `OVERWRITE`: option to overwrite an existing `index.html` file in your folder party, `true` / `1` or `false` / `0`, defaults to `false`
 
 `APPEND`: option to append new files to an existing `index.html` file in your folder party, `true` / `1` or `false` / `0`, defaults to `false`. If you want to both overwrite and append to the existing `index.html` file, you'll need to set both `OVERWRITE=1 APPEND=1` when running the script.
 
-## Development
+`RANDOM`: option to position furniture and folder party items randomly on the page, `true` / `1` or `false` / `0`, defaults to `false`
+
+## Working on the script itself
 
 This is a simple Typscript project with no external dependencies, except those used for development.
 

@@ -11,25 +11,30 @@ type Options = {
   directory: string
   overwriteIndex: boolean
   appendIndex: boolean
+  randomPlacement: boolean
 }
 
 const CURRENT_DIRECTORY = '.'
-const FILES_TO_IGNORE = new Set(['.DS_Store', 'furniture'])
+const FILES_TO_IGNORE = new Set(['.DS_Store', 'furniture', 'index.js'])
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g
 const FURNITURE_FOLDER = 'furniture'
 const DEFAULT_OUTPUT_FILENAME = "index"
+const MAX_RANDOM_HEIGHT = 1250;
+const MAX_RANDOM_WIDTH = 2500;
 const HTML_TITLE = "welcome to a place on my computer i've created just for you"
 // Environment variables that can be set
 // to configure folder party generation
 const FOLDER_ENV_VAR = 'FOLDER'
 const OVERWRITE_INDEX_ENV_VAR = 'OVERWRITE'
 const APPEND_INDEX_ENV_VAR = 'APPEND'
+const RANDOM_POSITION_ENV_VAR = 'RANDOM'
 
 function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
   const options: Options = {
     directory: CURRENT_DIRECTORY,
     overwriteIndex: false,
     appendIndex: false,
+    randomPlacement: false,
   }
   const folderName: string | undefined = e[FOLDER_ENV_VAR]
   if (folderName && typeof folderName == "string") {
@@ -43,6 +48,11 @@ function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
 
   const append: string | undefined = e[APPEND_INDEX_ENV_VAR]
   if (append && typeof append == "string") {
+    options.appendIndex = append === "0" ? false : true
+  }
+
+  const random: string | undefined = e[RANDOM_POSITION_ENV_VAR]
+  if (random && typeof random == "string") {
     options.appendIndex = append === "0" ? false : true
   }
 
@@ -90,6 +100,7 @@ function getAppendIndex(content: string): number {
 type TemplateInput = {
   files: FileData[]
   furniture: FileData[]
+  randomPlacement?: boolean
   existingIndex?: FileData
   existingFiles?: Set<string>
   existingFileContent?: string
@@ -200,7 +211,7 @@ function generateTemplate(input: TemplateInput): string {
   if (typeof input.appendToIndex === "number") {
     const beforeNewContent = input.existingFileContent.slice(0, input.appendToIndex + 1)
     const afterNewContent = input.existingFileContent.slice(input.appendToIndex + 1)
-    const newContent = input.files.map(createButtonDialogPair).join("\n") + "\n      "
+    const newContent = input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n") + "\n      "
     return beforeNewContent + newContent + afterNewContent
   }
 
@@ -356,6 +367,11 @@ function createStyle(): string {
         width: 500px;
         height: 500px;
       }
+
+      /* Styles for furniture */
+      section[aria-label="furniture"] > img {
+        z-index: -1;
+      }
     </style>`
 }
 
@@ -505,18 +521,20 @@ function createScript(): string {
     </script>`
 }
 
+type FileOptions = Pick<TemplateInput, "randomPlacement">
+
 function createBody(input: TemplateInput): string {
   return `
   <body>
-    <main>${input.files.map(createButtonDialogPair).join("\n")}
-      ${createFurniture(input.furniture)}
+    <main>${input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n")}
+      ${createFurniture(input.furniture, { randomPlacement: input.randomPlacement })}
     </main>
   </body>`
 }
 
-function createButtonDialogPair(file: FileData): string {
+function createButtonDialogPair(file: FileData, options: FileOptions): string {
   return `
-      ${createButton(file)}
+      ${createButton(file, options)}
       ${createDialog(file)}`
 }
 
@@ -528,11 +546,12 @@ function displayName(file: FileData) {
   return isFolder(file) ? `${file.path}/` : file.path
 }
 
-function createButton(file: FileData): string {
+function createButton(file: FileData, options?: FileOptions): string {
   return `<button
         class="filename"
         aria-haspopup="dialog"
-        aria-controls="${file.path}"
+        aria-controls="${file.path}"${ options?.randomPlacement ? `
+        style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : "" }
         data-fileviewer
         data-draggable>
         ${displayName(file)}
@@ -547,10 +566,10 @@ function createDialog(file: FileData): string {
       </dialog>`
 }
 
-function createFurniture(furniture: FileData[]) {
+function createFurniture(furniture: FileData[], options?: FileOptions) {
   return `<section aria-label="furniture">
         ${furniture.map(item => {
-          return `<img src="${item.path}" draggable="false" data-draggable />`
+          return `<img src="${item.path}" ${options?.randomPlacement ? `style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : ""} draggable="false" data-draggable />`
         }).join("\n        ")}
       </section>`
 }

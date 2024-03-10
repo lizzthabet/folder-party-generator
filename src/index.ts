@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { normalize, parse, ParsedPath, sep, join } from 'node:path'
 import { env } from 'node:process'
 
@@ -67,6 +67,17 @@ function readFileContent(path: string): string {
   return readFileSync(path, { encoding: 'utf-8' })
 }
 
+function checkFileExists(path: string): boolean {
+  try {
+    const stats = statSync(path)
+    if (stats) {
+      return true
+    }
+  } catch (_error) {
+    return false
+  }
+}
+
 function parseFilesFromHtml(content: string): Set<string> {
   const existingFiles = new Set<string>()
   const idMatches = content.matchAll(DIALOG_IDS_REGEX)
@@ -130,7 +141,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
     // Skip file if it's ignored globally
-    if (FILES_TO_IGNORE.has(file.parsed.name)) {
+    if (FILES_TO_IGNORE.has(file.parsed.base)) {
       continue
     }
     // Skip file if it's already been included in the existing html
@@ -172,9 +183,10 @@ function websiteFilePath({
   options: Options
  }): string {
   let filename = DEFAULT_OUTPUT_FILENAME
+  const indexExists = checkFileExists(`${directory}/${filename}.html`)
   // Generate a unique filename if the option to overwrite the existing file
   // isn't explicitly set
-  if (!options.overwriteIndex) {
+  if (indexExists && !options.overwriteIndex) {
     const pathSeparator = new RegExp(sep, "g")
     const spaces = new RegExp(/\s+/, "g")
     const now = new Date()

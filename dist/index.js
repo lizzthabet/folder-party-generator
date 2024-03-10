@@ -48,6 +48,17 @@ function listFilesInDir(dir) {
 function readFileContent(path) {
     return (0, node_fs_1.readFileSync)(path, { encoding: 'utf-8' });
 }
+function checkFileExists(path) {
+    try {
+        const stats = (0, node_fs_1.statSync)(path);
+        if (stats) {
+            return true;
+        }
+    }
+    catch (_error) {
+        return false;
+    }
+}
 function parseFilesFromHtml(content) {
     const existingFiles = new Set();
     const idMatches = content.matchAll(DIALOG_IDS_REGEX);
@@ -95,7 +106,7 @@ function sortFilesIntoInput(files, options) {
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
         // Skip file if it's ignored globally
-        if (FILES_TO_IGNORE.has(file.parsed.name)) {
+        if (FILES_TO_IGNORE.has(file.parsed.base)) {
             continue;
         }
         // Skip file if it's already been included in the existing html
@@ -127,9 +138,10 @@ function template(files, options) {
 }
 function websiteFilePath({ directory, options, }) {
     let filename = DEFAULT_OUTPUT_FILENAME;
+    const indexExists = checkFileExists(`${directory}/${filename}.html`);
     // Generate a unique filename if the option to overwrite the existing file
     // isn't explicitly set
-    if (!options.overwriteIndex) {
+    if (indexExists && !options.overwriteIndex) {
         const pathSeparator = new RegExp(node_path_1.sep, "g");
         const spaces = new RegExp(/\s+/, "g");
         const now = new Date();

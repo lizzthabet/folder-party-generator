@@ -14,8 +14,9 @@
       --button-font: 'Times New Roman', Times, serif;
       --button-focus-bg: purple;
       --button-focus-color: white;
-      --button-font-weight: normal;
       --button-font-style: normal;
+      --button-font-size: 1rem;
+      --button-font-weight: normal;
       --button-text-decoration: underline;
 
       /* just used for utility */
@@ -79,11 +80,17 @@
       text-align: center;
     }
 
+    button.big-save {
+      font-size: 1.5rem;
+      margin-top: 2rem;
+    }
+
     button.filename {
       /* customizable */
       background-color: var(--button-bg);
       color: var(--button-color);
       font-family: var(--button-font);
+      font-size: var(--button-font-size);
       font-style: var(--button-font-style);
       font-weight: var(--button-font-weight);
       text-decoration: var(--button-text-decoration);
@@ -91,7 +98,6 @@
       border: none;
       border-radius: 8px;
       box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
-      font-size: 1rem;
       height: max-content;
       max-width: 250px;
       padding: 5px;
@@ -212,6 +218,9 @@
             filenameBtn.classList.remove("focus")
           }
           return
+        case "filename-font-size":
+          setGlobalCssVar("--button-font-size", target.value + "rem")
+          return
         case "filename-font":
           const fontProperty = FONT_SELECT_TO_PROPERTY[target.value]
           if (!fontProperty) {
@@ -314,12 +323,12 @@
       const inputChangeIds = [
         // template controls
         "page-bg-color",
-        "page-bg-image",
         "filename-bg-color",
         "filename-color",
         "filename-bg-color_click",
         "filename-color_click",
         "filename-font",
+        "filename-font-size",
         "filename-font-underline",
         "filename-font-italic",
         "filename-font-bold",
@@ -333,6 +342,31 @@
         }
         element.addEventListener("input", onInput)
       })
+
+      // Page background uploader
+      const bgImageUploader = document.getElementById("page-bg-image")
+      if (bgImageUploader) {
+        bgImageUploader.addEventListener("change", (e) => {
+          if (!e.target || !e.target.files) {
+            return
+          }
+          // TODO: Consider encoding this data into base64, so it can be embedded on the page directly
+          const imageUrl = URL.createObjectURL(e.target.files[0])
+          setGlobalCssVar("--page-bg-image", `url("${imageUrl}")`)
+        })
+      }
+
+      // Page background reset
+      const bgImageClear = document.getElementById("page-bg-image_clear")
+      if (bgImageClear) {
+        bgImageClear.addEventListener("click", (e) => {
+          setGlobalCssVar("--page-bg-image", "none")
+          const uploader = document.getElementById("page-bg-image")
+          if (uploader) {
+            uploader.value = ""
+          }
+        })
+      }
 
       const elements = document.querySelectorAll("[data-draggable]")
       // Position each element absolutely so document flow isn't changed
@@ -369,8 +403,8 @@
 
     <label for="page-bg-image">page background image <i>(optional)</i></label>
     <div>
-      <input id="page-bg-image" type="file" />
-      <button>clear</button>
+      <input id="page-bg-image" type="file" accept="image/*"/>
+      <button id="page-bg-image_clear">clear</button>
     </div>
 
     <button id="filename" class="filename">folder/filename.png</button>
@@ -415,6 +449,11 @@
         </select>
       </label>
 
+      <label for="filename-font-size">
+        font size
+        <input id="filename-font-size" type="number" value="1" min="0.5" max="8" step="0.125" />
+      </label>
+
       <fieldset id="filename-font-style">
         <legend>font style</legend>
         <label for="filename-font-bold">
@@ -437,24 +476,27 @@
       </ul> -->
     </section>
 
-    <!-- BONUS: add in -->
-
     <dialog class="fileviewer" open>
+      <object class="file" data="./greatest-hits.png" draggable="false"></object>
+      <object class="file" data="./some-text.txt" draggable="false"></object>
       <button class="close-fileviewer">close</button>
-      <p style="width:300px;height:450px;">type=image placeholder image</p>
     </dialog>
-    <ul>
-      <li>font</li>
-      <li>color</li>
-      <li>background-color</li>
-      <li>box-shadow</li>
-      <li>button: font style (underline, bold, etc)</li>
-      <li>button: font</li>
-     </ul>
+    <section>
+      <i>Coming soon</i>
+      <ul>
+        <li>font</li>
+        <li>color</li>
+        <li>background-color</li>
+        <li>box-shadow</li>
+        <li>button: font style (underline, bold, etc)</li>
+        <li>button: font</li>
+      </ul>
+    </section>
     <!-- inputs to change them -->
-    <!-- plus it'd be nice to have a free-form paste css here field  -->
+    <!-- plus it'd be nice to have a free-form paste css here field -->
     <!-- download css button -->
     <!-- add a full preview with a few draggable items -->
   </section>
+  <button class="big-save" disabled>save styles <i>(coming soon)</i></button>
 </body>
 </html>

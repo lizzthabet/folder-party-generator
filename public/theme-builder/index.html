@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>folder party theme builder</title>
+  <style>
+    html {
+      /* customizable */
+      --page-bg: #d3d3d3;
+      --page-bg-image: none;
+      --button-bg: #d2d2d2;
+      --button-color: blue;
+      --button-font: 'Times New Roman', Times, serif;
+      --button-focus-bg: purple;
+      --button-focus-color: white;
+      --button-font-weight: normal;
+      --button-font-style: normal;
+      --button-text-decoration: underline;
+
+      /* just used for utility */
+      --basic-margin: 0.75rem;
+    }
+
+    body {
+      /* customizable */
+      background-color: var(--page-bg);
+      background-image: var(--page-bg-image);
+      /* set */
+      padding: 0;
+      /* https://medium.com/@specy.dev/automatic-text-color-from-background-in-css-bb0cd63e0657 */
+      color: lch(
+            from var(--page-bg)
+            clamp(
+                8,
+                round((100 - l), 100),
+                95
+            )
+            0 0
+        );
+    }
+
+    .nav-link {
+      font-size: 1.5rem;
+      color: white;
+      text-shadow: 5px 5px 5px #333333;
+    }
+
+    .margin-top,
+    fieldset,
+    label + label {
+      margin-top: var(--basic-margin);
+    }
+
+    /* dialogs should manage their own display */
+    [data-draggable]:not(dialog) {
+      display: inline-block;
+    }
+
+    [data-draggable] {
+      user-select: none;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    [data-draggable]:hover {
+      cursor: move;
+    }
+
+    header {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      z-index: 1;
+    }
+
+    header > h1 {
+      font-size: 1.75rem;
+      font-style: italic;
+      text-align: center;
+    }
+
+    button.filename {
+      /* customizable */
+      background-color: var(--button-bg);
+      color: var(--button-color);
+      font-family: var(--button-font);
+      font-style: var(--button-font-style);
+      font-weight: var(--button-font-weight);
+      text-decoration: var(--button-text-decoration);
+      /* set */
+      border: none;
+      border-radius: 8px;
+      box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
+      font-size: 1rem;
+      height: max-content;
+      max-width: 250px;
+      padding: 5px;
+      overflow-wrap: anywhere;
+      text-align: center;
+      width: max-content;
+    }
+
+    button.filename:focus,
+    button.filename.focus {
+      /* customizable */
+      background-color: var(--button-focus-bg);
+      color: var(--button-focus-color);
+      /* set */
+      outline: none;
+      text-decoration: none;
+    }
+
+    button.close-fileviewer {
+      background-color: unset;
+      border: none;
+      color: #333333;
+      font-family: monospace;
+      float: right;
+      margin: 0.5rem -0.5rem -0.5rem 0.5rem;
+      text-transform: uppercase;
+    }
+
+    button.close-fileviewer:active,
+    button.close-fileviewer:focus {
+      background-color: purple;
+      border-radius: 5px;
+      color: white;
+      outline: none;
+    }
+
+    dialog.fileviewer {
+      position: static;
+    }
+
+    dialog.fileviewer[open] {
+      background-color: #dfdfdf;
+      box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
+      border-radius: 8px;
+      border: 2px dotted #333333;
+      z-index: 2;
+    }
+
+    .table {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      grid-template-rows: 1fr;
+      column-gap: 1rem;
+      row-gap: 3rem;
+    }
+
+    label {
+      display: block;
+    }
+
+  </style>
+  <script>
+    // new code
+    const DATA_CONTROLS = "data-controls"
+    const FONT_SELECT_TO_PROPERTY = {
+      "serif": "Times New Roman', Times, serif",
+      "serif-2": "Georgia, 'Times New Roman', Times, serif",
+      "sans-serif": "Arial, Helvetica, sans-serif",
+      "sans-serif-2": "'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif",
+      "monospace": "'Lucida Console', Courier, monospace",
+    }
+    /**
+     * @param {string} name
+     * @param {number|string|null} value
+     */
+    function setGlobalCssVar(name, value) {
+      document.documentElement.style.setProperty(name, value)
+    }
+
+    /**
+     * @param {HTMLElement} element
+     * @param {string} name
+     * @param {number|string|null} value
+     */
+    function setStyle(element, name, value) {
+      if (!element) {
+        return
+      }
+      element.style.setProperty(name, value)
+    }
+
+    /**
+     * @param {InputEvent} e
+     */
+    function onInput(e) {
+      const { target } = e
+      if (!target || !target.id) {
+        console.warn(`missing element ${target ? "id": ""}`)
+        return
+      }
+
+      const controlsCssVar = target.getAttribute(DATA_CONTROLS)
+      if (controlsCssVar !== null) {
+        console.log(`setting ${controlsCssVar} to ${target.value}`)
+        setGlobalCssVar(controlsCssVar, target.value)
+        return
+      }
+
+      const filenameBtn = document.getElementById("filename")
+
+      // Custom event handlers for form elements that don't just
+      // change a CSS variable value
+      switch(target.id) {
+        case "click-style":
+          if (filenameBtn && target.checked) {
+            filenameBtn.classList.add("focus")
+          } else if (filenameBtn) {
+            filenameBtn.classList.remove("focus")
+          }
+          return
+        case "filename-font":
+          const fontProperty = FONT_SELECT_TO_PROPERTY[target.value]
+          if (!fontProperty) {
+            console.warn(`missing css property for ${target.value}`)
+            return
+          }
+          setGlobalCssVar("--button-font", fontProperty)
+          return
+        case "filename-font-underline":
+          if (filenameBtn && target.checked) {
+            setGlobalCssVar("--button-text-decoration", "underline")
+          } else if (filenameBtn) {
+            setGlobalCssVar("--button-text-decoration", "none")
+          }
+          return
+        case "filename-font-italic":
+          if (filenameBtn && target.checked) {
+            setGlobalCssVar("--button-font-style", "italic")
+          } else if (filenameBtn) {
+            setGlobalCssVar("--button-font-style", "normal")
+          }
+          return
+        case "filename-font-bold":
+          if (filenameBtn && target.checked) {
+            setGlobalCssVar("--button-font-weight", "bold")
+          } else if (filenameBtn) {
+            setGlobalCssVar("--button-font-weight", "normal")
+          }
+          return
+        default:
+          console.log("missing element handler for", target.id)
+      }
+    }
+
+    // copy paste from `index.ts`
+    function positionInPlace(element) {
+      const { top, left } = element.getBoundingClientRect()
+      const { scrollX, scrollY } = window
+      setTopLeft(element, top + scrollY, left + scrollX)
+    }
+
+    function setTopLeft(element, top, left) {
+      element.style.setProperty("top", top + "px")
+      element.style.setProperty("left", left + "px")
+    }
+
+    function setPositionAbsolute(element) {
+      element.style.setProperty("position", "absolute")
+    }
+
+    function onMouseDown(event) {
+      event.stopPropagation()
+      const { currentTarget, target, pageX, pageY, clientX, clientY } = event
+      const { left, top } = currentTarget.getBoundingClientRect()
+      const shiftX = clientX - left
+      const shiftY = clientY - top
+
+      function moveTo(pageX, pageY) {
+        const newLeft = pageX - shiftX + "px"
+        const newTop = pageY - shiftY + "px"
+        currentTarget.style.setProperty("left", newLeft)
+        currentTarget.style.setProperty("top", newTop)
+      }
+
+      function onMouseMove(event) {
+        moveTo(event.pageX, event.pageY)
+      }
+
+      function onMouseUp() {
+        document.removeEventListener("mousemove", onMouseMove)
+        document.removeEventListener("mouseup", onMouseUp)
+      }
+
+      document.addEventListener("mousemove", onMouseMove)
+      document.addEventListener("mouseup", onMouseUp)
+    }
+
+    const DOUBLE_CLICK = 2
+    function onDoubleClick(e) {
+      if (e.detail === DOUBLE_CLICK) {
+        const dialogId = e.currentTarget.getAttribute("aria-controls")
+        if (!dialogId) {
+          return
+        }
+        const dialog = document.getElementById(dialogId)
+        if (!dialog) {
+          return
+        }
+        if (dialog.open === false) {
+          const { top, left, height, width } = e.currentTarget.getBoundingClientRect()
+          const { scrollX, scrollY } = window
+          setTopLeft(dialog, top + height + scrollY + 10, left + scrollX)
+          setPositionAbsolute(dialog)
+          dialog.show()
+        }
+      }
+    }
+
+    window.addEventListener("load", (event) => {
+      const inputChangeIds = [
+        // template controls
+        "page-bg-color",
+        "page-bg-image",
+        "filename-bg-color",
+        "filename-color",
+        "filename-bg-color_click",
+        "filename-color_click",
+        "filename-font",
+        "filename-font-underline",
+        "filename-font-italic",
+        "filename-font-bold",
+        // other controls
+        "click-style"
+      ]
+      inputChangeIds.forEach((id) => {
+        const element = document.getElementById(id)
+        if (!element) {
+          return
+        }
+        element.addEventListener("input", onInput)
+      })
+
+      const elements = document.querySelectorAll("[data-draggable]")
+      // Position each element absolutely so document flow isn't changed
+      // when one element is moved
+      elements.forEach(positionInPlace)
+      elements.forEach(setPositionAbsolute)
+
+      // Add drag-to-move functionality
+      elements.forEach((ele) =>
+        ele.addEventListener("mousedown", onMouseDown)
+      )
+
+      // Add double-click listener to open up fileviewer
+      const fileviewers = document.querySelectorAll("[data-fileviewer]")
+      fileviewers.forEach((ele) => {
+        ele.addEventListener("click", onDoubleClick)
+      })
+    })
+  </script>
+</head>
+<body>
+  <header>
+    <h1>folder party theme builder ◕‿◕</h1>
+  </header>
+  <!--
+    Consider adding a view notes, like:
+    - linking to an interactive version of the site
+    - that elements are draggable
+    - that there can be other requests for custom styles (possibly)
+   -->
+  <section class="table">
+    <label for="page-bg-color">page background color</label>
+    <input id="page-bg-color" type="color" value="#d3d3d3" data-controls="--page-bg" />
+
+    <label for="page-bg-image">page background image <i>(optional)</i></label>
+    <div>
+      <input id="page-bg-image" type="file" />
+      <button>clear</button>
+    </div>
+
+    <button id="filename" class="filename">folder/filename.png</button>
+    <section>
+      <label for="filename-bg-color">
+        background color
+        <input id="filename-bg-color" type="color" value="#d3d3d3" data-controls="--button-bg" />
+      </label>
+
+      <label for="filename-color">
+        color
+        <input id="filename-color" type="color" value="#0000ff" data-controls="--button-color" />
+      </label>
+
+      <fieldset>
+        <legend>when clicked</legend>
+
+        <label for="click-style">
+          see "clicked" style
+          <input id="click-style" type="checkbox" />
+        </label>
+
+        <label for="filename-bg-color_click">
+          background color
+          <input id="filename-bg-color_click" type="color" value="#800080" data-controls="--button-focus-bg"/>
+        </label>
+  
+        <label for="filename-color_click">
+          color
+          <input id="filename-color_click" type="color" value="#ffffff" data-controls="--button-focus-color" />
+        </label>
+      </fieldset>
+
+      <label for="filename-font" class="margin-top">
+        font family
+        <select id="filename-font">
+          <option value="serif">serif #1</option>
+          <option value="serif-2">serif #2</option>
+          <option value="sans-serif">sans-serif #1</option>
+          <option value="sans-serif-2">sans-serif #2</option>
+          <option value="monospace">monospace</option>
+        </select>
+      </label>
+
+      <fieldset id="filename-font-style">
+        <legend>font style</legend>
+        <label for="filename-font-bold">
+          <input type="checkbox" id="filename-font-bold" />
+          bold
+        </label>
+        <label for="filename-font-italic">
+          <input type="checkbox" id="filename-font-italic" />
+          italic
+        </label>
+        <label for="filename-font-underline">
+          <input type="checkbox" id="filename-font-underline" checked />
+          underline
+        </label>
+      </fieldset>
+
+      <!-- <ul>
+        todo: add 
+        <li>box-shadow</li>
+      </ul> -->
+    </section>
+
+    <!-- BONUS: add in -->
+
+    <dialog class="fileviewer" open>
+      <button class="close-fileviewer">close</button>
+      <p style="width:300px;height:450px;">type=image placeholder image</p>
+    </dialog>
+    <ul>
+      <li>font</li>
+      <li>color</li>
+      <li>background-color</li>
+      <li>box-shadow</li>
+      <li>button: font style (underline, bold, etc)</li>
+      <li>button: font</li>
+     </ul>
+    <!-- inputs to change them -->
+    <!-- plus it'd be nice to have a free-form paste css here field  -->
+    <!-- download css button -->
+    <!-- add a full preview with a few draggable items -->
+  </section>
+</body>
+</html>

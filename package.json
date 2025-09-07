@@ -8,7 +8,8 @@
     "build": "tsc",
     "dev": "OVERWRITE=true FOLDER=test/testdata npm run start",
     "generate": "node dist/index.js",
-    "start": "npm run build && npm run generate"
+    "start": "npm run build && npm run generate",
+    "theme.dev": "PORT=2350 FOLDER=public/theme-builder npx nodemon --watch public/theme-builder --ext js,html,css dev-server.js"
   },
   "author": "lizz thabet",
   "devDependencies": {
@@ -16,6 +17,8 @@
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
     "eslint": "^8.56.0",
-    "typescript": "^5.3.3"
+    "nodemon": "^3.1.10",
+    "typescript": "^5.3.3",
+    "ws": "^8.18.3"
   }
 }

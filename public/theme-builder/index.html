@@ -193,6 +193,28 @@
     }
 
     /**
+     * @callback valueTransformer
+     * @param {HTMLElement} element
+     * @returns {string} cssPropertyValue
+     */
+    /** @type {Object.<string, valueTransformer>} */
+    const valueTransformers = {
+      "filename-font-size": (element) => element.value + "rem",
+      "filename-font": (element) => {
+        const fontProperty = FONT_SELECT_TO_PROPERTY[element.value]
+        if (!fontProperty) {
+          console.warn(`missing css property for ${element.value}`)
+          return
+        }
+        return fontProperty
+      },
+      "filename-font-underline": (element) => element.checked ? "underline" : "none",
+      "filename-font-bold": (element) => element.checked ? "bold" : "normal",
+      "filename-font-italic": (element) => element.checked ? "italic" : "normal",
+
+    }
+
+    /**
      * @param {InputEvent} e
      */
     function onInput(e) {
@@ -204,8 +226,10 @@
 
       const controlsCssVar = target.getAttribute(DATA_CONTROLS)
       if (controlsCssVar !== null) {
-        console.log(`setting ${controlsCssVar} to ${target.value}`)
-        setGlobalCssVar(controlsCssVar, target.value)
+        const transformValue = valueTransformers[target.id]
+        const value = transformValue ? transformValue(target) : target.value
+        console.log(`setting ${controlsCssVar} to ${value}`)
+        setGlobalCssVar(controlsCssVar, value)
         return
       }
 
@@ -219,38 +243,6 @@
             filenameBtn.classList.add("focus")
           } else if (filenameBtn) {
             filenameBtn.classList.remove("focus")
-          }
-          return
-        case "filename-font-size":
-          setGlobalCssVar("--button-font-size", target.value + "rem")
-          return
-        case "filename-font":
-          const fontProperty = FONT_SELECT_TO_PROPERTY[target.value]
-          if (!fontProperty) {
-            console.warn(`missing css property for ${target.value}`)
-            return
-          }
-          setGlobalCssVar("--button-font", fontProperty)
-          return
-        case "filename-font-underline":
-          if (filenameBtn && target.checked) {
-            setGlobalCssVar("--button-text-decoration", "underline")
-          } else if (filenameBtn) {
-            setGlobalCssVar("--button-text-decoration", "none")
-          }
-          return
-        case "filename-font-italic":
-          if (filenameBtn && target.checked) {
-            setGlobalCssVar("--button-font-style", "italic")
-          } else if (filenameBtn) {
-            setGlobalCssVar("--button-font-style", "normal")
-          }
-          return
-        case "filename-font-bold":
-          if (filenameBtn && target.checked) {
-            setGlobalCssVar("--button-font-weight", "bold")
-          } else if (filenameBtn) {
-            setGlobalCssVar("--button-font-weight", "normal")
           }
           return
         default:
@@ -511,7 +503,7 @@
 
       <label for="filename-font" class="margin-top">
         font family
-        <select id="filename-font">
+        <select id="filename-font" data-controls="--button-font">
           <option value="serif">serif #1</option>
           <option value="serif-2">serif #2</option>
           <option value="sans-serif">sans-serif #1</option>
@@ -522,21 +514,21 @@
 
       <label for="filename-font-size">
         font size
-        <input id="filename-font-size" type="number" value="1" min="0.5" max="8" step="0.125" />
+        <input id="filename-font-size" type="number" value="1" min="0.5" max="8" step="0.125" data-controls="--button-font-size" />
       </label>
 
       <fieldset id="filename-font-style">
         <legend>font style</legend>
         <label for="filename-font-bold">
-          <input type="checkbox" id="filename-font-bold" />
+          <input type="checkbox" id="filename-font-bold" data-controls="--button-font-weight" />
           bold
         </label>
         <label for="filename-font-italic">
-          <input type="checkbox" id="filename-font-italic" />
+          <input type="checkbox" id="filename-font-italic" data-controls="--button-font-style" />
           italic
         </label>
         <label for="filename-font-underline">
-          <input type="checkbox" id="filename-font-underline" checked />
+          <input type="checkbox" id="filename-font-underline" data-controls="--button-text-decoration" checked />
           underline
         </label>
       </fieldset>

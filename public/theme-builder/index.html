@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>folder party theme builder</title>
   <style>
-    html {
+    :root {
       /* customizable */
       --page-bg: #d3d3d3;
       --page-bg-image: none;
@@ -18,12 +18,13 @@
       --button-font-size: 1rem;
       --button-font-weight: normal;
       --button-text-decoration: underline;
-
-      /* just used for utility */
-      --basic-margin: 0.75rem;
     }
 
     body {
+      /* just used for utility */
+      --basic-margin: 0.75rem;
+      --page-max-width: 950px;
+
       /* customizable */
       background-color: var(--page-bg);
       background-image: var(--page-bg-image);
@@ -72,6 +73,7 @@
       margin-bottom: 1rem;
       padding: 1rem;
       z-index: 1;
+      max-width: var(--page-max-width);
     }
 
     header > h1 {
@@ -152,6 +154,7 @@
       grid-template-rows: 1fr;
       column-gap: 1rem;
       row-gap: 3rem;
+      max-width: var(--page-max-width);
     }
 
     label {
@@ -252,6 +255,74 @@
           return
         default:
           console.log("missing element handler for", target.id)
+      }
+    }
+
+    // Match against strings that start with '--' and include word + '-' or '_' characters up until a ':'
+    const CSS_VAR_NAME_REGEX = /--[\w|\-|_]+(?=:)/g
+    /** @returns {Array<string>} */
+    function listRootCssVars() {
+      const stylesheet = document.styleSheets.item(0)
+      if (!stylesheet) {
+        console.error("no stylesheet attached to document")
+        return
+      }
+      const htmlCssRules = stylesheet.cssRules.item(0)
+      if (!htmlCssRules || htmlCssRules.selectorText !== ":root" || !htmlCssRules.cssText.startsWith(":root")) {
+        console.error("root is not the first css rule")
+        return
+      }
+
+      // A wee bit hacky, but it'll work for now
+      const varNameMatches = Array.from(htmlCssRules.cssText.matchAll(CSS_VAR_NAME_REGEX))
+      const rootCssVarNames = varNameMatches.map((regexpArray) => regexpArray[0])
+
+      return rootCssVarNames
+    }
+
+    /** @returns {string} */
+    function getCustomizedCssVars() {
+      const htmlStyle = document.documentElement.style
+      if (htmlStyle.length === 0) {
+        return ""
+      }
+
+      let customStyles = `:root {
+  /* customized css variables for theme */`
+
+      for (let i = 0; i < htmlStyle.length; i++) {
+        const propertyName = htmlStyle.item(i);
+        const propertyValue = htmlStyle.getPropertyValue(propertyName)
+        if (propertyName.startsWith("--") && propertyValue.length > 0) {
+          customStyles += `\n  ${propertyName}: ${propertyValue};`
+        }
+      }
+
+      customStyles += "\n}"
+
+      return customStyles
+    }
+
+    // TODO: Display errors so they're visible in the UI (not console)
+    function saveTheme() {
+      let url
+      try {
+        const customCssVars = getCustomizedCssVars()
+        if (customCssVars.length === 0) {
+          throw new Error("no custom styles to save")
+        }
+        const blob = new Blob([customCssVars], { type: "text/css" });
+        url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "theme.css";
+        link.click();
+      } catch (err) {
+        console.error("failed to download css", err)
+        console.log("instead, you can copy the html in the 'Elements' tab")
+      } finally {
+        // for memory management
+        URL.revokeObjectURL(url)
       }
     }
 
@@ -471,8 +542,8 @@
       </fieldset>
 
       <!-- <ul>
-        todo: add 
-        <li>box-shadow</li>
+        todo: add box-shadow (color, shape)
+              add outline
       </ul> -->
     </section>
 
@@ -495,8 +566,8 @@
     <!-- inputs to change them -->
     <!-- plus it'd be nice to have a free-form paste css here field -->
     <!-- download css button -->
-    <!-- add a full preview with a few draggable items -->
+    <!-- add a full preview (with uploadable furniture) with a few draggable items -->
   </section>
-  <button class="big-save" disabled>save styles <i>(coming soon)</i></button>
+  <button class="big-save" onclick="saveTheme()">save styles</button>
 </body>
 </html>

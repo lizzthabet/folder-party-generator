@@ -218,29 +218,65 @@
      * @param {HTMLElement} element
      * @returns {string} cssPropertyValue
      */
+
+    /** @type {valueTransformer} */
+    const valueToRem = (element) => element.value + "rem"
+    /** @type {valueTransformer} */
+    const selectToFontProperty = (element) => {
+      const fontProperty = FONT_SELECT_TO_PROPERTY[element.value]
+      if (!fontProperty) {
+        console.warn(`missing css property for ${element.value}`)
+        return
+      }
+      return fontProperty
+    }
+
     /** @type {Object.<string, valueTransformer>} */
     const valueTransformers = {
-      "filename-font-size": (element) => element.value + "rem",
-      "dialog-button-font-size": (element) => element.value + "rem",
-      "filename-font": (element) => {
-        const fontProperty = FONT_SELECT_TO_PROPERTY[element.value]
-        if (!fontProperty) {
-          console.warn(`missing css property for ${element.value}`)
-          return
-        }
-        return fontProperty
-      },
-      "dialog-button-font": (element) => {
-        const fontProperty = FONT_SELECT_TO_PROPERTY[element.value]
-        if (!fontProperty) {
-          console.warn(`missing css property for ${element.value}`)
-          return
-        }
-        return fontProperty
-      },
+      "filename-font-size": valueToRem,
+      "dialog-button-font-size": valueToRem,
+      "filename-font": selectToFontProperty,
+      "dialog-button-font": selectToFontProperty,
       "filename-font-underline": (element) => element.checked ? "underline" : "none",
       "filename-font-bold": (element) => element.checked ? "bold" : "normal",
       "filename-font-italic": (element) => element.checked ? "italic" : "normal"
+    }
+
+    /**
+     * @callback reverseValueTransformer
+     * @param {HTMLInputElement} input
+     * @param {string} cssValue
+     * @returns {undefined}
+     */
+
+    /** @type {reverseValueTransformer} */
+    const defaultReverseTransformer = (input, cssValue) => input.value = cssValue
+    /** @type {reverseValueTransformer} */
+    const remToValue = (input, style) => input.value = style.replace("rem", "")
+    /** @type {reverseValueTransformer} */
+    const fontToValue = (input, style) => {
+      const fontsToProperties = Object.entries(FONT_SELECT_TO_PROPERTY)
+      for (let i = 0; i < fontsToProperties.length; i++) {
+        const [inputValue, cssValue] = fontsToProperties[i];
+        if (cssValue === style) {
+          input.value = inputValue
+          return
+        }
+      }
+      console.warn(`missing font value for ${style}`)
+    }
+    /** @type {reverseValueTransformer} */
+    const fontStyleToValue = (input, style) => style === "normal" ? input.checked = false : input.checked = true
+
+    /** @type {Object.<string, reverseValueTransformer>} */
+    const reverseValueTransformers = {
+      "filename-font-size": remToValue,
+      "dialog-button-font-size": remToValue,
+      "filename-font": fontToValue,
+      "dialog-button-font": fontToValue,
+      "filename-font-underline": fontStyleToValue,
+      "filename-font-bold": fontStyleToValue,
+      "filename-font-italic": fontStyleToValue,
     }
 
     /**
@@ -272,10 +308,9 @@
             }
             // Set css variable value
             setGlobalCssVar(key, value)
-            // Set input value
-            // TODO: handle the value reverse-transforms, since this will only work
-            // when input value is exactly what css variable is set to
-            input.value = value
+            // Set input value (transforming css value to input value, if needed)
+            const updateInputValue = reverseValueTransformers[input.id] ?? defaultReverseTransformer
+            updateInputValue(input, value)
           }
         }
       })
@@ -301,7 +336,6 @@
         return
       }
 
-      
       // Custom event handlers for form elements that don't just
       // change a CSS variable value
       switch(target.id) {
@@ -713,6 +747,7 @@
       <p><i>Coming soon</i></p>
       <ul>
         <li>box-shadow</li>
+        <li>outline</li>
         <li>custom styles</li>
       </ul>
 

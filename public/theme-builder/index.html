@@ -18,6 +18,20 @@
       --button-font-size: 1rem;
       --button-font-weight: normal;
       --button-text-decoration: underline;
+
+      --dialog-bg: #dfdfdf;
+      /* --dialog-color: black; TODO: not supported yet */
+      /* --dialog-font: 'Times New Roman', Times, serif; TODO: not supported yet */
+      /* --dialog-font-size: 1rem; TODO: not supported yet */
+      --dialog-button-bg: #dfdfdf;
+      --dialog-button-color: #333333;
+      --dialog-button-font: monospace;
+      --dialog-button-font-size: 0.80rem;
+      --dialog-button-focus-bg: purple;
+      --dialog-button-focus-color: white;
+      /* --dialog-button-font-style: normal; */
+      /* --dialog-button-font-weight: normal; */
+      /* --dialog-button-text-decoration: underline; */
     }
 
     body {
@@ -42,10 +56,8 @@
         );
     }
 
-    .nav-link {
-      font-size: 1.5rem;
-      color: white;
-      text-shadow: 5px 5px 5px #333333;
+    .center {
+      margin: 0 auto;
     }
 
     .margin-top,
@@ -73,7 +85,7 @@
       margin-bottom: 1rem;
       padding: 1rem;
       z-index: 1;
-      max-width: var(--page-max-width);
+      min-width: var(--page-max-width);
     }
 
     header > h1 {
@@ -119,20 +131,27 @@
     }
 
     button.close-fileviewer {
-      background-color: unset;
+      /* customizable */
+      background-color: var(--dialog-button-bg);
+      color: var(--dialog-button-color);
+      font-family: var(--dialog-button-font);
+      font-size: var(--dialog-button-font-size);
+      /* set */
       border: none;
-      color: #333333;
-      font-family: monospace;
+      border-radius: 5px;
       float: right;
       margin: 0.5rem -0.5rem -0.5rem 0.5rem;
       text-transform: uppercase;
     }
 
+    button.close-fileviewer.focus,
     button.close-fileviewer:active,
     button.close-fileviewer:focus {
-      background-color: purple;
+      /* customizable */
+      background-color: var(--dialog-button-focus-bg);
+      color: var(--dialog-button-focus-color);
+      /* set */
       border-radius: 5px;
-      color: white;
       outline: none;
     }
 
@@ -141,7 +160,9 @@
     }
 
     dialog.fileviewer[open] {
-      background-color: #dfdfdf;
+      /* customizable */
+      background-color: var(--dialog-bg);
+      /* set */
       box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
       border-radius: 8px;
       border: 2px dotted #333333;
@@ -152,7 +173,7 @@
       display: grid;
       grid-template-columns: 1fr 2fr;
       grid-template-rows: 1fr;
-      column-gap: 1rem;
+      column-gap: 2rem;
       row-gap: 3rem;
       max-width: var(--page-max-width);
     }
@@ -200,7 +221,16 @@
     /** @type {Object.<string, valueTransformer>} */
     const valueTransformers = {
       "filename-font-size": (element) => element.value + "rem",
+      "dialog-button-font-size": (element) => element.value + "rem",
       "filename-font": (element) => {
+        const fontProperty = FONT_SELECT_TO_PROPERTY[element.value]
+        if (!fontProperty) {
+          console.warn(`missing css property for ${element.value}`)
+          return
+        }
+        return fontProperty
+      },
+      "dialog-button-font": (element) => {
         const fontProperty = FONT_SELECT_TO_PROPERTY[element.value]
         if (!fontProperty) {
           console.warn(`missing css property for ${element.value}`)
@@ -271,16 +301,24 @@
         return
       }
 
-      const filenameBtn = document.getElementById("filename")
-
+      
       // Custom event handlers for form elements that don't just
       // change a CSS variable value
       switch(target.id) {
         case "click-style":
+          const filenameBtn = document.getElementById("filename")
           if (filenameBtn && target.checked) {
             filenameBtn.classList.add("focus")
           } else if (filenameBtn) {
             filenameBtn.classList.remove("focus")
+          }
+          return
+        case "click-style-dialog-button":
+          const dialogButton = document.getElementById("dialog-button")
+          if (dialogButton && target.checked) {
+            dialogButton.classList.add("focus")
+          } else if (dialogButton) {
+            dialogButton.classList.remove("focus")
           }
           return
         default:
@@ -436,8 +474,19 @@
         "filename-font-underline",
         "filename-font-italic",
         "filename-font-bold",
+        "dialog-bg-color",
+        "dialog-button-bg-color",
+        "dialog-button-color",
+        "dialog-button-bg-color_click",
+        "dialog-button-color_click",
+        "dialog-button-font",
+        "dialog-button-font-size",
+        "dialog-button-font-underline",
+        "dialog-button-font-italic",
+        "dialog-button-font-bold",
         // other controls
-        "click-style"
+        "click-style",
+        "click-style-dialog-button",
       ]
       inputChangeIds.forEach((id) => {
         const element = document.getElementById(id)
@@ -499,7 +548,7 @@
   </script>
 </head>
 <body>
-  <header>
+  <header class="center">
     <h1>folder party theme builder ◕‿◕</h1>
   </header>
   <!--
@@ -508,7 +557,7 @@
     - that elements are draggable
     - that there can be other requests for custom styles (possibly)
    -->
-  <section class="table">
+  <section class="table center">
     <label for="page-bg-color">page background color</label>
     <input id="page-bg-color" type="color" value="#d3d3d3" data-controls="--page-bg" />
 
@@ -581,31 +630,94 @@
         </label>
       </fieldset>
 
-      <!-- <ul>
-        todo: add box-shadow (color, shape)
-              add outline
-      </ul> -->
+      <p><i>Coming soon</i></p>
+      <ul>
+        <li>box-shadow (color and shape)</li>
+        <li>outline (color and weight)</li>
+        <li>custom styles</li>
+      </ul>
     </section>
 
     <dialog class="fileviewer" open>
       <object class="file" data="./greatest-hits.png" draggable="false"></object>
       <object class="file" data="./some-text.txt" draggable="false"></object>
-      <button class="close-fileviewer">close</button>
+      <button id="dialog-button" class="close-fileviewer">close</button>
     </dialog>
     <section>
-      <i>Coming soon</i>
+      <label for="dialog-bg-color">
+        background color
+        <input id="dialog-bg-color" type="color" value="#dfdfdf" data-controls="--dialog-bg" />
+      </label>
+
+      <label for="dialog-button-bg-color">
+        button background color
+        <input id="dialog-button-bg-color" type="color" value="#dfdfdf" data-controls="--dialog-button-bg" />
+      </label>
+
+      <label for="dialog-button-color">
+        button color
+        <input id="dialog-button-color" type="color" value="#333333" data-controls="--dialog-button-color" />
+      </label>
+
+       <fieldset>
+        <legend>when clicked</legend>
+
+        <label for="click-style-dialog-button">
+          see "clicked" style
+          <input id="click-style-dialog-button" type="checkbox" />
+        </label>
+
+        <label for="dialog-button-bg-color_click">
+          background color
+          <input id="dialog-button-bg-color_click" type="color" value="#800080" data-controls="--dialog-button-focus-bg"/>
+        </label>
+  
+        <label for="dialog-button-color_click">
+          color
+          <input id="dialog-button-color_click" type="color" value="#ffffff" data-controls="--dialog-button-focus-color" />
+        </label>
+      </fieldset>
+
+      <label for="dialog-button-font" class="margin-top">
+        button font family
+        <select id="dialog-button-font" data-controls="--dialog-button-font">
+          <option value="serif">serif #1</option>
+          <option value="serif-2">serif #2</option>
+          <option value="sans-serif">sans-serif #1</option>
+          <option value="sans-serif-2">sans-serif #2</option>
+          <option value="monospace" selected>monospace</option>
+        </select>
+      </label>
+
+      <label for="dialog-button-font-size">
+        button font size
+        <input id="dialog-button-font-size" type="number" value="0.8" min="0.5" max="8" step="0.125" data-controls="--dialog-button-font-size" />
+      </label>
+
+      <!-- <fieldset id="dialog-button-font-style">
+        <legend>button font style</legend>
+        <label for="dialog-button-font-bold">
+          <input type="checkbox" id="dialog-button-font-bold" data-controls="--dialog-button-font-weight" />
+          bold
+        </label>
+        <label for="dialog-button-font-italic">
+          <input type="checkbox" id="dialog-button-font-italic" data-controls="--dialog-button-font-style" />
+          italic
+        </label>
+        <label for="dialog-button-font-underline">
+          <input type="checkbox" id="dialog-button-font-underline" data-controls="--dialog-button-text-decoration" checked />
+          underline
+        </label>
+      </fieldset> -->
+
+      <p><i>Coming soon</i></p>
       <ul>
-        <li>font</li>
-        <li>color</li>
-        <li>background-color</li>
         <li>box-shadow</li>
-        <li>button: font style (underline, bold, etc)</li>
-        <li>button: font</li>
+        <li>custom styles</li>
       </ul>
+
     </section>
-    <!-- inputs to change them -->
     <!-- plus it'd be nice to have a free-form paste css here field -->
-    <!-- download css button -->
     <!-- add a full preview (with uploadable furniture) with a few draggable items -->
   </section>
   <button class="big-save" onclick="saveTheme()">save styles</button>

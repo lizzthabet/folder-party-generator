@@ -26,11 +26,11 @@ This website will let you browse all the files in the folder. You can include yo
 
 1. Curate a tiny (or big!) folder party in a directory on your computer.
 
-2. *(optional)* Add a folder called `furniture/` to your folder party and put whatever images you'd like in it. Optionally, you can download the furniture drawings in `dist/furniture` to use.
+2. *(optional)* Add a folder called `furniture/` to your folder party and put whatever images you'd like in it. Optionally, you can download the furniture drawings in `generator/dist/furniture` to use.
 
-3. Download the script `dist/index.js`, so you can run it locally with the directory of your folder party:
+3. Download the script `furniture/dist/index.js`, so you can run it locally with the directory of your folder party:
    ```bash
-   FOLDER=./my-party node dist/index.js
+   FOLDER=./my-party node furniture/dist/index.js
    ```
    It will generate an HTML file that includes all the files in that folder.
 

@@ -6,8 +6,8 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
-    "dev": "OVERWRITE=true FOLDER=test/testdata npm run start",
-    "generate": "node dist/index.js",
+    "dev": "OVERWRITE=true FOLDER=generator/test/testdata npm run start",
+    "generate": "node generator/dist/index.js",
     "start": "npm run build && npm run generate",
     "theme.dev": "PORT=2350 FOLDER=public/theme-builder npx nodemon --watch public/theme-builder --ext js,html,css dev-server.js"
   },

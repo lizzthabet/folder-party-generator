@@ -1,0 +1,20 @@
+services:
+  tor:
+    image: lizz0thabet/tor-hidden-service:latest
+    links:
+      - party
+    environment:
+      PARTY_TOR_SERVICE_HOSTS: "80:party:80"
+    volumes:
+      - "./hidden_service:/var/lib/tor/hidden_service"
+    restart: unless-stopped
+
+  party:
+    image: nginx
+    hostname: party
+    ports:
+      - "7853:7853"
+    volumes:
+      - "./nginx.conf:/etc/nginx/conf.d/default.conf"
+      - "./party/public:/usr/share/nginx/html"
+    restart: unless-stopped

@@ -1,0 +1,1 @@
+This is a file-viewer dialog. When a filename is double-clicked, this dialog will open to display the contents of that file, whether it's an image, text, html document, pdf, etc. This text itself is a preview of what a text file might look like when it's displayed. You can customize the font and size.

@@ -1,3 +1,4 @@
 # Redirects from what the browser requests to what Netlify serves
 # https://docs.netlify.com/routing/redirects/
 /                /a/home                302
+/a-home          /a/home                302   # add redirect for previous route

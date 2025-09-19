@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- For reference, see https://community.torproject.org/onion-services/advanced/onion-location/ -->
+    <meta http-equiv="onion-location" content="http://v6owtdo7pgdocio4qshsheopt4msfl3scdhq6jb7mby45z3nryh3kaad.onion" />
+    <link rel="icon" href="favicon.png" type="image/x-icon" />
+    <title>an invitation</title>
+    <style>
+      html {
+        background-color: #d3d3d3;
+      }
+
+      [data-draggable] {
+        display: inline-block;
+      }
+
+      [data-draggable] {
+        user-select: none;
+        margin: 0;
+        padding: 1rem;
+      }
+
+      [data-draggable]:hover {
+        cursor: move;
+      }
+
+      h2 {
+        margin-bottom: 2rem;
+      }
+
+      .filename {
+        background-color: #d2d2d2;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
+        color: blue;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 1rem;
+        font-weight: normal;
+        max-width: 250px;
+        padding: 5px;
+        overflow-wrap: anywhere;
+        text-align: center;
+        text-decoration: underline;
+        width: max-content;
+      }
+
+      .invitation {
+        box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
+        box-sizing: border-box;
+        border-radius: 8px;
+        border: 2px dotted #333333;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        padding: 1rem;
+        overflow-wrap: anywhere;
+        width: max-content;
+      }
+
+      @media (max-width: 600px) {
+        .invitation {
+          max-width: 100%;
+        }
+      }
+
+      details > summary {
+        margin: 0.5rem 0;
+      }
+    </style>
+    <script>
+      function positionInPlace(element) {
+        const { top, left } = element.getBoundingClientRect()
+        const { scrollX, scrollY } = window
+        setTopLeft(element, top + scrollY, left + scrollX)
+      }
+
+      function setTopLeft(element, top, left) {
+        element.style.setProperty("top", `${top}px`)
+        element.style.setProperty("left", `${left}px`)
+      }
+
+      function setPositionAbsolute(element) {
+        element.style.setProperty("position", "absolute")
+      }
+
+      function onMouseDown(event) {
+        event.stopPropagation()
+        const { currentTarget, target, pageX, pageY, clientX, clientY } = event
+        const { left, top } = currentTarget.getBoundingClientRect()
+        const shiftX = clientX - left
+        const shiftY = clientY - top
+
+        function moveTo(pageX, pageY) {
+          const newLeft = pageX - shiftX + "px"
+          const newTop = pageY - shiftY + "px"
+          currentTarget.style.setProperty("left", newLeft)
+          currentTarget.style.setProperty("top", newTop)
+        }
+
+        function onMouseMove(event) {
+          moveTo(event.pageX, event.pageY)
+        }
+
+        function onMouseUp() {
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      window.addEventListener("load", (event) => {
+        const elements = document.querySelectorAll("[data-draggable]")
+        // Add drag-to-move functionality
+        elements.forEach((ele) => ele.addEventListener("mousedown", onMouseDown))
+      })
+  </script>
+  </head>
+  <body>
+    <header>
+      <h1><i>my computer is a home that my friends can visit</i></h1>
+    </header>
+    <main>
+      <section class="invitation">
+        <h2 class="filename">invite.html</h2>
+        <p>
+          hi friend!
+        </p>
+        <p>
+          i'm having a small gathering at a folder on my computer.
+        </p>
+        <p>
+          i've created a space just for you to visit. drop by any time.
+        </p>
+        <p>
+          xo<br/>lizz
+        </p>
+      </section>
+      <img
+        class="decor"
+        src="plant.png"
+        alt="a simple black and white drawing of a zz plant"
+        style="top: 60.875px; left: 427px; position: absolute;"
+        draggable="false"
+        data-draggable />
+        <img
+        class="decor"
+        src="map.png"
+        alt="a simple black and white drawing piece of paper; on the paper is a house with a dotted line leading to an x"
+        style="top: 301px; left: 445px; position: absolute;"
+        draggable="false"
+        data-draggable />
+      <section class="invitation">
+        <h2 class="filename">directions.html</h2>
+        <p>
+          i don't have my computer's address listed publically, so you'll need the help of your browser to get there.
+        </p>
+        <hr />
+        <p>
+          the easiest way to get here is with <a href="https://www.torproject.org/download/">tor browser</a>. you can also take <a href="https://brave.com/download/">brave browser</a> to get here. both of these web browsers respect your privacy and know how to rendezvous with my computer, so you can drop by without revealing where you're coming from. :)
+        </p>
+        <p>use this address: <a href="http://v6owtdo7pgdocio4qshsheopt4msfl3scdhq6jb7mby45z3nryh3kaad.onion">http://v6owtdo7pgdocio4qshsheopt4msfl3scdhq6jb7mby45z3nryh3kaad.onion</a></p>
+        <hr />
+        <p>
+          you can also take the round-about way if you're using another browser like firefox, safari, or chrome, but sometimes the road is under construction, and there are unexpected detours. take this route at your own risk. <3
+        </p>
+        <p>use this address: <a href="https://v6owtdo7pgdocio4qshsheopt4msfl3scdhq6jb7mby45z3nryh3kaad.onion.ly">https://v6owtdo7pgdocio4qshsheopt4msfl3scdhq6jb7mby45z3nryh3kaad.onion.ly</a></p>
+        <hr />
+        <details>
+          <summary>tell me more! what's this weird link?</summary>
+          i'm using a free and open-source tool called <a href="https://www.torproject.org">tor</a>, which uses a worldwide network of volunteer-run computers to help people access websites anonymously and securely. the very long link is a unique key that helps you find my website.
+        </details>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,4 @@
+# Configure headers for clearnet deployment on Netlify
+# https://docs.netlify.com/routing/headers/#syntax-for-the-headers-file
+/a/home/index.html
+  Onion-Location: http://v6owtdo7pgdocio4qshsheopt4msfl3scdhq6jb7mby45z3nryh3kaad.onion

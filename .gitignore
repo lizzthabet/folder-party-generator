@@ -70,3 +70,10 @@ jspm_packages/
 
 # don't include map file in dist
 dist/*.map
+
+# don't include folder party content
+party/
+
+# don't include local tor dev files
+hidden_service/
+torrc.local

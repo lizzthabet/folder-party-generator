@@ -6,7 +6,7 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist"
+    "outDir": "./generator/dist"
   },
   "lib": ["es2015"]
 }

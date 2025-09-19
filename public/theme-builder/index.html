@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>folder party theme builder</title>
+  <title>folder party ✐ theme builder</title>
   <style>
     :root {
       /* customizable */
@@ -94,9 +94,19 @@
       text-align: center;
     }
 
+    p.intro {
+      font-size: 1.25rem;
+      margin: 0 auto 2rem;
+      max-width: 600px;
+    }
+
+    .big-buttons {
+      width: fit-content;
+      padding-bottom: 2.5rem;
+    }
+
     button.big-save {
       font-size: 1.5rem;
-      margin-top: 2rem;
     }
 
     button.filename {
@@ -428,6 +438,14 @@
       }
     }
 
+    function reset() {
+      // Hard reset all the styles
+      document.documentElement.style = ""
+      // TODO: The input values will also need to be reset.
+      const urlWithoutParams = new URL(window.location.pathname, window.location.origin)
+      window.history.pushState({}, "", urlWithoutParams)
+    }
+
     // copy paste from `index.ts`
     function positionInPlace(element) {
       const { top, left } = element.getBoundingClientRect()
@@ -583,8 +601,15 @@
 </head>
 <body>
   <header class="center">
-    <h1>folder party theme builder ◕‿◕</h1>
+    <h1>folder party ✐ theme builder</h1>
   </header>
+  <section class="">
+    <p class="intro">welcome to the theme builder. <code>◕‿◕</code> here you can customize the core elements of a folder party website and download the css styles to use. any feedback is very welcome!</p>
+    <div class="big-buttons center">
+      <button class="big-save" onclick="saveTheme()">save styles</button>
+      <button class="big-save" onclick="reset()">reset</button>
+    </div>
+  </section>
   <!--
     Consider adding a view notes, like:
     - linking to an interactive version of the site
@@ -755,6 +780,5 @@
     <!-- plus it'd be nice to have a free-form paste css here field -->
     <!-- add a full preview (with uploadable furniture) with a few draggable items -->
   </section>
-  <button class="big-save" onclick="saveTheme()">save styles</button>
 </body>
 </html>

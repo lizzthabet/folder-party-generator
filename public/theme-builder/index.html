@@ -73,21 +73,6 @@
       margin-top: var(--basic-margin);
     }
 
-    /* dialogs should manage their own display */
-    [data-draggable]:not(dialog) {
-      display: inline-block;
-    }
-
-    [data-draggable] {
-      user-select: none;
-      margin: 0;
-      padding: 1rem;
-    }
-
-    [data-draggable]:hover {
-      cursor: move;
-    }
-
     header {
       margin-bottom: 1rem;
       padding: 1rem;
@@ -585,125 +570,17 @@
       window.history.pushState({}, "", urlWithoutParams)
     }
 
-    // copy paste from `index.ts`
-    function positionInPlace(element) {
-      const { top, left } = element.getBoundingClientRect()
-      const { scrollX, scrollY } = window
-      setTopLeft(element, top + scrollY, left + scrollX)
-    }
-
-    function setTopLeft(element, top, left) {
-      element.style.setProperty("top", top + "px")
-      element.style.setProperty("left", left + "px")
-    }
-
-    function setPositionAbsolute(element) {
-      element.style.setProperty("position", "absolute")
-    }
-
-    function onMouseDown(event) {
-      event.stopPropagation()
-      const { currentTarget, target, pageX, pageY, clientX, clientY } = event
-      const { left, top } = currentTarget.getBoundingClientRect()
-      const shiftX = clientX - left
-      const shiftY = clientY - top
-
-      function moveTo(pageX, pageY) {
-        const newLeft = pageX - shiftX + "px"
-        const newTop = pageY - shiftY + "px"
-        currentTarget.style.setProperty("left", newLeft)
-        currentTarget.style.setProperty("top", newTop)
-      }
-
-      function onMouseMove(event) {
-        moveTo(event.pageX, event.pageY)
-      }
-
-      function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove)
-        document.removeEventListener("mouseup", onMouseUp)
-      }
-
-      document.addEventListener("mousemove", onMouseMove)
-      document.addEventListener("mouseup", onMouseUp)
-    }
-
-    const DOUBLE_CLICK = 2
-    function onDoubleClick(e) {
-      if (e.detail === DOUBLE_CLICK) {
-        const dialogId = e.currentTarget.getAttribute("aria-controls")
-        if (!dialogId) {
-          return
-        }
-        const dialog = document.getElementById(dialogId)
-        if (!dialog) {
-          return
-        }
-        if (dialog.open === false) {
-          const { top, left, height, width } = e.currentTarget.getBoundingClientRect()
-          const { scrollX, scrollY } = window
-          setTopLeft(dialog, top + height + scrollY + 10, left + scrollX)
-          setPositionAbsolute(dialog)
-          dialog.show()
-        }
-      }
-    }
-
     window.addEventListener("load", (event) => {
       const params = new URLSearchParams(window.location.search)
       updatePageFromParams(params)
 
-      const inputChangeIds = [
-        // template controls
-        "dialog-border-color",
-        "dialog-border-radius",
-        "dialog-border-style",
-        "dialog-border-width",
-        "dialog-bg-color",
-        "dialog-button-bg-color",
-        "dialog-button-bg-color_click",
-        "dialog-button-color",
-        "dialog-button-color_click",
-        "dialog-button-font",
-        "dialog-button-font-bold",
-        "dialog-button-font-italic",
-        "dialog-button-font-size",
-        "dialog-button-font-underline",
-        "dialog-shadow-blur",
-        "dialog-shadow-color",
-        "dialog-shadow-position-x",
-        "dialog-shadow-position-y",
-        "dialog-shadow-spread",
-        "filename-bg-color",
-        "filename-bg-color_click",
-        "filename-color",
-        "filename-color_click",
-        "filename-border-color",
-        "filename-border-radius",
-        "filename-border-style",
-        "filename-border-width",
-        "filename-font",
-        "filename-font-bold",
-        "filename-font-italic",
-        "filename-font-size",
-        "filename-font-underline",
-        "filename-padding",
-        "filename-shadow-blur",
-        "filename-shadow-color",
-        "filename-shadow-position-x",
-        "filename-shadow-position-y",
-        "filename-shadow-spread",
-        "page-bg-color",
-        // other controls
-        "click-style",
-        "click-style-dialog-button",
-      ]
-      inputChangeIds.forEach((id) => {
-        const element = document.getElementById(id)
-        if (!element) {
-          return
+      const idsWithCustomHandlers = ["page-bg-image", "page-bg-image_clear"]
+      const allInputs = document.querySelectorAll("input,select")
+      allInputs.forEach((input) => {
+        // Ignore elements with custom handlers
+        if (!idsWithCustomHandlers.includes(input.id)) {
+          input.addEventListener("input", onInput)
         }
-        element.addEventListener("input", onInput)
       })
 
       // Page background uploader
@@ -730,23 +607,6 @@
           }
         })
       }
-
-      const elements = document.querySelectorAll("[data-draggable]")
-      // Position each element absolutely so document flow isn't changed
-      // when one element is moved
-      elements.forEach(positionInPlace)
-      elements.forEach(setPositionAbsolute)
-
-      // Add drag-to-move functionality
-      elements.forEach((ele) =>
-        ele.addEventListener("mousedown", onMouseDown)
-      )
-
-      // Add double-click listener to open up fileviewer
-      const fileviewers = document.querySelectorAll("[data-fileviewer]")
-      fileviewers.forEach((ele) => {
-        ele.addEventListener("click", onDoubleClick)
-      })
     })
 
     window.addEventListener("popstate", (_e) => {
@@ -798,17 +658,14 @@
 
       <fieldset>
         <legend>when clicked</legend>
-
         <label for="click-style">
           see "clicked" style
           <input id="click-style" type="checkbox" />
         </label>
-
         <label for="filename-bg-color_click">
           background color
           <input id="filename-bg-color_click" type="color" value="#800080" data-controls="--button-focus-bg"/>
         </label>
-  
         <label for="filename-color_click">
           color
           <input id="filename-color_click" type="color" value="#ffffff" data-controls="--button-focus-color" />

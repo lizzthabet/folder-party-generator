@@ -6,9 +6,10 @@
   <title>folder party ✐ theme builder</title>
   <style>
     :root {
-      /* customizable */
+      /* --- customizable --- */
       --page-bg: #d3d3d3;
       --page-bg-image: none;
+      /* --- button custom styles --- */
       --button-bg: #d2d2d2;
       --button-color: blue;
       --button-font: 'Times New Roman', Times, serif;
@@ -20,20 +21,22 @@
       --button-text-decoration: underline;
       --button-padding: 5px;
       --button-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
-
+      --button-border-color: none;
+      --button-border-radius: 8px;
+      --button-border-style: none;
+      --button-border-width: 0px;
+      /* --- dialog custom styles --- */
+      --dialog-border-color: #333333;
+      --dialog-border-radius: 8px;
+      --dialog-border-style: dotted;
+      --dialog-border-width: 2px;
       --dialog-bg: #dfdfdf;
-      /* --dialog-color: black; TODO: not supported yet */
-      /* --dialog-font: 'Times New Roman', Times, serif; TODO: not supported yet */
-      /* --dialog-font-size: 1rem; TODO: not supported yet */
       --dialog-button-bg: #dfdfdf;
       --dialog-button-color: #333333;
       --dialog-button-font: monospace;
       --dialog-button-font-size: 0.80rem;
       --dialog-button-focus-bg: purple;
       --dialog-button-focus-color: white;
-      /* --dialog-button-font-style: normal; */
-      /* --dialog-button-font-weight: normal; */
-      /* --dialog-button-text-decoration: underline; */
       --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
     }
 
@@ -124,9 +127,11 @@
       padding: var(--button-padding);
       text-decoration: var(--button-text-decoration);
       box-shadow: var(--button-box-shadow);
+      border-color: var(--button-border-color);
+      border-style: var(--button-border-style);
+      border-radius: var(--button-border-radius);
+      border-width: var(--button-border-width);
       /* set */
-      border: none;
-      border-radius: 8px;
       height: max-content;
       max-width: 250px;
       overflow-wrap: anywhere;
@@ -176,10 +181,12 @@
     dialog.fileviewer[open] {
       /* customizable */
       background-color: var(--dialog-bg);
+      border-color: var(--dialog-border-color);
+      border-style: var(--dialog-border-style);
+      border-radius: var(--dialog-border-radius);
+      border-width: var(--dialog-border-width);
       box-shadow: var(--dialog-box-shadow);
       /* set */
-      border-radius: 8px;
-      border: 2px dotted #333333;
       z-index: 2;
     }
 
@@ -198,7 +205,6 @@
 
   </style>
   <script>
-    // new code
     const DATA_CONTROLS = "data-controls"
     const DATA_SHADOW_PROPERTY = "data-shadow-property"
     const FONT_SELECT_TO_PROPERTY = {
@@ -324,6 +330,8 @@
       "dialog-shadow-position-x": composeBoxShadow,
       "dialog-shadow-position-y": composeBoxShadow,
       "dialog-shadow-spread": composeBoxShadow,
+      "filename-border-radius": valueToPx,
+      "filename-border-width": valueToPx,
       "filename-font": selectToFontProperty,
       "filename-font-bold": (element) => element.checked ? "bold" : "normal",
       "filename-font-italic": (element) => element.checked ? "italic" : "normal",
@@ -404,6 +412,8 @@
       "dialog-shadow-position-x": composeValueFromBoxShadow,
       "dialog-shadow-position-y": composeValueFromBoxShadow,
       "dialog-shadow-spread": composeValueFromBoxShadow,
+      "filename-border-radius": pxToValue,
+      "filename-border-width": pxToValue,
       "filename-font": fontToValue,
       "filename-font-bold": fontStyleToValue,
       "filename-font-italic": fontStyleToValue,
@@ -541,7 +551,6 @@
       }
 
       customStyles += "\n}"
-
       return customStyles
     }
 
@@ -646,6 +655,10 @@
 
       const inputChangeIds = [
         // template controls
+        "dialog-border-color",
+        "dialog-border-radius",
+        "dialog-border-style",
+        "dialog-border-width",
         "dialog-bg-color",
         "dialog-button-bg-color",
         "dialog-button-bg-color_click",
@@ -665,6 +678,10 @@
         "filename-bg-color_click",
         "filename-color",
         "filename-color_click",
+        "filename-border-color",
+        "filename-border-radius",
+        "filename-border-style",
+        "filename-border-width",
         "filename-font",
         "filename-font-bold",
         "filename-font-italic",
@@ -801,7 +818,7 @@
       <label for="filename-font" class="margin-top">
         font family
         <select id="filename-font" data-controls="--button-font">
-          <option value="serif">serif #1</option>
+          <option value="serif" selected>serif #1</option>
           <option value="serif-2">serif #2</option>
           <option value="sans-serif">sans-serif #1</option>
           <option value="sans-serif-2">sans-serif #2</option>
@@ -859,11 +876,40 @@
         </label>
       </fieldset>
 
-      <p><i>Coming soon</i></p>
+      <fieldset>
+        <legend>border</legend>
+        <label for="filename-border-style" class="margin-top">
+          border style
+          <select id="filename-border-style" data-controls="--button-border-style">
+            <option value="none" selected>none</option>
+            <option value="dotted">dotted</option>
+            <option value="dashed">dashed</option>
+            <option value="solid">solid</option>
+            <option value="double">double</option>
+            <option value="groove">groove</option>
+            <option value="ridge">ridge</option>
+            <option value="inset">inset</option>
+            <option value="outset">outset</option>
+          </select>
+        </label>
+        <label for="filename-border-width">
+          width
+          <input id="filename-border-width" type="number" value="0" min="0" max="100" step="1" data-controls="--button-border-width" /> px
+        </label>
+        <label for="filename-border-radius">
+          radius
+          <input id="filename-border-radius" type="number" value="8" min="0" max="100" step="1" data-controls="--button-border-radius" /> px
+        </label>
+        <label for="filename-border-color">
+          color
+          <input id="filename-border-color" type="color" value="#333333" data-controls="--button-border-color" />
+        </label>
+      </fieldset>
+
+      <!-- <p><i>Coming soon</i></p>
       <ul>
-        <li>border (color, weight, radius)</li>
         <li>custom styles</li>
-      </ul>
+      </ul> -->
     </section>
 
     <dialog class="fileviewer" open>
@@ -946,27 +992,40 @@
         </label>
       </fieldset>
 
-      <!-- <fieldset id="dialog-button-font-style">
-        <legend>button font style</legend>
-        <label for="dialog-button-font-bold">
-          <input type="checkbox" id="dialog-button-font-bold" data-controls="--dialog-button-font-weight" />
-          bold
+      <fieldset>
+        <legend>border</legend>
+        <label for="dialog-border-style" class="margin-top">
+          border style
+          <select id="dialog-border-style" data-controls="--dialog-border-style">
+            <option value="none">none</option>
+            <option value="dotted" selected>dotted</option>
+            <option value="dashed">dashed</option>
+            <option value="solid">solid</option>
+            <option value="double">double</option>
+            <option value="groove">groove</option>
+            <option value="ridge">ridge</option>
+            <option value="inset">inset</option>
+            <option value="outset">outset</option>
+          </select>
         </label>
-        <label for="dialog-button-font-italic">
-          <input type="checkbox" id="dialog-button-font-italic" data-controls="--dialog-button-font-style" />
-          italic
+        <label for="dialog-border-width">
+          width
+          <input id="dialog-border-width" type="number" value="2" min="0" max="100" step="1" data-controls="--dialog-border-width" /> px
         </label>
-        <label for="dialog-button-font-underline">
-          <input type="checkbox" id="dialog-button-font-underline" data-controls="--dialog-button-text-decoration" checked />
-          underline
+        <label for="dialog-border-radius">
+          radius
+          <input id="dialog-border-radius" type="number" value="8" min="0" max="100" step="1" data-controls="--dialog-border-radius" /> px
         </label>
-      </fieldset> -->
+        <label for="dialog-border-color">
+          color
+          <input id="dialog-border-color" type="color" value="#333333" data-controls="--dialog-border-color" />
+        </label>
+      </fieldset>
 
-      <p><i>Coming soon</i></p>
+      <!-- <p><i>Coming soon</i></p>
       <ul>
-        <li>border (color, weight, radius)</li>
         <li>custom styles</li>
-      </ul>
+      </ul> -->
 
     </section>
     <!-- plus it'd be nice to have a free-form paste css here field -->

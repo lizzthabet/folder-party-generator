@@ -6,9 +6,9 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
-    "dev": "OVERWRITE=true FOLDER=generator/test/testdata npm run start",
+    "test": "OVERWRITE=true FOLDER=generator/test/testdata npm run build && npm run generate",
     "generate": "node generator/dist/index.js",
-    "start": "npm run build && npm run generate",
+    "start": "npm run build",
     "theme.dev": "PORT=2350 FOLDER=public/theme-builder npx nodemon --watch public/theme-builder --ext js,html,css dev-server.js"
   },
   "author": "lizz thabet",

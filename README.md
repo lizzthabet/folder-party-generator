@@ -56,7 +56,7 @@ This is a simple Typscript project with no external dependencies, except those u
 
 I have it set up with a few sample files to make testing easier, which you can run with:
 ```bash
-npm run dev
+npm run test
 ```
 
 If you've made changes to this script, you can build it with:

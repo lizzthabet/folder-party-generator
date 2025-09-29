@@ -245,6 +245,9 @@ function createHead(): string {
     <title>${HTML_TITLE}</title>
 ${createStyle()}
 ${createScript()}
+
+    <!-- Add custom styles from the folder party theme generator here -->
+    <!-- <link href="theme.css" rel="stylesheet" /> -->
   </head>`
 }
 
@@ -252,8 +255,45 @@ ${createScript()}
 function createStyle(): string {
   return `
     <style>
+      :root {
+        /* Variables for easy customization */
+        /* --- page --- */
+        --page-bg: #d2d2d2;
+        --page-bg-image: none;
+        /* --- filename buttons --- */
+        --button-bg: #d2d2d2;
+        --button-color: blue;
+        --button-font: 'Times New Roman', Times, serif;
+        --button-focus-bg: purple;
+        --button-focus-color: white;
+        --button-font-style: normal;
+        --button-font-size: 1rem;
+        --button-font-weight: normal;
+        --button-text-decoration: underline;
+        --button-padding: 5px;
+        --button-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+        --button-border-color: none;
+        --button-border-radius: 8px;
+        --button-border-style: none;
+        --button-border-width: 0px;
+        /* --- fileviewer dialogs --- */
+        --dialog-border-color: #333333;
+        --dialog-border-radius: 8px;
+        --dialog-border-style: dotted;
+        --dialog-border-width: 2px;
+        --dialog-bg: #dfdfdf;
+        --dialog-button-bg: #dfdfdf;
+        --dialog-button-color: #333333;
+        --dialog-button-font: monospace;
+        --dialog-button-font-size: 0.80rem;
+        --dialog-button-focus-bg: purple;
+        --dialog-button-focus-color: white;
+        --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+      }
+
       html {
-        background-color: #d2d2d2;
+        background-color: var(--page-bg);
+        background-image: var(--page-bg-image);
       }
 
       /* Styles for draggable elements */
@@ -278,54 +318,72 @@ function createStyle(): string {
 
       /* Styles for filenames */
       button.filename {
-        background-color: #d2d2d2;
-        border: none;
-        border-radius: 8px;
-        box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
-        color: blue;
-        font-family: 'Times New Roman', Times, serif;
-        font-size: 1rem;
+        /* customizable */
+        background-color: var(--button-bg);
+        border-color: var(--button-border-color);
+        border-radius: var(--button-border-radius);
+        border-style: var(--button-border-style);
+        border-width: var(--button-border-width);
+        box-shadow: var(--button-box-shadow);
+        color: var(--button-color);
+        font-family: var(--button-font);
+        font-size: var(--button-font-size);
+        font-style: var(--button-font-style);
+        font-weight: var(--button-font-weight);
+        padding: var(--button-padding);
+        text-decoration: var(--button-text-decoration);
+        /* set */
+        height: max-content;
         max-width: 250px;
-        padding: 5px;
         overflow-wrap: anywhere;
         text-align: center;
-        text-decoration: underline;
         width: max-content;
       }
 
       button.filename:focus {
-        background-color: purple;
-        color: white;
+        /* customizable */
+        background-color: var(--button-focus-bg);
+        color: var(--button-focus-color);
+        /* set */
         outline: none;
         text-decoration: none;
       }
 
+      /* Styles for dialogs and dialog buttons */
+      dialog.fileviewer[open] {
+        /* customizable */
+        background-color: var(--dialog-bg);
+        border-color: var(--dialog-border-color);
+        border-style: var(--dialog-border-style);
+        border-radius: var(--dialog-border-radius);
+        border-width: var(--dialog-border-width);
+        box-shadow: var(--dialog-box-shadow);
+        /* set */
+        width: max-content; /* Size dialogs in Firefox to fit their content */
+        z-index: 2;
+      }
+
       button.close-fileviewer {
-        background-color: unset;
+        /* customizable */
+        background-color: var(--dialog-button-bg);
+        color: var(--dialog-button-color);
+        font-family: var(--dialog-button-font);
+        font-size: var(--dialog-button-font-size);
+        /* set */
         border: none;
-        color: #333333;
-        font-family: monospace;
+        border-radius: 5px;
         float: right;
         margin: 0.5rem -0.5rem -0.5rem 0.5rem;
         text-transform: uppercase;
       }
 
-      /* Styles for dialogs and dialog buttons */
-      dialog.fileviewer[open] {
-        background-color: #dfdfdf;
-        box-shadow: 5px 5px 5px rgb(51, 51, 51, 0.75);
-        border-radius: 8px;
-        border: 2px dotted #333333;
-        /* Needed to size dialogs in Firefox to fit their content */
-        width: max-content;
-        z-index: 2;
-      }
-
       button.close-fileviewer:active,
       button.close-fileviewer:focus {
-        background-color: purple;
+        /* customizable */
+        background-color: var(--dialog-button-focus-bg);
+        color: var(--dialog-button-focus-color);
+        /* set */
         border-radius: 5px;
-        color: white;
         outline: none;
       }
 

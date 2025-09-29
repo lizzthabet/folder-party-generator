@@ -7,9 +7,9 @@
   <style>
     :root {
       /* --- customizable --- */
-      --page-bg: #d3d3d3;
+      --page-bg: #d2d2d2;
       --page-bg-image: none;
-      /* --- button custom styles --- */
+      /* --- filename button styles --- */
       --button-bg: #d2d2d2;
       --button-color: blue;
       --button-font: 'Times New Roman', Times, serif;
@@ -25,7 +25,7 @@
       --button-border-radius: 8px;
       --button-border-style: none;
       --button-border-width: 0px;
-      /* --- dialog custom styles --- */
+      /* --- fileviewer dialog styles --- */
       --dialog-border-color: #333333;
       --dialog-border-radius: 8px;
       --dialog-border-style: dotted;
@@ -104,6 +104,11 @@
     button.filename {
       /* customizable */
       background-color: var(--button-bg);
+      border-color: var(--button-border-color);
+      border-radius: var(--button-border-radius);
+      border-style: var(--button-border-style);
+      border-width: var(--button-border-width);
+      box-shadow: var(--button-box-shadow);
       color: var(--button-color);
       font-family: var(--button-font);
       font-size: var(--button-font-size);
@@ -111,11 +116,6 @@
       font-weight: var(--button-font-weight);
       padding: var(--button-padding);
       text-decoration: var(--button-text-decoration);
-      box-shadow: var(--button-box-shadow);
-      border-color: var(--button-border-color);
-      border-style: var(--button-border-style);
-      border-radius: var(--button-border-radius);
-      border-width: var(--button-border-width);
       /* set */
       height: max-content;
       max-width: 250px;

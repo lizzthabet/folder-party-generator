@@ -4,11 +4,10 @@
   "description": "playground for a static site generator to create folder parties",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint . --ext .ts",
     "build": "tsc",
-    "test": "OVERWRITE=true FOLDER=generator/test/testdata npm run build && npm run generate",
-    "generate": "node generator/dist/index.js",
+    "lint": "eslint . --ext .ts",
     "start": "npm run build",
+    "test": "npm run build && OVERWRITE=true FOLDER=generator/test/testdata node generator/dist/index.js",
     "theme.dev": "PORT=2350 FOLDER=public/theme-builder npx nodemon --watch public/theme-builder --ext js,html,css dev-server.js"
   },
   "author": "lizz thabet",

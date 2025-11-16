@@ -4,7 +4,12 @@ const node_fs_1 = require("node:fs");
 const node_path_1 = require("node:path");
 const node_process_1 = require("node:process");
 const CURRENT_DIRECTORY = '.';
-const FILES_TO_IGNORE = new Set(['.DS_Store', 'furniture', 'index.js']);
+const FILES_TO_IGNORE = new Set([
+    '.DS_Store', // Silly MacOS files
+    'index.js', // The folder party generator script
+    'furniture', // Folder with images to be treated as furniture
+    'theme' // Folder with theme-specific content that shouldn't be treated as content
+]);
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g;
 const FURNITURE_FOLDER = 'furniture';
 const DEFAULT_OUTPUT_FILENAME = "index";
@@ -580,7 +585,7 @@ function createDialog(file) {
 function createFurniture(furniture, options) {
     return `<section aria-label="furniture">
         ${furniture.map(item => {
-        return `<img src="${item.path}" ${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? `style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : ""} draggable="false" data-draggable />`;
+        return `<img src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
     }).join("\n        ")}
       </section>`;
 }

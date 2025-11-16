@@ -15,7 +15,12 @@ type Options = {
 }
 
 const CURRENT_DIRECTORY = '.'
-const FILES_TO_IGNORE = new Set(['.DS_Store', 'furniture', 'index.js'])
+const FILES_TO_IGNORE = new Set([
+  '.DS_Store', // Silly MacOS files
+  'index.js', // The folder party generator script
+  'furniture', // Folder with images to be treated as furniture
+  'theme' // Folder with theme-specific content that shouldn't be treated as content
+])
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g
 const FURNITURE_FOLDER = 'furniture'
 const DEFAULT_OUTPUT_FILENAME = "index"
@@ -641,7 +646,7 @@ function createDialog(file: FileData): string {
 function createFurniture(furniture: FileData[], options?: FileOptions) {
   return `<section aria-label="furniture">
         ${furniture.map(item => {
-          return `<img src="${item.path}" ${options?.randomPlacement ? `style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : ""} draggable="false" data-draggable />`
+          return `<img src="${item.path}"${options?.randomPlacement ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`
         }).join("\n        ")}
       </section>`
 }

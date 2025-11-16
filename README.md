@@ -22,11 +22,24 @@ This website will let you browse all the files in the folder. You can include yo
 
 ![screenshot of a webpage generated from the folder files](./demo-screenshot-2.png)
 
-## Host your own folder party
+## Host your own folder party website
+
+Your folder party layout will look like this:
+```
+your-folder-party/
+├── theme/              - (optional) any files like css, images, and fonts used to style your website
+├── furniture/          - (optional) any images to display as rearrangable "furniture" on your website
+└── files and folders   - all your party content! displayed as rarrangable filenames on your website
+
+```
 
 1. Curate a tiny (or big!) folder party in a directory on your computer.
 
-2. *(optional)* Add a folder called `furniture/` to your folder party and put whatever images you'd like in it. Optionally, you can download the furniture drawings in `generator/dist/furniture` to use.
+2. *(optional)* Choose a theme for your party and add its contents to your folder party directory.
+
+   To customize how your folder party appears, you can download a theme from the `themes/` directory, or you can write your own custom styles and make your own furniture set.
+
+   Make sure to add the `furniture` and `theme` folders to your folder party directory. Any images in the `furniture` folder will be added as rearrangable images on the website. Any content in the `theme` folder will be ignored as folder party content, so use it for any media, like css stylesheets, background images, cursor icons, and fonts, that will be used to style your site.
 
 3. Download the script `generator/dist/index.js`, so you can run it locally with the directory of your folder party:
    ```bash
@@ -38,7 +51,7 @@ This website will let you browse all the files in the folder. You can include yo
 
 Tada! That's it. Now you're ready to have your friends over.
 
-## Configure how the folder party generates
+## Configuration options
 
 There are a few environment variables you can define before running the script like `KEY=VALUE node dist/index.js` that will tweak the behavior of the folder party generator.
 
@@ -50,7 +63,7 @@ There are a few environment variables you can define before running the script l
 
 `RANDOM`: option to position furniture and folder party items randomly on the page, `true` / `1` or `false` / `0`, defaults to `false`
 
-## Working on the script itself
+## Developing the generator tool
 
 This is a simple Typscript project with no external dependencies, except those used for development.
 

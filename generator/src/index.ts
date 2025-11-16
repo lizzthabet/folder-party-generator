@@ -265,6 +265,7 @@ function createStyle(): string {
         --button-color: blue;
         --button-font: 'Times New Roman', Times, serif;
         --button-focus-bg: purple;
+        --button-focus-border-color: none;
         --button-focus-color: white;
         --button-font-style: normal;
         --button-font-size: 1rem;
@@ -343,6 +344,7 @@ function createStyle(): string {
       button.filename:focus {
         /* customizable */
         background-color: var(--button-focus-bg);
+        border-color: var(--button-focus-border-color);
         color: var(--button-focus-color);
         /* set */
         outline: none;

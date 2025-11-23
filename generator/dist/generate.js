@@ -335,6 +335,7 @@ function createStyle({ displayInstructions }) {
         overflow-wrap: anywhere;
         text-align: center;
         width: max-content;
+        z-index: 1;
       }
 
       button.filename:focus {
@@ -438,7 +439,7 @@ function createStyle({ displayInstructions }) {
 
       /* Styles for furniture */
       section[aria-label="furniture"] > img {
-        z-index: -1;
+        z-index: 0;
       }${displayInstructions ? `
 
       /* Styles used only for instructions

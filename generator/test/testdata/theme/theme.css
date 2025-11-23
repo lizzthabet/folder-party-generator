@@ -1,0 +1,46 @@
+@font-face {
+  font-family: "Uncut Variable";
+  src: url("furniture/fonts/Uncut-Sans-v1304/Variable/UncutSans-Variable.ttf");
+}
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("furniture/fonts/Anton_SC\,Fraunces\,Source_Serif_4/Fraunces/Fraunces-Italic-VariableFont_SOFT,WONK,opsz,wght.ttf");
+  font-style: italic;
+}
+
+:root {
+  /* customized css variables for theme */
+  --button-text-decoration: none;
+  --page-bg: none;
+  --page-bg-image: url("furniture/background.jpg");
+  /* --- filename button styles --- */
+  --button-bg: #4c170b;
+  --button-color: #d1634b;
+  --button-font: "Fraunces", Times, serif;
+  --button-focus-bg: #ecddc1;
+  --button-focus-border-color: #fef9ea;
+  --button-focus-color: #6e1905;
+  --button-font-style: italic;
+  --button-font-size: 16pt;
+  --button-font-weight: normal;
+  --button-padding: 8pt 12pt;
+  --button-box-shadow: 0 0 12px 0 rgba(202, 191, 145, 0.2);
+  --button-border-color: #d1634b;
+  --button-border-radius: 8pt;
+  --button-border-style: solid;
+  --button-border-width: 2pt;
+  /* --- fileviewer dialog styles --- */
+  --dialog-border-color: #fef9ea;
+  --dialog-border-radius: 8pt;
+  --dialog-border-style: solid;
+  --dialog-border-width: 2pt;
+  --dialog-bg: #cabf91;
+  --dialog-button-bg: #3b4d28;
+  --dialog-button-color: #fef9ea;
+  --dialog-button-font: "Uncut Variable", sans-serif;
+  --dialog-button-font-size: 16pt;
+  --dialog-button-focus-bg: #3b4d28;
+  --dialog-button-focus-color: #fef9ea;
+  --dialog-box-shadow: 0 0 12px 0 rgba(202, 191, 145, 0.2);
+}

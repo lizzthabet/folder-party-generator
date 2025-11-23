@@ -12,6 +12,7 @@ const FILES_TO_IGNORE = new Set([
 ]);
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g;
 const FURNITURE_FOLDER = 'furniture';
+const THEME_CONTENT_FOLDER = 'theme';
 const DEFAULT_OUTPUT_FILENAME = "index";
 const MAX_RANDOM_HEIGHT = 1250;
 const MAX_RANDOM_WIDTH = 2500;
@@ -90,9 +91,11 @@ function getAppendIndex(content) {
     return content.length - 1;
 }
 function sortFilesIntoInput(files, options) {
+    var _a;
     const input = {
         files: [],
         furniture: [],
+        theme: [],
     };
     // If new files should be appended to the existing html file,
     // get the file contents and a list of files already included in it
@@ -120,8 +123,16 @@ function sortFilesIntoInput(files, options) {
             input.existingFiles.has(file.path)) {
             continue;
         }
-        if (file.parsed.dir === FURNITURE_FOLDER) {
+        // Categorize files based on their base folder path, so that any files
+        // within special folders like "furniture" are sorted correctly,
+        // even if they appear in subfolders
+        const parsedDirPath = file.parsed.dir.split(node_path_1.sep);
+        const parsedBaseDir = (_a = parsedDirPath[0]) !== null && _a !== void 0 ? _a : "";
+        if (parsedBaseDir.toLowerCase() === FURNITURE_FOLDER) {
             input.furniture.push(file);
+        }
+        else if (parsedBaseDir.toLowerCase() === THEME_CONTENT_FOLDER) {
+            input.theme.push(file);
         }
         else if (file.path === `${DEFAULT_OUTPUT_FILENAME}.html`) {
             input.existingIndex = file;
@@ -130,6 +141,9 @@ function sortFilesIntoInput(files, options) {
             input.files.push(file);
         }
     }
+    console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);
+    console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "" : "s"} of furniture`);
+    console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "" : "s"} for the theme`);
     return input;
 }
 function template(files, options) {
@@ -137,7 +151,7 @@ function template(files, options) {
     const templateInput = sortFilesIntoInput(data, options);
     if (options.appendIndex) {
         const newFiles = templateInput.files.length;
-        console.log(`> > adding ${newFiles} file${newFiles === 1 ? '' : 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`);
+        console.info(`> > adding ${newFiles} file${newFiles === 1 ? '' : 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`);
     }
     return { templateInput, content: generateTemplate(templateInput) };
 }
@@ -160,14 +174,14 @@ function websiteFilePath({ directory, options, }) {
     try {
         const options = getOptionsFromEnv(node_process_1.env);
         const { directory } = options;
-        console.log(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
+        console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
             "current directory" : directory}`);
         const files = listFilesInDir(directory);
-        console.log(`> > found ${files.length} files for folder party`);
+        console.info(`> > found ${files.length} files for folder party`);
         const { content } = template(files, options);
         const filePath = websiteFilePath({ directory, options });
         (0, node_fs_1.writeFileSync)(filePath, content, { encoding: 'utf-8' });
-        console.log(`> > creating folder party website file: ${filePath}`);
+        console.info(`> > creating folder party website file: ${filePath}`);
     }
     catch (err) {
         console.error("folder party creation failed:", err);

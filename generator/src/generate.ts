@@ -23,6 +23,7 @@ const FILES_TO_IGNORE = new Set([
 ])
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g
 const FURNITURE_FOLDER = 'furniture'
+const THEME_CONTENT_FOLDER = 'theme'
 const DEFAULT_OUTPUT_FILENAME = "index"
 const MAX_RANDOM_HEIGHT = 1250;
 const MAX_RANDOM_WIDTH = 2500;
@@ -116,6 +117,7 @@ function getAppendIndex(content: string): number {
 type TemplateInput = {
   files: FileData[]
   furniture: FileData[]
+  theme: FileData[]
   randomPlacement?: boolean
   existingIndex?: FileData
   existingFiles?: Set<string>
@@ -127,6 +129,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
   const input: TemplateInput = {
     files: [],
     furniture: [],
+    theme: [],
   }
 
   // If new files should be appended to the existing html file,
@@ -158,14 +161,25 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
       continue
     }
 
-    if (file.parsed.dir === FURNITURE_FOLDER) {
+    // Categorize files based on their base folder path, so that any files
+    // within special folders like "furniture" are sorted correctly,
+    // even if they appear in subfolders
+    const parsedDirPath = file.parsed.dir.split(sep)
+    const parsedBaseDir = parsedDirPath[0] ?? ""
+    if (parsedBaseDir.toLowerCase() === FURNITURE_FOLDER) {
       input.furniture.push(file)
+    } else if (parsedBaseDir.toLowerCase() === THEME_CONTENT_FOLDER) {
+      input.theme.push(file)
     } else if (file.path === `${DEFAULT_OUTPUT_FILENAME}.html`) {
       input.existingIndex = file
     } else {
       input.files.push(file)
     }
   }
+
+  console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "": "s"} of folder party content`)
+  console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "": "s"} of furniture`)
+  console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "": "s"} for the theme`)
 
   return input
 }
@@ -175,7 +189,7 @@ function template(files: string[], options: Options): { content: string, templat
   const templateInput = sortFilesIntoInput(data, options)
   if (options.appendIndex) {
     const newFiles = templateInput.files.length
-    console.log(`> > adding ${newFiles} file${newFiles === 1 ? '': 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`)
+    console.info(`> > adding ${newFiles} file${newFiles === 1 ? '': 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`)
   }
   return { templateInput, content: generateTemplate(templateInput) }
 }
@@ -207,14 +221,14 @@ function websiteFilePath({
   try {
     const options = getOptionsFromEnv(env)
     const { directory } = options
-    console.log(`> > generating folder party from ${directory === CURRENT_DIRECTORY ? 
+    console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ? 
       "current directory": directory}`)
     const files = listFilesInDir(directory)
-    console.log(`> > found ${files.length} files for folder party`)
+    console.info(`> > found ${files.length} files for your folder party`)
     const { content } = template(files, options)
     const filePath = websiteFilePath({ directory, options })
     writeFileSync(filePath, content, { encoding: 'utf-8' })
-    console.log(`> > creating folder party website file: ${filePath}`)
+    console.info(`> > creating folder party website file: ${filePath}`)
   } catch (err) {
     console.error("folder party creation failed:", err)
     process.exit(1)

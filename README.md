@@ -61,7 +61,9 @@ There are a few environment variables you can define before running the script l
 
 `APPEND`: option to append new files to an existing `index.html` file in your folder party, `true` / `1` or `false` / `0`, defaults to `false`. If you want to both overwrite and append to the existing `index.html` file, you'll need to set both `OVERWRITE=1 APPEND=1` when running the script.
 
-`RANDOM`: option to position furniture and folder party items randomly on the page, `true` / `1` or `false` / `0`, defaults to `false`
+`RANDOM_POSITION`: option to position furniture and folder party items randomly on the page, `true` / `1` or `false` / `0`, defaults to `false`
+
+`INSTRUCTIONS`: option to remove the instructions and "save" buttons that get added to the initial folder party website, `true` / `1` or `false` / `0`, defaults to `true`
 
 ## Developing the generator tool
 

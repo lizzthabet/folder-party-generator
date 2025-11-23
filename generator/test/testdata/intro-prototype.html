@@ -1,255 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const node_fs_1 = require("node:fs");
-const node_path_1 = require("node:path");
-const node_process_1 = require("node:process");
-const CURRENT_DIRECTORY = '.';
-const FILES_TO_IGNORE = new Set([
-    '.DS_Store', // Silly MacOS files
-    'index.js', // The folder party generator script
-    'furniture', // Folder with images to be treated as furniture
-    'theme' // Folder with theme-specific content that shouldn't be treated as content
-]);
-const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g;
-const FURNITURE_FOLDER = 'furniture';
-const THEME_CONTENT_FOLDER = 'theme';
-const DEFAULT_OUTPUT_FILENAME = "index";
-const MAX_RANDOM_HEIGHT = 1250;
-const MAX_RANDOM_WIDTH = 2500;
-const HTML_TITLE = "welcome to a place on my computer i've created just for you";
-// Environment variables that can be set
-// to configure folder party generation
-const FOLDER_ENV_VAR = 'FOLDER';
-const OVERWRITE_INDEX_ENV_VAR = 'OVERWRITE';
-const APPEND_INDEX_ENV_VAR = 'APPEND';
-const RANDOM_POSITION_ENV_VAR = 'RANDOM_POSITION';
-const INSTRUCTIONS_ENV_VAR = 'INSTRUCTIONS';
-function getOptionsFromEnv(e) {
-    const options = {
-        appendFile: false,
-        directory: CURRENT_DIRECTORY,
-        displayInstructions: true,
-        overwriteFile: false,
-        randomPlacement: false,
-    };
-    const folderName = e[FOLDER_ENV_VAR];
-    if (folderName) {
-        options.directory = (0, node_path_1.normalize)(folderName);
-    }
-    const overwrite = e[OVERWRITE_INDEX_ENV_VAR];
-    if (overwrite) {
-        options.overwriteFile = parseBool(overwrite);
-    }
-    const append = e[APPEND_INDEX_ENV_VAR];
-    if (append) {
-        options.appendFile = parseBool(append);
-    }
-    const random = e[RANDOM_POSITION_ENV_VAR];
-    if (random) {
-        options.randomPlacement = parseBool(random);
-    }
-    const instructions = e[INSTRUCTIONS_ENV_VAR];
-    if (instructions) {
-        options.displayInstructions = parseBool(instructions);
-    }
-    return options;
-}
-function listFilesInDir(dir) {
-    return (0, node_fs_1.readdirSync)(dir, { encoding: 'utf-8', recursive: true });
-}
-function readFileContent(path) {
-    return (0, node_fs_1.readFileSync)(path, { encoding: 'utf-8' });
-}
-function checkFileExists(path) {
-    try {
-        const stats = (0, node_fs_1.statSync)(path);
-        if (stats) {
-            return true;
-        }
-    }
-    catch (_error) {
-        return false;
-    }
-}
-function parseFilesFromHtml(content) {
-    const existingFiles = new Set();
-    const idMatches = content.matchAll(DIALOG_IDS_REGEX);
-    for (const match of idMatches) {
-        const filenameInId = match[1];
-        if (filenameInId && typeof filenameInId === "string") {
-            existingFiles.add(filenameInId);
-        }
-    }
-    return existingFiles;
-}
-function getAppendIndex(content) {
-    // Append files before furniture if there's a furniture section
-    const furnitureOpenTagIndex = content.indexOf('<section aria-label="furniture">');
-    if (furnitureOpenTagIndex > 0) {
-        return furnitureOpenTagIndex - 1;
-    }
-    // Append files at the end of the body
-    const bodyCloseTagIndex = content.indexOf('</body>');
-    if (bodyCloseTagIndex > 0) {
-        return bodyCloseTagIndex - 1;
-    }
-    // Otherwise append files at the end of the document
-    return content.length - 1;
-}
-function sortFilesIntoInput(files, options) {
-    var _a;
-    const input = {
-        files: [],
-        furniture: [],
-        theme: [],
-        displayInstructions: options.displayInstructions,
-        randomPlacement: options.randomPlacement,
-    };
-    // If new files should be appended to the existing html file,
-    // get the file contents and a list of files already included in it
-    if (options.appendFile) {
-        try {
-            const fullPath = (0, node_path_1.join)(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`);
-            input.existingFileContent = readFileContent(fullPath);
-            input.existingFiles = parseFilesFromHtml(input.existingFileContent);
-            input.appendToIndex = getAppendIndex(input.existingFileContent);
-        }
-        catch (error) {
-            console.warn("> > unable to append new files to existing index.html:", error);
-            console.warn("> > creating new file instead of appending");
-        }
-    }
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        // Skip file if it's ignored globally
-        if (FILES_TO_IGNORE.has(file.parsed.base)) {
-            continue;
-        }
-        // Skip file if it's already been included in the existing html
-        if (options.appendFile &&
-            input.existingFiles &&
-            input.existingFiles.has(file.path)) {
-            continue;
-        }
-        // Categorize files based on their base folder path, so that any files
-        // within special folders like "furniture" are sorted correctly,
-        // even if they appear in subfolders
-        const parsedDirPath = file.parsed.dir.split(node_path_1.sep);
-        const parsedBaseDir = (_a = parsedDirPath[0]) !== null && _a !== void 0 ? _a : "";
-        if (parsedBaseDir.toLowerCase() === FURNITURE_FOLDER) {
-            input.furniture.push(file);
-        }
-        else if (parsedBaseDir.toLowerCase() === THEME_CONTENT_FOLDER) {
-            input.theme.push(file);
-        }
-        else if (file.path === `${DEFAULT_OUTPUT_FILENAME}.html`) {
-            input.existingIndex = file;
-        }
-        else {
-            input.files.push(file);
-        }
-    }
-    console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);
-    console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "" : "s"} of furniture`);
-    console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "" : "s"} for the theme & styles`);
-    return input;
-}
-function template(files, options) {
-    const data = files.map(f => ({ path: f, parsed: (0, node_path_1.parse)(f) }));
-    const templateInput = sortFilesIntoInput(data, options);
-    if (options.appendFile) {
-        const newFiles = templateInput.files.length;
-        console.info(`> > adding ${newFiles} file${newFiles === 1 ? '' : 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`);
-    }
-    return { templateInput, content: generateTemplate(templateInput) };
-}
-function websiteFilePath({ directory, options, }) {
-    let filename = DEFAULT_OUTPUT_FILENAME;
-    const indexExists = checkFileExists(`${directory}/${filename}.html`);
-    // Generate a unique filename if the option to overwrite the existing file
-    // isn't explicitly set
-    if (indexExists && !options.overwriteFile) {
-        const pathSeparator = new RegExp(node_path_1.sep, "g");
-        const spaces = new RegExp(/\s+/, "g");
-        const now = new Date();
-        const date = now.toLocaleDateString().replace(pathSeparator, ".").replace(spaces, "-");
-        const time = now.toLocaleTimeString().replace(pathSeparator, ".").replace(spaces, "-");
-        filename += `_${date}_${time}`;
-    }
-    return (0, node_path_1.join)(directory, `${filename}.html`);
-}
-(function main() {
-    try {
-        const options = getOptionsFromEnv(node_process_1.env);
-        console.info(`
-                      welcome to the
- .-   .   .                    .                         .       
--|-.-.| .-| .-,.-.  .-..-. .-.-|-. .  .-..-,.-..-,.-..-.-|-.-..-.
- ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|  \`-|\`'-' '\`'-'  \`-\`-'-\`-''  
-                    '            \`-'  \`-'                        
-
-                      ~ * ~ * ~ * ~
-`);
-        const { directory } = options;
-        console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
-            "current directory" : directory}`);
-        const files = listFilesInDir(directory);
-        console.info(`> > found ${files.length} files for your folder party`);
-        const { content } = template(files, options);
-        const filePath = websiteFilePath({ directory, options });
-        (0, node_fs_1.writeFileSync)(filePath, content, { encoding: 'utf-8' });
-        console.info(`> > saving folder party website: ${filePath}`);
-        console.info(`
-  ----------------------------------------------------------
-  | now that your folder party website is created, you'll  |
-  | want to open up that .html file and start arranging.   |
-  |                                                        |
-  | once you've gotten everything exactly where you'd like |
-  | it to be, save a copy of your final folder party site. |
-  ----------------------------------------------------------
-
-                ~ * ~ happy hosting ~ * ~
-`);
-    }
-    catch (err) {
-        console.error("folder party creation failed:", err);
-        process.exit(1);
-    }
-})();
-// Template logic * ~ * ~ *
-function generateTemplate(input) {
-    // If there's an index to append new content to,
-    // do that instead of generating a new html document
-    if (typeof input.appendToIndex === "number") {
-        const beforeNewContent = input.existingFileContent.slice(0, input.appendToIndex + 1);
-        const afterNewContent = input.existingFileContent.slice(input.appendToIndex + 1);
-        const newContent = input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n") + "\n      ";
-        return beforeNewContent + newContent + afterNewContent;
-    }
-    return createHtmlDocument(input);
-}
-function createHtmlDocument(input) {
-    return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-${createHead(input)}
-${createBody(input)}
-</html>`;
-}
-function createHead({ displayInstructions }) {
-    return `  <head>
+  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${HTML_TITLE}</title>
-${createStyle({ displayInstructions })}
-${createScript({ displayInstructions })}
+    <title>welcome to a place on my computer i've created just for you</title>
 
-    <!-- Add custom styles from the folder party theme generator here -->
-    <!-- <link href="theme/theme.css" rel="stylesheet" /> -->
-  </head>`;
-}
-// Styles (plus, specific styles for each media content)
-function createStyle({ displayInstructions }) {
-    return `
     <style>
       :root {
         /* Variables for easy customization */
@@ -439,7 +194,7 @@ function createStyle({ displayInstructions }) {
       /* Styles for furniture */
       section[aria-label="furniture"] > img {
         z-index: -1;
-      }${displayInstructions ? `
+      }
 
       /* Styles used only for instructions
          (and can be deleted for final site) */
@@ -474,11 +229,9 @@ function createStyle({ displayInstructions }) {
       button.instructions > span {
         display: block;
         font-size: 1rem;
-      }` : ""}
-    </style>`;
-}
-function createScript({ displayInstructions }) {
-    return `
+      }
+    </style>
+
     <script>
       function positionInPlace(element) {
         const { top, left } = element.getBoundingClientRect()
@@ -609,7 +362,7 @@ function createScript({ displayInstructions }) {
       //
       // This code is *only* needed if each draggable item doesn't already have a
       // "top", "left", and "position: absolute" set in its inline style, like:
-      // \`style="top: 575px; left: 413px; position: absolute;"\`.
+      // `style="top: 575px; left: 413px; position: absolute;"`.
       //
       // If each draggable element on the page already has an inline position,
       // it can be removed.
@@ -619,7 +372,7 @@ function createScript({ displayInstructions }) {
         // when one element is moved
         draggable.forEach(positionInPlace)
         draggable.forEach(setPositionAbsolute)
-      })${displayInstructions ? `
+      })
 
       // The following code is only used for the instructions and "save" party
       // layout buttons. It can safely be removed when your party layout is finalized.
@@ -642,7 +395,7 @@ function createScript({ displayInstructions }) {
           url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = url;
-          link.download = removeInstructions ? "party.html" : "party-draft.html";
+          link.download = removeInstructions ? "party.html" : "party-draft.html" ;
           link.click();
         } catch (err) {
           console.err("ERROR: failed to save file", err)
@@ -653,74 +406,246 @@ function createScript({ displayInstructions }) {
           // For memory management
           URL.revokeObjectURL(url)
         }
-      }` : ""}
-    </script>`;
-}
-function createBody(input) {
-    return `
-  <body>${input.displayInstructions ? `
+      }
+    </script>
+
+    <!-- Add custom styles from the folder party theme generator here -->
+    <link href="theme/theme_magenta.css" rel="stylesheet" />
+  </head>
+
+  <body>
     <header>
+      <dialog class="instructions" open>
+        Welcome to your folder party space.
+        <button type="submit">close</button>
+      </dialog>
+
       <div class="instructions" role="menubar">
         <button class="instructions" onclick="downloadWholePage()">save a draft <span>(with instructions)</span></button>
         <button class="instructions" onclick="downloadWholePage(true)">save & finalize <span>(without instructions)</span></button>
       </div>
-    </header>` : ""}
-    <main>${input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n")}
-      ${createFurniture(input.furniture, { randomPlacement: input.randomPlacement })}
-    </main>
-  </body>`;
-}
-function createButtonDialogPair(file, options) {
-    return `
-      ${createButton(file, options)}
-      ${createDialog(file)}`;
-}
-function isFolder(file) {
-    return file.parsed.ext === "";
-}
-function displayName(file) {
-    return isFolder(file) ? `${file.path}/` : file.path;
-}
-function createButton(file, options) {
-    return `<button
+    </header>
+    <main>
+      <button
         class="filename"
         aria-haspopup="dialog"
-        aria-controls="${file.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? `
-        style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : ""}
+        aria-controls="Screen Shot 2021-03-09 at 10.19.53 PM.png"
         data-fileviewer
         data-draggable>
-        ${displayName(file)}
-      </button>`;
-}
-function createDialog(file) {
-    const dialogContent = isFolder(file) ? `<pre>${displayName(file)} folder</pre>` : `<object class="file" data="${file.path}" draggable="false"></object>`;
-    return `<dialog id="${file.path}" class="fileviewer" data-draggable>
-        ${dialogContent}
+        Screen Shot 2021-03-09 at 10.19.53 PM.png
+      </button>
+      <dialog id="Screen Shot 2021-03-09 at 10.19.53 PM.png" class="fileviewer" data-draggable>
+        <object class="file" data="Screen Shot 2021-03-09 at 10.19.53 PM.png" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
-      </dialog>`;
-}
-function createFurniture(furniture, options) {
-    return `<section aria-label="furniture">
-        ${furniture.map(item => {
-        return `<img src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
-    }).join("\n        ")}
-      </section>`;
-}
-function randomInt(min, max) {
-    return Math.round(Math.random() * (max - min) + min);
-}
-function parseBool(varValue) {
-    switch (varValue) {
-        case "":
-        case "0":
-        case "false":
-            return false;
-        case "1":
-        case "true":
-            return true;
-        default:
-            console.warn(`* * warning: unexpected env var value: ${varValue}`);
-            return false;
-    }
-}
-//# sourceMappingURL=generate.js.map
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="future-feelings.txt"
+        data-fileviewer
+        data-draggable>
+        future-feelings.txt
+      </button>
+      <dialog id="future-feelings.txt" class="fileviewer" data-draggable>
+        <object class="file" data="future-feelings.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="hm"
+        data-fileviewer
+        data-draggable>
+        hm/
+      </button>
+      <dialog id="hm" class="fileviewer" data-draggable>
+        <pre>hm/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="homegrown-sample.pdf"
+        data-fileviewer
+        data-draggable>
+        homegrown-sample.pdf
+      </button>
+      <dialog id="homegrown-sample.pdf" class="fileviewer" data-draggable>
+        <object class="file" data="homegrown-sample.pdf" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="i-am-an-aspiring-teacher.png"
+        data-fileviewer
+        data-draggable>
+        i-am-an-aspiring-teacher.png
+      </button>
+      <dialog id="i-am-an-aspiring-teacher.png" class="fileviewer" data-draggable>
+        <object class="file" data="i-am-an-aspiring-teacher.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="new-file.txt"
+        data-fileviewer
+        data-draggable>
+        new-file.txt
+      </button>
+      <dialog id="new-file.txt" class="fileviewer" data-draggable>
+        <object class="file" data="new-file.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="not-all-features.png"
+        data-fileviewer
+        data-draggable>
+        not-all-features.png
+      </button>
+      <dialog id="not-all-features.png" class="fileviewer" data-draggable>
+        <object class="file" data="not-all-features.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="welcome"
+        data-fileviewer
+        data-draggable>
+        welcome/
+      </button>
+      <dialog id="welcome" class="fileviewer" data-draggable>
+        <pre>welcome/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="would-you-like-to"
+        data-fileviewer
+        data-draggable>
+        would-you-like-to/
+      </button>
+      <dialog id="would-you-like-to" class="fileviewer" data-draggable>
+        <pre>would-you-like-to/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="you-deserve-a.png"
+        data-fileviewer
+        data-draggable>
+        you-deserve-a.png
+      </button>
+      <dialog id="you-deserve-a.png" class="fileviewer" data-draggable>
+        <object class="file" data="you-deserve-a.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="welcome/hello,goodday!!!!.png"
+        data-fileviewer
+        data-draggable>
+        welcome/hello,goodday!!!!.png
+      </button>
+      <dialog id="welcome/hello,goodday!!!!.png" class="fileviewer" data-draggable>
+        <object class="file" data="welcome/hello,goodday!!!!.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="welcome/to"
+        data-fileviewer
+        data-draggable>
+        welcome/to/
+      </button>
+      <dialog id="welcome/to" class="fileviewer" data-draggable>
+        <pre>welcome/to/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="would-you-like-to/find-out.jpeg"
+        data-fileviewer
+        data-draggable>
+        would-you-like-to/find-out.jpeg
+      </button>
+      <dialog id="would-you-like-to/find-out.jpeg" class="fileviewer" data-draggable>
+        <object class="file" data="would-you-like-to/find-out.jpeg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="welcome/to/my"
+        data-fileviewer
+        data-draggable>
+        welcome/to/my/
+      </button>
+      <dialog id="welcome/to/my" class="fileviewer" data-draggable>
+        <pre>welcome/to/my/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button
+        class="filename"
+        aria-haspopup="dialog"
+        aria-controls="welcome/to/my/computer"
+        data-fileviewer
+        data-draggable>
+        welcome/to/my/computer/
+      </button>
+      <dialog id="welcome/to/my/computer" class="fileviewer" data-draggable>
+        <pre>welcome/to/my/computer/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+      <section aria-label="furniture">
+        <img src="furniture/arm-chair.png" draggable="false" data-draggable />
+        <img src="furniture/banner.png" draggable="false" data-draggable />
+        <img src="furniture/book-with-pencil.png" draggable="false" data-draggable />
+        <img src="furniture/bookcase.png" draggable="false" data-draggable />
+        <img src="furniture/chair-2.png" draggable="false" data-draggable />
+        <img src="furniture/chair-5.png" draggable="false" data-draggable />
+        <img src="furniture/couch.png" draggable="false" data-draggable />
+        <img src="furniture/flowers.png" draggable="false" data-draggable />
+        <img src="furniture/house-document.png" draggable="false" data-draggable />
+        <img src="furniture/lamp-1.png" draggable="false" data-draggable />
+        <img src="furniture/lamp-2.png" draggable="false" data-draggable />
+        <img src="furniture/lounge-chair.png" draggable="false" data-draggable />
+        <img src="furniture/picture-wall.png" draggable="false" data-draggable />
+        <img src="furniture/plant.png" draggable="false" data-draggable />
+        <img src="furniture/round-coffee-table.png" draggable="false" data-draggable />
+        <img src="furniture/rug-with-spirals.png" draggable="false" data-draggable />
+        <img src="furniture/rug-with-tassles.png" draggable="false" data-draggable />
+        <img src="furniture/side-table-2.png" draggable="false" data-draggable />
+        <img src="furniture/side-table-3.png" draggable="false" data-draggable />
+        <img src="furniture/side-table-4.png" draggable="false" data-draggable />
+        <img src="furniture/stool.png" draggable="false" data-draggable />
+        <img src="furniture/table.png" draggable="false" data-draggable />
+        <img src="furniture/tea-cups.png" draggable="false" data-draggable />
+        <img src="furniture/tea-kettle.png" draggable="false" data-draggable />
+      </section>
+    </main>
+  </body>
+</html>

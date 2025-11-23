@@ -8,9 +8,10 @@ type FileData = {
 }
 
 type Options = {
+  appendFile: boolean
   directory: string
-  overwriteIndex: boolean
-  appendIndex: boolean
+  displayInstructions: boolean
+  overwriteFile: boolean
   randomPlacement: boolean
 }
 
@@ -33,33 +34,40 @@ const HTML_TITLE = "welcome to a place on my computer i've created just for you"
 const FOLDER_ENV_VAR = 'FOLDER'
 const OVERWRITE_INDEX_ENV_VAR = 'OVERWRITE'
 const APPEND_INDEX_ENV_VAR = 'APPEND'
-const RANDOM_POSITION_ENV_VAR = 'RANDOM'
+const RANDOM_POSITION_ENV_VAR = 'RANDOM_POSITION'
+const INSTRUCTIONS_ENV_VAR = 'INSTRUCTIONS'
 
 function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
   const options: Options = {
+    appendFile: false,
     directory: CURRENT_DIRECTORY,
-    overwriteIndex: false,
-    appendIndex: false,
+    displayInstructions: true,
+    overwriteFile: false,
     randomPlacement: false,
   }
   const folderName: string | undefined = e[FOLDER_ENV_VAR]
-  if (folderName && typeof folderName == "string") {
+  if (folderName) {
     options.directory = normalize(folderName)
   }
 
   const overwrite: string | undefined = e[OVERWRITE_INDEX_ENV_VAR]
-  if (overwrite && typeof overwrite == "string") {
-    options.overwriteIndex = overwrite === "0" ? false : true
+  if (overwrite) {
+    options.overwriteFile = parseBool(overwrite)
   }
 
   const append: string | undefined = e[APPEND_INDEX_ENV_VAR]
-  if (append && typeof append == "string") {
-    options.appendIndex = append === "0" ? false : true
+  if (append) {
+    options.appendFile = parseBool(append)
   }
 
   const random: string | undefined = e[RANDOM_POSITION_ENV_VAR]
-  if (random && typeof random == "string") {
-    options.appendIndex = append === "0" ? false : true
+  if (random) {
+    options.randomPlacement = parseBool(random)
+  }
+
+  const instructions: string | undefined = e[INSTRUCTIONS_ENV_VAR]
+  if (instructions) {
+    options.displayInstructions = parseBool(instructions)
   }
 
   return options
@@ -115,14 +123,17 @@ function getAppendIndex(content: string): number {
 }
 
 type TemplateInput = {
+  // Required
   files: FileData[]
   furniture: FileData[]
   theme: FileData[]
-  randomPlacement?: boolean
-  existingIndex?: FileData
+  // Optional
+  appendToIndex?: number
+  displayInstructions?: boolean
   existingFiles?: Set<string>
   existingFileContent?: string
-  appendToIndex?: number
+  existingIndex?: FileData
+  randomPlacement?: boolean
 }
 
 function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput {
@@ -130,11 +141,13 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     files: [],
     furniture: [],
     theme: [],
+    displayInstructions: options.displayInstructions,
+    randomPlacement: options.randomPlacement,
   }
 
   // If new files should be appended to the existing html file,
   // get the file contents and a list of files already included in it
-  if (options.appendIndex) {
+  if (options.appendFile) {
     try {
       const fullPath = join(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`)
       input.existingFileContent = readFileContent(fullPath)
@@ -154,7 +167,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     }
     // Skip file if it's already been included in the existing html
     if (
-      options.appendIndex &&
+      options.appendFile &&
       input.existingFiles &&
       input.existingFiles.has(file.path)
     ) {
@@ -179,7 +192,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
 
   console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "": "s"} of folder party content`)
   console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "": "s"} of furniture`)
-  console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "": "s"} for the theme`)
+  console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "": "s"} for the theme & styles`)
 
   return input
 }
@@ -187,7 +200,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
 function template(files: string[], options: Options): { content: string, templateInput: TemplateInput } {
   const data: FileData[] = files.map(f => ({ path: f, parsed: parse(f) }))
   const templateInput = sortFilesIntoInput(data, options)
-  if (options.appendIndex) {
+  if (options.appendFile) {
     const newFiles = templateInput.files.length
     console.info(`> > adding ${newFiles} file${newFiles === 1 ? '': 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`)
   }
@@ -205,7 +218,7 @@ function websiteFilePath({
   const indexExists = checkFileExists(`${directory}/${filename}.html`)
   // Generate a unique filename if the option to overwrite the existing file
   // isn't explicitly set
-  if (indexExists && !options.overwriteIndex) {
+  if (indexExists && !options.overwriteFile) {
     const pathSeparator = new RegExp(sep, "g")
     const spaces = new RegExp(/\s+/, "g")
     const now = new Date()
@@ -272,26 +285,29 @@ function generateTemplate(input: TemplateInput): string {
 function createHtmlDocument(input: TemplateInput): string {
   return `<!DOCTYPE html>
 <html lang="en">
-${createHead()}
+${createHead(input)}
 ${createBody(input)}
 </html>`
 }
 
-function createHead(): string {
+function createHead({ displayInstructions }: TemplateInput ): string {
   return `  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${HTML_TITLE}</title>
-${createStyle()}
-${createScript()}
+${createStyle({ displayInstructions })}
+${createScript({ displayInstructions })}
 
     <!-- Add custom styles from the folder party theme generator here -->
-    <!-- <link href="theme.css" rel="stylesheet" /> -->
+    <!-- <link href="theme/theme.css" rel="stylesheet" /> -->
   </head>`
 }
 
+type TemplateOptions = Pick<TemplateInput, "displayInstructions">
+type FileOptions = Pick<TemplateInput, "randomPlacement" | "displayInstructions">
+
 // Styles (plus, specific styles for each media content)
-function createStyle(): string {
+function createStyle({ displayInstructions }: TemplateOptions): string {
   return `
     <style>
       :root {
@@ -482,11 +498,46 @@ function createStyle(): string {
       /* Styles for furniture */
       section[aria-label="furniture"] > img {
         z-index: -1;
+      }${displayInstructions ? `
+
+      /* Styles used only for instructions
+         (and can be deleted for final site) */
+
+      dialog.instructions {
+        z-index: 3;
       }
+
+      div.instructions[role="menubar"] {
+        background: radial-gradient(
+          ellipse,
+          rgba(0, 0, 0, 0.5) 0%,
+          rgba(255, 255, 255, 0) 60%
+        );
+        bottom: 0;
+        position: fixed;
+        right: 0;
+        padding: 2rem;
+        z-index: 3;
+      }
+
+      button.instructions {
+        border-radius: 5px;
+        font-size: 1.5rem;
+        padding: 0.5rem 1rem;
+      }
+
+      button.instructions + button.instructions {
+        margin-left: 0.5rem;
+      }
+
+      button.instructions > span {
+        display: block;
+        font-size: 1rem;
+      }` : ""}
     </style>`
 }
 
-function createScript(): string {
+function createScript({ displayInstructions }: TemplateOptions): string {
   return `
     <script>
       function positionInPlace(element) {
@@ -628,15 +679,53 @@ function createScript(): string {
         // when one element is moved
         draggable.forEach(positionInPlace)
         draggable.forEach(setPositionAbsolute)
-      })
+      })${displayInstructions ? `
+
+      // The following code is only used for the instructions and "save" party
+      // layout buttons. It can safely be removed when your party layout is finalized.
+      function downloadWholePage(removeInstructions = false) {
+        const removedElements = []
+        let url
+        try {
+          if (removeInstructions) {
+            const toRemove = ["header"]
+            toRemove.forEach((selector) => {
+              const elements = document.querySelectorAll(selector)
+              elements.forEach((e) => {
+                removedElements.push(e)
+                e.remove()
+              })
+            })
+          }
+          const page = document.documentElement.outerHTML
+          const blob = new Blob([page], { type: "text/html" });
+          url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = removeInstructions ? "party.html" : "party-draft.html";
+          link.click();
+        } catch (err) {
+          console.err("ERROR: failed to save file", err)
+          console.info("instead, you can copy the html document directly from the 'Inspector' view.")
+        } finally {
+          // Add back elements that have been removed
+          removedElements.forEach((e) => document.body.appendChild(e))
+          // For memory management
+          URL.revokeObjectURL(url)
+        }
+      }`: ""}
     </script>`
 }
 
-type FileOptions = Pick<TemplateInput, "randomPlacement">
-
 function createBody(input: TemplateInput): string {
   return `
-  <body>
+  <body>${input.displayInstructions ? `
+    <header>
+      <div class="instructions" role="menubar">
+        <button class="instructions" onclick="downloadWholePage()">save a draft <span>(with instructions)</span></button>
+        <button class="instructions" onclick="downloadWholePage(true)">save & finalize <span>(without instructions)</span></button>
+      </div>
+    </header>`: ""}
     <main>${input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n")}
       ${createFurniture(input.furniture, { randomPlacement: input.randomPlacement })}
     </main>
@@ -685,7 +774,21 @@ function createFurniture(furniture: FileData[], options?: FileOptions) {
       </section>`
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function randomInt(min: number, max: number): number {
   return Math.round(Math.random() * (max - min) + min)
+}
+
+function parseBool(varValue: string): boolean {
+  switch (varValue) {
+    case "":
+    case "0":
+    case "false":
+      return false
+    case "1":
+    case "true":
+      return true
+    default:
+      console.warn(`* * warning: unexpected env var value: ${varValue}`)
+      return false
+  }
 }

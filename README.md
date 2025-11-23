@@ -41,9 +41,9 @@ your-folder-party/
 
    Make sure to add the `furniture` and `theme` folders to your folder party directory. Any images in the `furniture` folder will be added as rearrangable images on the website. Any content in the `theme` folder will be ignored as folder party content, so use it for any media, like css stylesheets, background images, cursor icons, and fonts, that will be used to style your site.
 
-3. Download the script `generator/dist/index.js`, so you can run it locally with the directory of your folder party:
+3. Download the script `generator/dist/generate.js`, so you can run it locally with the directory of your folder party:
    ```bash
-   FOLDER=./your-party-folder node index.js
+   FOLDER=./your-party-folder node generate.js
    ```
    It will generate an HTML file that includes all the files in that folder.
 
@@ -53,7 +53,7 @@ Tada! That's it. Now you're ready to have your friends over.
 
 ## Configuration options
 
-There are a few environment variables you can define before running the script like `KEY=VALUE node dist/index.js` that will tweak the behavior of the folder party generator.
+There are a few environment variables you can define before running the script like `KEY=VALUE node generator/dist/generate.js` that will tweak the behavior of the folder party generator.
 
 `FOLDER`: the path to the files that should be used to generate your folder party, relative to the directory where the script run; defaults to the current directory
 
@@ -76,4 +76,4 @@ If you've made changes to this script, you can build it with:
 ```bash
 npm run build
 ```
-and then copy the `dist/index.js` file wherever you'd like to use it!
+and then copy the `generator/dist/generate.js` file wherever you'd like to use it!

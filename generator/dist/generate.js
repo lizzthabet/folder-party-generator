@@ -593,4 +593,4 @@ function createFurniture(furniture, options) {
 function randomInt(min, max) {
     return Math.round(Math.random() * (max - min) + min);
 }
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=generate.js.map

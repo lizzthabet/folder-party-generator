@@ -214,12 +214,21 @@ function websiteFilePath({
     filename += `_${date}_${time}`
   }
 
-  return `${directory}/${filename}.html`
+  return join(directory, `${filename}.html`)
 }
 
 (function main() {
   try {
     const options = getOptionsFromEnv(env)
+    console.info(`
+                      welcome to the
+ .-   .   .                    .                         .       
+-|-.-.| .-| .-,.-.  .-..-. .-.-|-. .  .-..-,.-..-,.-..-.-|-.-..-.
+ ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|  \`-|\`'-' '\`'-'  \`-\`-'-\`-''  
+                    '            \`-'  \`-'                        
+
+                      ~ * ~ * ~ * ~
+`)
     const { directory } = options
     console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ? 
       "current directory": directory}`)
@@ -228,7 +237,18 @@ function websiteFilePath({
     const { content } = template(files, options)
     const filePath = websiteFilePath({ directory, options })
     writeFileSync(filePath, content, { encoding: 'utf-8' })
-    console.info(`> > creating folder party website file: ${filePath}`)
+    console.info(`> > saving folder party website: ${filePath}`)
+    console.info(`
+  ----------------------------------------------------------
+  | now that your folder party website is created, you'll  |
+  | want to open up that .html file and start arranging.   |
+  |                                                        |
+  | once you've gotten everything exactly where you'd like |
+  | it to be, save a copy of your final folder party site. |
+  ----------------------------------------------------------
+
+                ~ * ~ happy hosting ~ * ~
+`)
   } catch (err) {
     console.error("folder party creation failed:", err)
     process.exit(1)

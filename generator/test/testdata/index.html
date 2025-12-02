@@ -201,7 +201,51 @@
          (and can be deleted for final site) */
 
       dialog.instructions {
+        border-radius: 10px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 1.1rem;
+        line-height: 1.25;
+        margin: 2rem auto;
+        max-width: 550px;
         z-index: 3;
+      }
+
+      dialog.instructions > h1 {
+        font-size: 1.7rem;
+      }
+
+      dialog.instructions > details {
+        border: 1.5px dashed black;
+        border-radius: 10px;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        width: fit-content;
+      }
+
+      dialog.instructions > details > summary {
+        font-size: 1.3rem;
+        cursor: pointer;
+      }
+
+      dialog.instructions > details > p {
+        margin-bottom: 0;
+      }
+
+      dialog.instructions > form[method="dialog"] {
+        float: right;
+        width: fit-content;
+      }
+
+      dialog.instructions > form[method="dialog"] > button {
+        font-size: 1.1rem;
+        border-radius: 5px;
+        border-width: 1.5px;
+      }
+
+      p.instructions.highlight {
+        background-color: #dcdcdc;
+        border-radius: 10px;
+        padding: 0.75rem;
       }
 
       div.instructions[role="menubar"] {
@@ -417,6 +461,24 @@
 
   <body>
     <header>
+      <dialog class="instructions" open>
+        <h1>welcome to your folder party</h1>
+        <details>
+          <summary>step 1: look around, get settled ☁</summary>
+          <p>all your files and furniture are here. you can drag all the items around. click on the files to view their contents.</p>
+        </details>
+        <details>
+          <summary>step 2: arrange your space ☼</summary>
+          <p>move everything where you'd like it to be for your guests. the space can be as big as you want it to be.</p>
+          <p class="instructions highlight"><b>tip ℹ</b> you can also open up the website file at any point to make changes to the html, css, and javascript code. (there's no magic! this is just a website.)</p>
+        </details>
+        <details>
+          <summary>step 3: save your layout ⚘</summary>
+          <p>press the "save" button to save a copy of this file with all adjustments. when you're ready to finalize the layout, you can save a copy without these instructions.</p>
+        </details>
+        <p class="instructions highlight"><b>warning ⚠</b> layout adjustments are temporary until you save them. refreshing this page without saving will reset any layout adjustments you've made.</p>
+        <form method="dialog"><button>dismiss</button></form>
+      </dialog>
       <div class="instructions" role="menubar">
         <button class="instructions" onclick="downloadWholePage()">save a draft <span>(with instructions)</span></button>
         <button class="instructions" onclick="downloadWholePage(true)">save & finalize <span>(without instructions)</span></button>

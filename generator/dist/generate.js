@@ -151,7 +151,7 @@ function sortFilesIntoInput(files, options) {
     }
     console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);
     console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "" : "s"} of furniture`);
-    console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "" : "s"} for the theme & styles`);
+    console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "" : "s"} of styles & theming`);
     return input;
 }
 function template(files, options) {
@@ -235,7 +235,12 @@ ${createHead(input)}
 ${createBody(input)}
 </html>`;
 }
-function createHead({ displayInstructions }) {
+function createHead({ displayInstructions, theme }) {
+    const cssFiles = theme.filter((file) => file.parsed.ext === ".css");
+    const stylesheetBlock = cssFiles.length ?
+        `    <!-- Theme styles -->${cssFiles.map((f) => `\n    ${createLinkTag(f)}`)}` :
+        `    <!-- Add custom styles from the folder party theme generator here -->
+    <!-- <link href="theme/styles.css" rel="stylesheet" /> -->`;
     return `  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -243,8 +248,7 @@ function createHead({ displayInstructions }) {
 ${createStyle({ displayInstructions })}
 ${createScript({ displayInstructions })}
 
-    <!-- Add custom styles from the folder party theme generator here -->
-    <!-- <link href="theme/theme.css" rel="stylesheet" /> -->
+${stylesheetBlock}
   </head>`;
 }
 // Styles (plus, specific styles for each media content)
@@ -706,6 +710,9 @@ function createFurniture(furniture, options) {
         return `<img src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
     }).join("\n        ")}
       </section>`;
+}
+function createLinkTag(resource, type = "stylesheet") {
+    return `<link href="${resource.path}" rel="${type}" />`;
 }
 function randomInt(min, max) {
     return Math.round(Math.random() * (max - min) + min);

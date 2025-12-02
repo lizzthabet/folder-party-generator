@@ -24,7 +24,7 @@ This website will let you browse all the files in the folder. You can include yo
 
 ## Host your own folder party website
 
-Your folder party layout will look like this:
+Your folder layout will look like this:
 ```
 your-folder-party/
 ├── theme/              - (optional) any files like css, images, and fonts used to style your website

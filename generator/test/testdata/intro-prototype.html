@@ -200,7 +200,9 @@
          (and can be deleted for final site) */
 
       dialog.instructions {
+        background-color: buttonface;
         border-radius: 10px;
+        box-shadow: 0 0 20px 0px #2c2c2c;
         font-family: Arial, Helvetica, sans-serif;
         font-size: 1.1rem;
         line-height: 1.25;
@@ -210,11 +212,15 @@
       }
 
       dialog.instructions > h1 {
+        font-family: monospace;
         font-size: 1.7rem;
+        text-align: center;
+        margin: 1rem auto 3rem;
       }
 
       dialog.instructions > details {
-        border: 1.5px dashed black;
+        background-color: white;
+        border: 1.5px dashed gray;
         border-radius: 10px;
         padding: 0.75rem;
         margin: 0.5rem 0;
@@ -241,8 +247,15 @@
         border-width: 1.5px;
       }
 
+      p.instructions.warning {
+        border-top: 1px dashed gray;
+        margin-bottom: 0;
+        margin-top: 1.5rem;
+        padding: 0.75rem;
+      }
+      
       p.instructions.highlight {
-        background-color: #dcdcdc;
+        background-color: buttonface;
         border-radius: 10px;
         padding: 0.75rem;
       }
@@ -468,13 +481,13 @@
         <details>
           <summary>step 2: arrange your space ☼</summary>
           <p>move everything where you'd like it to be for your guests. the space can be as big as you want it to be.</p>
-          <p class="instructions highlight"><b>tip ℹ</b> you can also open up the website file at any point to make changes to the html, css, and javascript code. (there's no magic! this is just a website.)</p>
+          <p class="instructions highlight"><b>tip:</b> you can also open up the website file at any point to make changes to the html, css, and javascript code. (there's no magic! this is just a website.)</p>
         </details>
         <details>
           <summary>step 3: save your layout ⚘</summary>
           <p>press the "save" button to save a copy of this file with all adjustments. when you're ready to finalize the layout, you can save a copy without these instructions.</p>
         </details>
-        <p class="instructions highlight"><b>warning ⚠</b> layout adjustments are temporary until you save them. refreshing this page without saving will reset any layout adjustments you've made.</p>
+        <p class="instructions warning"><b>warning ⚠</b> layout adjustments are temporary until you save them. refreshing this page without saving will reset any layout adjustments you've made.</p>
         <form method="dialog"><button>dismiss</button></form>
       </dialog>
 

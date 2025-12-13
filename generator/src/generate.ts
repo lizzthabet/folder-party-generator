@@ -18,7 +18,7 @@ type Options = {
 const CURRENT_DIRECTORY = '.'
 const FILES_TO_IGNORE = new Set([
   '.DS_Store', // Silly MacOS files
-  'index.js', // The folder party generator script
+  'generate.js', // The folder party generator script
   'furniture', // Folder with images to be treated as furniture
   'theme' // Folder with theme-specific content that shouldn't be treated as content
 ])

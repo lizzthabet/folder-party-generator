@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_fs_1 = require("node:fs");
 const node_path_1 = require("node:path");
@@ -122,89 +131,96 @@ function getAppendIndex(content) {
     return content.length - 1;
 }
 function sortFilesIntoInput(files, options) {
-    var _a;
-    const input = {
-        files: [],
-        furniture: [],
-        theme: [],
-        displayInstructions: options.displayInstructions,
-        randomLayout: options.randomLayout,
-    };
-    // If new files should be appended to the existing html file,
-    // get the file contents and a list of files already included in it
-    // TODO: This logic may get more complicated is someone is swapping furniture and theme;
-    // it doesn't currently support keeping your file arrangements while swapping theme and furniture.
-    if (options.appendFile) {
-        try {
-            // TODO: Add support for reading from the most recent index file, in case there are multiple.
-            const fullPath = (0, node_path_1.join)(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`);
-            input.existingFileContent = readFileContent(fullPath);
-            input.existingFiles = parseFilesFromHtml(input.existingFileContent);
-            input.appendToIndex = getAppendIndex(input.existingFileContent);
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        const input = {
+            files: [],
+            furniture: [],
+            theme: [],
+            displayInstructions: options.displayInstructions,
+            randomLayout: options.randomLayout,
+        };
+        // If new files should be appended to the existing html file,
+        // get the file contents and a list of files already included in it
+        // TODO: This logic may get more complicated is someone is swapping furniture and theme;
+        // it doesn't currently support keeping your file arrangements while swapping theme and furniture.
+        if (options.appendFile) {
+            try {
+                // TODO: Add support for reading from the most recent index file, in case there are multiple.
+                const fullPath = (0, node_path_1.join)(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`);
+                input.existingFileContent = readFileContent(fullPath);
+                input.existingFiles = parseFilesFromHtml(input.existingFileContent);
+                input.appendToIndex = getAppendIndex(input.existingFileContent);
+            }
+            catch (error) {
+                console.warn("> > unable to append new files to existing index.html:", error);
+                console.warn("> > creating new file instead of appending");
+            }
         }
-        catch (error) {
-            console.warn("> > unable to append new files to existing index.html:", error);
-            console.warn("> > creating new file instead of appending");
+        /**
+         * This is what file data looks like here
+         * (since I'm always forgetting):
+          {
+            path: 'furniture/table.png',
+            parsed: { root: '', dir: 'furniture', base: 'table.png', ext: '.png', name: 'table' }
+          }
+         */
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            // Skip file if it's ignored globally; this filters out files
+            // and directories, (but not files inside an ignored directory)
+            if (FILES_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
+                logLevelDebug("ignoring file:", file.path);
+                continue;
+            }
+            // Skip file if it's already been included in the existing html
+            if (options.appendFile &&
+                input.existingFiles &&
+                input.existingFiles.has(file.path)) {
+                continue;
+            }
+            // Categorize files based on their base folder path, so that any files
+            // within special folders like "furniture" are sorted correctly,
+            // even if they appear in subfolders
+            const parsedDirPath = file.parsed.dir.split(node_path_1.sep);
+            const parsedBaseDir = ((_a = parsedDirPath[0]) !== null && _a !== void 0 ? _a : "").toLowerCase();
+            // Add file to furniture if it matches the furniture directory
+            if (parsedBaseDir === options.furniture) {
+                input.furniture.push(file);
+                // Add file to theme if it matches the theme directory
+            }
+            else if (parsedBaseDir === options.theme) {
+                input.theme.push(file);
+                // Finally, add file to folder party content if it isn't in a theme 
+                // or furniture folder (since there may be other theme or furniture
+                // directories that aren't currently in use)
+            }
+            else if (!THEME_OR_FURNITURE_REGEX.test(parsedBaseDir)) {
+                input.files.push(file);
+            }
+            else {
+                logLevelDebug("ignoring file:", file.path);
+            }
         }
-    }
-    /**
-     * This is what file data looks like here
-     * (since I'm always forgetting):
-      {
-        path: 'furniture/table.png',
-        parsed: { root: '', dir: 'furniture', base: 'table.png', ext: '.png', name: 'table' }
-      }
-     */
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        // Skip file if it's ignored globally; this filters out files
-        // and directories, (but not files inside an ignored directory)
-        if (FILES_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
-            logLevelDebug("ignoring file:", file.path);
-            continue;
-        }
-        // Skip file if it's already been included in the existing html
-        if (options.appendFile &&
-            input.existingFiles &&
-            input.existingFiles.has(file.path)) {
-            continue;
-        }
-        // Categorize files based on their base folder path, so that any files
-        // within special folders like "furniture" are sorted correctly,
-        // even if they appear in subfolders
-        const parsedDirPath = file.parsed.dir.split(node_path_1.sep);
-        const parsedBaseDir = ((_a = parsedDirPath[0]) !== null && _a !== void 0 ? _a : "").toLowerCase();
-        // Add file to furniture if it matches the furniture directory
-        if (parsedBaseDir === options.furniture) {
-            input.furniture.push(file);
-            // Add file to theme if it matches the theme directory
-        }
-        else if (parsedBaseDir === options.theme) {
-            input.theme.push(file);
-            // Finally, add file to folder party content if it isn't in a theme 
-            // or furniture folder (since there may be other theme or furniture
-            // directories that aren't currently in use)
-        }
-        else if (!THEME_OR_FURNITURE_REGEX.test(parsedBaseDir)) {
-            input.files.push(file);
-        }
-        else {
-            logLevelDebug("ignoring file:", file.path);
-        }
-    }
-    console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);
-    console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "" : "s"} of furniture`);
-    console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "" : "s"} of styles & theming`);
-    return input;
+        yield sleep(500);
+        console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);
+        yield sleep(500);
+        console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "" : "s"} of furniture`);
+        yield sleep(500);
+        console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "" : "s"} of styles & theming`);
+        return input;
+    });
 }
 function template(files, options) {
-    const data = files.map(f => ({ path: f, parsed: (0, node_path_1.parse)(f) }));
-    const templateInput = sortFilesIntoInput(data, options);
-    if (options.appendFile) {
-        const newFiles = templateInput.files.length;
-        console.info(`> > adding ${newFiles} file${newFiles === 1 ? '' : 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`);
-    }
-    return { templateInput, content: generateTemplate(templateInput) };
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = files.map(f => ({ path: f, parsed: (0, node_path_1.parse)(f) }));
+        const templateInput = yield sortFilesIntoInput(data, options);
+        if (options.appendFile) {
+            const newFiles = templateInput.files.length;
+            console.info(`> > adding ${newFiles} file${newFiles === 1 ? '' : 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`);
+        }
+        return { templateInput, content: generateTemplate(templateInput) };
+    });
 }
 function websiteFilePath({ directory, options, }) {
     let filename = DEFAULT_OUTPUT_FILENAME;
@@ -222,33 +238,42 @@ function websiteFilePath({ directory, options, }) {
     return (0, node_path_1.join)(directory, `${filename}.html`);
 }
 (function main() {
-    try {
-        const options = getOptionsFromEnv(node_process_1.env);
-        console.info(`
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const options = getOptionsFromEnv(node_process_1.env);
+            console.info(`
                       welcome to the
- .-   .   .                    .                         .       
--|-.-.| .-| .-,.-.  .-..-. .-.-|-. .  .-..-,.-..-,.-..-.-|-.-..-.
- ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|  \`-|\`'-' '\`'-'  \`-\`-'-\`-''  
-                    '            \`-'  \`-'                        
+
+             .-   .   .                    .
+            -|-.-.| .-| .-,.-.  .-..-. .-.-|-. .
+             ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|
+                               .'            \`-'
+                .-..-,.-..-,.-..-.-|-.-..-.
+                \`-|\`'-' '\`'-'  \`-\`-'-\`-''
+                \`-'
 
                       ~ * ~ * ~ * ~
 `);
-        Object.keys(defaultOptions).filter((key) => {
-            const current = options[key];
-            if (defaultOptions[key] !== current) {
-                logLevelDebug(`"${key}" is set to "${current}"`);
-            }
-        });
-        const { directory } = options;
-        console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
-            "current directory" : directory}`);
-        const files = listFilesInDir(directory);
-        console.info(`> > found ${files.length} files for your folder party`);
-        const { content } = template(files, options);
-        const filePath = websiteFilePath({ directory, options });
-        (0, node_fs_1.writeFileSync)(filePath, content, { encoding: 'utf-8' });
-        console.info(`> > saving folder party website: ${filePath}`);
-        console.info(`
+            Object.keys(defaultOptions).filter((key) => {
+                const current = options[key];
+                if (defaultOptions[key] !== current) {
+                    logLevelDebug(`"${key}" is set to "${current}"`);
+                }
+            });
+            const { directory } = options;
+            yield sleep(1000);
+            console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
+                "current directory" : directory}`);
+            const files = listFilesInDir(directory);
+            yield sleep(1000);
+            console.info(`> > found ${files.length} files for your folder party`);
+            const { content } = yield template(files, options);
+            const filePath = websiteFilePath({ directory, options });
+            (0, node_fs_1.writeFileSync)(filePath, content, { encoding: 'utf-8' });
+            yield sleep(1000);
+            console.info(`> > saving folder party website: ${filePath}`);
+            yield sleep(1500);
+            console.info(`
   ----------------------------------------------------------
   | now that your folder party website is created, you'll  |
   | want to open up that .html file and start arranging.   |
@@ -256,14 +281,17 @@ function websiteFilePath({ directory, options, }) {
   | once you've gotten everything exactly where you'd like |
   | it to be, save a copy of your final folder party site. |
   ----------------------------------------------------------
-
+`);
+            yield sleep(500);
+            console.log(`
                 ~ * ~ happy hosting ~ * ~
 `);
-    }
-    catch (err) {
-        console.error("folder party creation failed:", err);
-        process.exit(1);
-    }
+        }
+        catch (err) {
+            console.error("folder party creation failed:", err);
+            process.exit(1);
+        }
+    });
 })();
 // Template logic * ~ * ~ *
 function generateTemplate(input) {
@@ -858,5 +886,14 @@ function parseBool(varValue) {
             console.warn(`* * warning: unexpected env var value: ${varValue}`);
             return false;
     }
+}
+function sleep(ms, cb) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield new Promise((res) => setTimeout(res, ms));
+        if (cb) {
+            cb();
+        }
+        return;
+    });
 }
 //# sourceMappingURL=generate.js.map

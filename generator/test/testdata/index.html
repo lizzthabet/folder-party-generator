@@ -200,6 +200,98 @@
       section[aria-label="furniture"] > img {
         z-index: 0;
       }
+
+      /* Styles used only for instructions
+         (and can be deleted for final site) */
+
+      dialog.instructions {
+        background-color: buttonface;
+        border-radius: 10px;
+        box-shadow: 0 0 20px 0px #2c2c2c;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 1.1rem;
+        line-height: 1.25;
+        margin: 2rem auto;
+        max-width: 550px;
+        z-index: 3;
+      }
+
+      dialog.instructions > h1 {
+        font-family: monospace;
+        font-size: 1.7rem;
+        text-align: center;
+        margin: 1rem auto 3rem;
+      }
+
+      dialog.instructions > details {
+        background-color: white;
+        border: 1.5px dashed gray;
+        border-radius: 10px;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        width: fit-content;
+      }
+
+      dialog.instructions > details > summary {
+        font-size: 1.3rem;
+        cursor: pointer;
+      }
+
+      dialog.instructions > details > p {
+        margin-bottom: 0;
+      }
+
+      dialog.instructions > form[method="dialog"] {
+        float: right;
+        width: fit-content;
+      }
+
+      dialog.instructions > form[method="dialog"] > button {
+        font-size: 1.1rem;
+        border-radius: 5px;
+        border-width: 1.5px;
+      }
+
+      p.instructions.warning {
+        border-top: 1px dashed gray;
+        margin-bottom: 0;
+        margin-top: 1.5rem;
+        padding: 0.75rem;
+      }
+      
+      p.instructions.highlight {
+        background-color: buttonface;
+        border-radius: 10px;
+        padding: 0.75rem;
+      }
+
+      div.instructions[role="menubar"] {
+        background: radial-gradient(
+          ellipse,
+          rgba(0, 0, 0, 0.5) 0%,
+          rgba(255, 255, 255, 0) 60%
+        );
+        bottom: 0;
+        position: fixed;
+        right: 0;
+        padding: 2rem;
+        z-index: 3;
+      }
+
+      button.instructions {
+        border-radius: 5px;
+        font-size: 1.5rem;
+        padding: 0.5rem 1rem;
+      }
+
+      button.instructions + button.instructions {
+        margin-left: 0.5rem;
+      }
+
+      button.instructions > span {
+        display: block;
+        font-size: 1rem;
+      }
     </style>
 
     <script>
@@ -343,6 +435,40 @@
         draggable.forEach(positionInPlace)
         draggable.forEach(setPositionAbsolute)
       })
+
+      // The following code is only used for the instructions and "save" party
+      // layout buttons. It can safely be removed when your party layout is finalized.
+      function downloadWholePage(removeInstructions = false) {
+        const removedElements = []
+        let url
+        try {
+          if (removeInstructions) {
+            const toRemove = ["header"]
+            toRemove.forEach((selector) => {
+              const elements = document.querySelectorAll(selector)
+              elements.forEach((e) => {
+                removedElements.push(e)
+                e.remove()
+              })
+            })
+          }
+          const page = document.documentElement.outerHTML
+          const blob = new Blob([page], { type: "text/html" });
+          url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = removeInstructions ? "party.html" : "party-draft.html";
+          link.click();
+        } catch (err) {
+          console.err("ERROR: failed to save file", err)
+          console.info("instead, you can copy the html document directly from the 'Inspector' view.")
+        } finally {
+          // Add back elements that have been removed
+          removedElements.forEach((e) => document.body.appendChild(e))
+          // For memory management
+          URL.revokeObjectURL(url)
+        }
+      }
     </script>
 
     <!-- Theme styles -->
@@ -351,12 +477,36 @@
   </head>
 
   <body>
+    <header>
+      <dialog class="instructions" open>
+        <h1>welcome to your folder party</h1>
+        <details>
+          <summary>step 1: look around, get settled ☁</summary>
+          <p>all your files and furniture are here. you can drag all the items around. click on the files to view their contents.</p>
+        </details>
+        <details>
+          <summary>step 2: arrange your space ☼</summary>
+          <p>move everything where you'd like it to be for your guests. the space can be as big as you want it to be.</p>
+          <p class="instructions highlight"><b>tip:</b> you can also open up the website file at any point to make changes to the html, css, and javascript code. (there's no magic! this is just a website.)</p>
+        </details>
+        <details>
+          <summary>step 3: save your layout ⚘</summary>
+          <p>press the "save" button to save a copy of this file with all adjustments. when you're ready to finalize the layout, you can save a copy without these instructions.</p>
+        </details>
+        <p class="instructions warning"><b>warning ⚠</b> layout adjustments are temporary until you save them. refreshing this page without saving will reset any layout adjustments you've made.</p>
+        <form method="dialog"><button>dismiss</button></form>
+      </dialog>
+      <div class="instructions" role="menubar">
+        <button class="instructions" onclick="downloadWholePage()">save a draft <span>(with instructions)</span></button>
+        <button class="instructions" onclick="downloadWholePage(true)">save & finalize <span>(without instructions)</span></button>
+      </div>
+    </header>
     <main>
       <button
         class="filename"
         aria-haspopup="dialog"
         aria-controls="Screen Shot 2021-03-09 at 10.19.53 PM.png"
-        style="position: absolute; top: 1035px; left: 1751px;"
+        style="position: absolute; top: 179px; left: 1538px;"
         data-fileviewer
         data-draggable>
         Screen Shot 2021-03-09 at 10.19.53 PM.png
@@ -370,7 +520,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="furniture"
-        style="position: absolute; top: 615px; left: 285px;"
+        style="position: absolute; top: 69px; left: 436px;"
         data-fileviewer
         data-draggable>
         furniture/
@@ -384,7 +534,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="future-feelings.txt"
-        style="position: absolute; top: 257px; left: 1823px;"
+        style="position: absolute; top: 999px; left: 1951px;"
         data-fileviewer
         data-draggable>
         future-feelings.txt
@@ -398,7 +548,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="hm"
-        style="position: absolute; top: 549px; left: 865px;"
+        style="position: absolute; top: 150px; left: 1698px;"
         data-fileviewer
         data-draggable>
         hm/
@@ -412,7 +562,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="homegrown-sample.pdf"
-        style="position: absolute; top: 806px; left: 425px;"
+        style="position: absolute; top: 801px; left: 1684px;"
         data-fileviewer
         data-draggable>
         homegrown-sample.pdf
@@ -426,7 +576,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="i-am-an-aspiring-teacher.png"
-        style="position: absolute; top: 875px; left: 1494px;"
+        style="position: absolute; top: 841px; left: 256px;"
         data-fileviewer
         data-draggable>
         i-am-an-aspiring-teacher.png
@@ -440,7 +590,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="intro-prototype.html"
-        style="position: absolute; top: 326px; left: 1927px;"
+        style="position: absolute; top: 1005px; left: 1750px;"
         data-fileviewer
         data-draggable>
         intro-prototype.html
@@ -454,7 +604,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="new-file.txt"
-        style="position: absolute; top: 102px; left: 994px;"
+        style="position: absolute; top: 1250px; left: 2194px;"
         data-fileviewer
         data-draggable>
         new-file.txt
@@ -468,7 +618,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="not-all-features.png"
-        style="position: absolute; top: 182px; left: 802px;"
+        style="position: absolute; top: 769px; left: 1662px;"
         data-fileviewer
         data-draggable>
         not-all-features.png
@@ -482,7 +632,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="theme"
-        style="position: absolute; top: 921px; left: 1918px;"
+        style="position: absolute; top: 105px; left: 1538px;"
         data-fileviewer
         data-draggable>
         theme/
@@ -496,7 +646,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="welcome"
-        style="position: absolute; top: 770px; left: 2271px;"
+        style="position: absolute; top: 209px; left: 2418px;"
         data-fileviewer
         data-draggable>
         welcome/
@@ -510,7 +660,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="would-you-like-to"
-        style="position: absolute; top: 18px; left: 1860px;"
+        style="position: absolute; top: 53px; left: 880px;"
         data-fileviewer
         data-draggable>
         would-you-like-to/
@@ -524,7 +674,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="you-deserve-a.png"
-        style="position: absolute; top: 1014px; left: 2087px;"
+        style="position: absolute; top: 130px; left: 2272px;"
         data-fileviewer
         data-draggable>
         you-deserve-a.png
@@ -538,7 +688,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="welcome/hello,goodday!!!!.png"
-        style="position: absolute; top: 121px; left: 903px;"
+        style="position: absolute; top: 580px; left: 368px;"
         data-fileviewer
         data-draggable>
         welcome/hello,goodday!!!!.png
@@ -552,7 +702,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="welcome/to"
-        style="position: absolute; top: 1113px; left: 1787px;"
+        style="position: absolute; top: 1239px; left: 1113px;"
         data-fileviewer
         data-draggable>
         welcome/to/
@@ -566,7 +716,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="would-you-like-to/find-out.jpeg"
-        style="position: absolute; top: 708px; left: 1155px;"
+        style="position: absolute; top: 67px; left: 1992px;"
         data-fileviewer
         data-draggable>
         would-you-like-to/find-out.jpeg
@@ -580,7 +730,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="welcome/to/my"
-        style="position: absolute; top: 222px; left: 1488px;"
+        style="position: absolute; top: 363px; left: 1816px;"
         data-fileviewer
         data-draggable>
         welcome/to/my/
@@ -594,7 +744,7 @@
         class="filename"
         aria-haspopup="dialog"
         aria-controls="welcome/to/my/computer"
-        style="position: absolute; top: 1024px; left: 79px;"
+        style="position: absolute; top: 674px; left: 1414px;"
         data-fileviewer
         data-draggable>
         welcome/to/my/computer/
@@ -604,30 +754,30 @@
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
       <section aria-label="furniture">
-        <img class="furniture-item" src="furniture/arm-chair.png" style="position: absolute; top: 493px; left: 2026px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/banner.png" style="position: absolute; top: 993px; left: 291px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/book-with-pencil.png" style="position: absolute; top: 273px; left: 435px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/bookcase.png" style="position: absolute; top: 1153px; left: 229px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/chair-2.png" style="position: absolute; top: 281px; left: 1999px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/chair-5.png" style="position: absolute; top: 413px; left: 2071px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/couch.png" style="position: absolute; top: 686px; left: 1284px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/flowers.png" style="position: absolute; top: 190px; left: 1562px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/house-document.png" style="position: absolute; top: 751px; left: 850px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/lamp-1.png" style="position: absolute; top: 332px; left: 1481px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/lamp-2.png" style="position: absolute; top: 169px; left: 1893px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/lounge-chair.png" style="position: absolute; top: 720px; left: 1563px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/picture-wall.png" style="position: absolute; top: 439px; left: 460px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/plant.png" style="position: absolute; top: 985px; left: 892px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/round-coffee-table.png" style="position: absolute; top: 1094px; left: 2064px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/rug-with-spirals.png" style="position: absolute; top: 502px; left: 49px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/rug-with-tassles.png" style="position: absolute; top: 1193px; left: 1481px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/side-table-2.png" style="position: absolute; top: 829px; left: 796px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/side-table-3.png" style="position: absolute; top: 115px; left: 248px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/side-table-4.png" style="position: absolute; top: 36px; left: 558px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/stool.png" style="position: absolute; top: 39px; left: 608px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/table.png" style="position: absolute; top: 908px; left: 2100px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/tea-cups.png" style="position: absolute; top: 589px; left: 1033px;" draggable="false" data-draggable />
-        <img class="furniture-item" src="furniture/tea-kettle.png" style="position: absolute; top: 1119px; left: 513px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/arm-chair.png" style="position: absolute; top: 566px; left: 612px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/banner.png" style="position: absolute; top: 725px; left: 1941px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/book-with-pencil.png" style="position: absolute; top: 1216px; left: 1512px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/bookcase.png" style="position: absolute; top: 1098px; left: 1358px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/chair-2.png" style="position: absolute; top: 109px; left: 730px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/chair-5.png" style="position: absolute; top: 638px; left: 1615px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/couch.png" style="position: absolute; top: 232px; left: 1739px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/flowers.png" style="position: absolute; top: 266px; left: 788px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/house-document.png" style="position: absolute; top: 1050px; left: 1982px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/lamp-1.png" style="position: absolute; top: 721px; left: 1580px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/lamp-2.png" style="position: absolute; top: 177px; left: 2078px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/lounge-chair.png" style="position: absolute; top: 266px; left: 689px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/picture-wall.png" style="position: absolute; top: 928px; left: 1150px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/plant.png" style="position: absolute; top: 632px; left: 2463px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/round-coffee-table.png" style="position: absolute; top: 51px; left: 1291px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/rug-with-spirals.png" style="position: absolute; top: 995px; left: 321px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/rug-with-tassles.png" style="position: absolute; top: 164px; left: 1724px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/side-table-2.png" style="position: absolute; top: 529px; left: 831px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/side-table-3.png" style="position: absolute; top: 1228px; left: 430px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/side-table-4.png" style="position: absolute; top: 455px; left: 1124px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/stool.png" style="position: absolute; top: 219px; left: 2404px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/table.png" style="position: absolute; top: 366px; left: 1878px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/tea-cups.png" style="position: absolute; top: 828px; left: 1115px;" draggable="false" data-draggable />
+        <img class="furniture-item" src="furniture/tea-kettle.png" style="position: absolute; top: 1012px; left: 81px;" draggable="false" data-draggable />
       </section>
     </main>
   </body>

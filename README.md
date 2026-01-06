@@ -24,7 +24,7 @@ This website will let you browse all the files in the folder. You can include yo
 
 ## A short demo
 
-![short demo using the folder party generator to create a website from a list of files in a folder](./demo-reel.mp4)
+https://github.com/user-attachments/assets/ffb5adfe-780b-4e3f-acd8-27850b32d75a
 
 ## Host your own folder party website
 

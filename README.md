@@ -18,9 +18,13 @@ This script will generate a _folder party website_ from a folder of files.
 
 This website will let you browse all the files in the folder. You can include your own furniture and styles or directly edit the `index.html` file that gets created.
 
-![screenshot of a folder with files next to a terminal window](./demo-screenshot-1.png)
+![a screenshot of the text output of running the folder party script from the terminal](./demo-screenshot-terminal.png)
 
-![screenshot of a webpage generated from the folder files](./demo-screenshot-2.png)
+![a screenshot of a browser window displaying the folder party website that has files that can be browsed and rearrangable furniture](./demo-screenshot-party.png)
+
+## A short demo
+
+![short demo using the folder party generator to create a website from a list of files in a folder](./demo-reel.mp4)
 
 ## Host your own folder party website
 
@@ -47,7 +51,9 @@ your-folder-party/
    ```
    It will generate an HTML file that includes all the files in that folder.
 
-4. *(optional)* Open the `index.html` file in your browser and rearrange the items to your liking. When you're done rearranging, save the file back to your folder party directory by either right-clicking and choosing "Save As" or by using the browser's menu "File > Save Page As."
+4. Open the `index.html` file in your browser and rearrange the items to your liking. When you're done rearranging, save the updated website file to your folder party directory using the "save" buttons on site.
+
+   ![screenshot of the "welcome" dialog with instructions that displays on the generated website](./demo-welcome-dialog.png)
 
 Tada! That's it. Now you're ready to have your friends over.
 

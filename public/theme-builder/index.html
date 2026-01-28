@@ -76,9 +76,9 @@
 
     header {
       margin-bottom: 1rem;
+      max-width: var(--page-max-width);
       padding: 1rem;
       z-index: 1;
-      min-width: var(--page-max-width);
     }
 
     header > h1 {
@@ -310,6 +310,8 @@
 
     /** @type {Object.<string, valueTransformer>} */
     const valueTransformers = {
+      "dialog-border-radius": valueToPx,
+      "dialog-border-width": valueToPx,
       "dialog-button-font": selectToFontProperty,
       "dialog-button-font-size": valueToRem,
       "dialog-shadow-blur": composeBoxShadow,
@@ -392,6 +394,8 @@
 
     /** @type {Object.<string, reverseValueTransformer>} */
     const reverseValueTransformers = {
+      "dialog-border-radius": pxToValue,
+      "dialog-border-width": pxToValue,
       "dialog-button-font": fontToValue,
       "dialog-button-font-size": remToValue,
       "dialog-shadow-blur": composeValueFromBoxShadow,

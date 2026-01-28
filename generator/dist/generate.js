@@ -782,7 +782,7 @@ function createDialog(file) {
 function createFurniture(furniture, options) {
     return `<section aria-label="furniture">
         ${furniture.map(item => {
-        return `<img src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
+        return `<img class="furniture-item" src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
     }).join("\n        ")}
       </section>`;
 }

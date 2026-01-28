@@ -849,7 +849,7 @@ function createDialog(file: FileData): string {
 function createFurniture(furniture: FileData[], options?: FileOptions) {
   return `<section aria-label="furniture">
         ${furniture.map(item => {
-          return `<img src="${item.path}"${options?.randomPlacement ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`
+          return `<img class="furniture-item" src="${item.path}"${options?.randomPlacement ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`
         }).join("\n        ")}
       </section>`
 }

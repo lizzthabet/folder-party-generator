@@ -1,8 +1,11 @@
 {
   "name": "folder-party",
   "version": "0.1.0",
-  "description": "playground for a static site generator to create folder parties",
+  "description": "a simple static site generator that creates a website from a folder of files on your computer so you can invite your friends to hang out on your file system",
   "main": "index.ts",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "build": "tsc",
     "lint": "eslint . --ext .ts",
@@ -12,10 +15,10 @@
   },
   "author": "lizz thabet",
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "@typescript-eslint/eslint-plugin": "^6.18.1",
-    "@typescript-eslint/parser": "^6.18.1",
-    "eslint": "^8.56.0",
+    "@types/node": "^25.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
     "nodemon": "^3.1.10",
     "typescript": "^5.3.3",
     "ws": "^8.18.3"

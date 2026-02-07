@@ -1,0 +1,641 @@
+<html lang="en"><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>welcome to a place on my computer i've created just for you</title>
+
+    <style>
+      :root {
+        /* Variables for easy customization */
+        /* --- page --- */
+        --page-bg: #d2d2d2;
+        --page-bg-image: none;
+        /* --- filename buttons --- */
+        --button-bg: #d2d2d2;
+        --button-color: blue;
+        --button-font: 'Times New Roman', Times, serif;
+        --button-focus-bg: purple;
+        --button-focus-border-color: none;
+        --button-focus-color: white;
+        --button-font-style: normal;
+        --button-font-size: 1rem;
+        --button-font-weight: normal;
+        --button-text-decoration: underline;
+        --button-padding: 5px;
+        --button-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+        --button-border-color: none;
+        --button-border-radius: 8px;
+        --button-border-style: none;
+        --button-border-width: 0px;
+        /* --- fileviewer dialogs --- */
+        --dialog-border-color: #333333;
+        --dialog-border-radius: 8px;
+        --dialog-border-style: dotted;
+        --dialog-border-width: 2px;
+        --dialog-bg: #dfdfdf;
+        --dialog-button-bg: #dfdfdf;
+        --dialog-button-color: #333333;
+        --dialog-button-font: monospace;
+        --dialog-button-font-size: 0.80rem;
+        --dialog-button-focus-bg: purple;
+        --dialog-button-focus-color: white;
+        --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+      }
+
+      html {
+        background-color: var(--page-bg);
+        background-image: var(--page-bg-image);
+      }
+
+      /* Styles for draggable elements */
+
+      /* display inline-block so that elements are
+      positioned absolutely next to each other when
+      the document loads EXCEPT for dialog elements
+      which manage their own display + visibility */
+      [data-draggable]:not(dialog) {
+        display: inline-block;
+      }
+
+      [data-draggable] {
+        user-select: none;
+        margin: 0;
+        padding: 1rem;
+      }
+
+      [data-draggable]:hover {
+        cursor: move;
+      }
+
+      /* Styles for filenames */
+      button.filename {
+        /* customizable */
+        background-color: var(--button-bg);
+        border-color: var(--button-border-color);
+        border-radius: var(--button-border-radius);
+        border-style: var(--button-border-style);
+        border-width: var(--button-border-width);
+        box-shadow: var(--button-box-shadow);
+        color: var(--button-color);
+        font-family: var(--button-font);
+        font-size: var(--button-font-size);
+        font-style: var(--button-font-style);
+        font-weight: var(--button-font-weight);
+        padding: var(--button-padding);
+        text-decoration: var(--button-text-decoration);
+        /* set */
+        height: max-content;
+        max-width: 250px;
+        overflow-wrap: anywhere;
+        text-align: center;
+        width: max-content;
+        z-index: 1;
+      }
+
+      button.filename:focus {
+        /* customizable */
+        background-color: var(--button-focus-bg);
+        border-color: var(--button-focus-border-color);
+        color: var(--button-focus-color);
+        /* set */
+        outline: none;
+        text-decoration: none;
+      }
+
+      /* Styles for dialogs and dialog buttons */
+      dialog.fileviewer[open] {
+        /* customizable */
+        background-color: var(--dialog-bg);
+        border-color: var(--dialog-border-color);
+        border-style: var(--dialog-border-style);
+        border-radius: var(--dialog-border-radius);
+        border-width: var(--dialog-border-width);
+        box-shadow: var(--dialog-box-shadow);
+        /* set */
+        width: max-content; /* Size dialogs in Firefox to fit their content */
+        z-index: 2;
+      }
+
+      button.close-fileviewer {
+        /* customizable */
+        background-color: var(--dialog-button-bg);
+        color: var(--dialog-button-color);
+        font-family: var(--dialog-button-font);
+        font-size: var(--dialog-button-font-size);
+        /* set */
+        border: none;
+        border-radius: 5px;
+        float: right;
+        margin: 0.5rem -0.5rem -0.5rem 0.5rem;
+        text-transform: uppercase;
+      }
+
+      button.close-fileviewer:active,
+      button.close-fileviewer:focus {
+        /* customizable */
+        background-color: var(--dialog-button-focus-bg);
+        color: var(--dialog-button-focus-color);
+        /* set */
+        border-radius: 5px;
+        outline: none;
+      }
+
+      /* Styles for embedded media */
+      /* Note: the *-text classes are useful for content
+      that browsers won't expand to fit the max sizes,
+      like text and html */
+      object {
+        /* Set a global max size so content
+        isn't TOO big */
+        max-width: 600px;
+        max-height: 600px;
+      }
+
+      object.tiny {
+        max-height: 60px;
+        max-width: 175px;
+      }
+
+      object.tiny-text {
+        height: 60px;
+        width: 175px;
+      }
+
+      object.small {
+        max-height: 250px;
+        max-width: 150px;
+      }
+
+      object.small-text {
+        height: 100px;
+        width: 150px;
+      }
+
+      object.medium {
+        max-height: 300px;
+        max-width: 400px;
+      }
+
+      object.medium-text {
+        height: 300px;
+        width: 400px;
+      }
+
+      object.large {
+        max-width: 500px;
+        max-height: 500px;
+      }
+
+      object.large-text {
+        width: 500px;
+        height: 500px;
+      }
+
+      /* Styles for furniture */
+      section[aria-label="furniture"] > img {
+        z-index: 0;
+      }
+
+      /* Styles used only for instructions
+         (and can be deleted for final site) */
+
+      dialog.instructions {
+        background-color: buttonface;
+        border-radius: 10px;
+        box-shadow: 0 0 20px 0px #2c2c2c;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 1.1rem;
+        line-height: 1.25;
+        margin: 2rem auto;
+        max-width: 550px;
+        z-index: 3;
+      }
+
+      dialog.instructions > h1 {
+        font-family: monospace;
+        font-size: 1.7rem;
+        text-align: center;
+        margin: 1rem auto 3rem;
+      }
+
+      dialog.instructions > details {
+        background-color: white;
+        border: 1.5px dashed gray;
+        border-radius: 10px;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        width: fit-content;
+      }
+
+      dialog.instructions > details > summary {
+        font-size: 1.3rem;
+        cursor: pointer;
+      }
+
+      dialog.instructions > details > p {
+        margin-bottom: 0;
+      }
+
+      dialog.instructions > form[method="dialog"] {
+        float: right;
+        width: fit-content;
+      }
+
+      dialog.instructions > form[method="dialog"] > button {
+        font-size: 1.1rem;
+        border-radius: 5px;
+        border-width: 1.5px;
+      }
+
+      p.instructions.warning {
+        border-top: 1px dashed gray;
+        margin-bottom: 0;
+        margin-top: 1.5rem;
+        padding: 0.75rem;
+      }
+      
+      p.instructions.highlight {
+        background-color: buttonface;
+        border-radius: 10px;
+        padding: 0.75rem;
+      }
+
+      div.instructions[role="menubar"] {
+        background: radial-gradient(
+          ellipse,
+          rgba(0, 0, 0, 0.5) 0%,
+          rgba(255, 255, 255, 0) 60%
+        );
+        bottom: 0;
+        position: fixed;
+        right: 0;
+        padding: 2rem;
+        z-index: 3;
+      }
+
+      button.instructions {
+        border-radius: 5px;
+        font-size: 1.5rem;
+        padding: 0.5rem 1rem;
+      }
+
+      button.instructions + button.instructions {
+        margin-left: 0.5rem;
+      }
+
+      button.instructions > span {
+        display: block;
+        font-size: 1rem;
+      }
+    </style>
+
+    <script>
+      function positionInPlace(element) {
+        const { top, left } = element.getBoundingClientRect()
+        const { scrollX, scrollY } = window
+        setTopLeft(element, top + scrollY, left + scrollX)
+      }
+
+      function setTopLeft(element, top, left) {
+        element.style.setProperty("top", top + "px")
+        element.style.setProperty("left", left + "px")
+      }
+
+      function setPositionAbsolute(element) {
+        element.style.setProperty("position", "absolute")
+      }
+
+      const MOUSE_BUTTON_MAIN = 0
+      function moveOnMouseDown(event) {
+        // Use the currentTarget for calculating position, because it's the
+        // element that has the "data-draggable" property on it. The target
+        // may be another element inside of it.
+        const { currentTarget, pageX, pageY, clientX, clientY, button } = event
+        // Don't continue if the main mouse button (left click) is not used;
+        // this prevents funny behavior on right or middle click
+        if (button !== undefined && button !== MOUSE_BUTTON_MAIN) {
+          return
+        }
+        const { left, top } = currentTarget.getBoundingClientRect()
+        const shiftX = clientX - left
+        const shiftY = clientY - top
+
+        function moveTo(pageX, pageY) {
+          const newLeft = pageX - shiftX + "px"
+          const newTop = pageY - shiftY + "px"
+          currentTarget.style.setProperty("left", newLeft)
+          currentTarget.style.setProperty("top", newTop)
+        }
+
+        function onMouseMove(event) {
+          moveTo(event.pageX, event.pageY)
+        }
+
+        function onMouseUp(event) {
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      // To distinguish between moving an element and clicking an element,
+      // this handler is triggered by the "mousedown" instead of "click" event,
+      // so it can listen for "mousemove" events and ignore them.
+      function openViewerOnMouseDown(event) {
+        // Don't continue if the main mouse button (left click) is not used;
+        // this prevents funny behavior on right or middle click
+        if (event.button !== undefined && event.button !== MOUSE_BUTTON_MAIN) {
+          return
+        }
+
+        let elementHasMoved = false
+        function onMouseMove(event) {
+          elementHasMoved = true
+        }
+
+        function onMouseUp(event) {
+          if (elementHasMoved !== true) {
+            onClick(event)
+          }
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      // Because click events are handled through the "mousedown" trigger,
+      // the default button behavior of space and enter keys triggering a
+      // click need to be added manually
+      function openViewerOnKeyPress(event) {
+        if (event.code === 'Enter' || event.code === 'Space') {
+          onClick(event)
+        }
+      }
+
+      function onClick(event) {
+        const dialogId = event.target.getAttribute("aria-controls")
+        if (!dialogId) {
+          return
+        }
+        const dialog = document.getElementById(dialogId)
+        if (!dialog) {
+          return
+        }
+        if (dialog.open === false) {
+          const { top, left, height, width } = event.target.getBoundingClientRect()
+          const { scrollX, scrollY } = window
+          setTopLeft(dialog, top + height + scrollY + 10, left + scrollX)
+          setPositionAbsolute(dialog)
+          dialog.show()
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", (_event) => {
+        // Add drag-to-move functionality
+        const draggable = document.querySelectorAll("[data-draggable]")
+        draggable.forEach((ele) => ele.addEventListener("mousedown", moveOnMouseDown))
+        
+        // Add file viewer functionality to draggable elements
+        const fileViewers = document.querySelectorAll("[data-fileviewer][data-draggable]")
+        fileViewers.forEach((ele) => {
+          ele.addEventListener("mousedown", openViewerOnMouseDown)
+          ele.addEventListener("keypress", openViewerOnKeyPress)
+        })
+
+        // Add file viewer functionality to non-draggable elements;
+        // this is done separately from draggable elements, since there's
+        // extra logic to _not_ open the file viewer when the element is dragged
+        const staticFileViewers = document.querySelectorAll("[data-fileviewer]:not([data-draggable])")
+        staticFileViewers.forEach((ele) => ele.addEventListener("click", onClick))
+      })
+
+      // The following code needs to wait for all resources (especially images) to
+      // be loaded on the page to position them propertly; if a resource isn't loaded,
+      // it can't be positioned on the page with its height and width.
+      //
+      // This code is *only* needed if each draggable item doesn't already have a
+      // "top", "left", and "position: absolute" set in its inline style, like:
+      // `style="top: 575px; left: 413px; position: absolute;"`.
+      //
+      // If each draggable element on the page already has an inline position,
+      // it can be removed.
+      window.addEventListener("load", (_event) => {
+        const draggable = document.querySelectorAll("[data-draggable]")
+        // Position each element absolutely so document flow isn't changed
+        // when one element is moved
+        draggable.forEach(positionInPlace)
+        draggable.forEach(setPositionAbsolute)
+      })
+
+      // The following code is only used for the instructions and "save" party
+      // layout buttons. It can safely be removed when your party layout is finalized.
+      function downloadWholePage(removeInstructions = false) {
+        const removedElements = []
+        let url
+        try {
+          if (removeInstructions) {
+            const toRemove = ["header"]
+            toRemove.forEach((selector) => {
+              const elements = document.querySelectorAll(selector)
+              elements.forEach((e) => {
+                removedElements.push(e)
+                e.remove()
+              })
+            })
+          }
+          const page = document.documentElement.outerHTML
+          const blob = new Blob([page], { type: "text/html" });
+          url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = removeInstructions ? "party.html" : "party-draft.html";
+          link.click();
+        } catch (err) {
+          console.err("ERROR: failed to save file", err)
+          console.info("instead, you can copy the html document directly from the 'Inspector' view.")
+        } finally {
+          // Add back elements that have been removed
+          removedElements.forEach((e) => document.body.appendChild(e))
+          // For memory management
+          URL.revokeObjectURL(url)
+        }
+      }
+    </script>
+
+    <!-- Theme styles -->
+    <link href="theme/theme.css" rel="stylesheet">
+  </head>
+
+  <body>
+    
+    <main>
+      <button class="filename" aria-haspopup="dialog" aria-controls="Screen Shot 2021-03-09 at 10.19.53 PM.png" data-fileviewer="" data-draggable="" style="top: 991.953px; left: 4311.95px; position: absolute;">
+        Screen Shot 2021-03-09 at 10.19.53 PM.png
+      </button>
+      <dialog id="Screen Shot 2021-03-09 at 10.19.53 PM.png" class="fileviewer" data-draggable="" style="top: 1075.94px; left: 4315.45px; position: absolute;">
+        <object class="file" data="Screen Shot 2021-03-09 at 10.19.53 PM.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="future-feelings.txt" data-fileviewer="" data-draggable="" style="top: 1836.98px; left: 687.969px; position: absolute;">
+        future-feelings.txt
+      </button>
+      <dialog id="future-feelings.txt" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="future-feelings.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="hm" data-fileviewer="" data-draggable="" style="top: 4435px; left: 2311.88px; position: absolute;">
+        hm/
+      </button>
+      <dialog id="hm" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>hm/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="homegrown-sample.pdf" data-fileviewer="" data-draggable="" style="top: 3514.94px; left: 4060.55px; position: absolute;">
+        homegrown-sample.pdf
+      </button>
+      <dialog id="homegrown-sample.pdf" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="homegrown-sample.pdf" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="i-am-an-aspiring-teacher.png" data-fileviewer="" data-draggable="" style="top: 836.969px; left: 2425.61px; position: absolute;">
+        i-am-an-aspiring-teacher.png
+      </button>
+      <dialog id="i-am-an-aspiring-teacher.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="i-am-an-aspiring-teacher.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="new-file.txt" data-fileviewer="" data-draggable="" style="top: 1253.97px; left: 2724.56px; position: absolute;">
+        new-file.txt
+      </button>
+      <dialog id="new-file.txt" class="fileviewer" data-draggable="" style="top: 1235.45px; left: 1401.56px; position: absolute;">
+        <object class="file" data="new-file.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="not-all-features.png" data-fileviewer="" data-draggable="" style="top: 1304.96px; left: 1813.44px; position: absolute;">
+        not-all-features.png
+      </button>
+      <dialog id="not-all-features.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="not-all-features.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="welcome" data-fileviewer="" data-draggable="" style="top: 1053.97px; left: 484.812px; position: absolute;">
+        welcome/
+      </button>
+      <dialog id="welcome" class="fileviewer" data-draggable="" style="top: 964.969px; left: 390.812px; position: absolute;" open="">
+        <pre>welcome/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="would-you-like-to" data-fileviewer="" data-draggable="" style="top: 2714.98px; left: 3332.88px; position: absolute;">
+        would-you-like-to/
+      </button>
+      <dialog id="would-you-like-to" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>would-you-like-to/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="you-deserve-a.png" data-fileviewer="" data-draggable="" style="top: 3473.96px; left: 340.969px; position: absolute;">
+        you-deserve-a.png
+      </button>
+      <dialog id="you-deserve-a.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="you-deserve-a.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="welcome/hello,goodday!!!!.png" data-fileviewer="" data-draggable="" style="top: 2498.49px; left: 1571.88px; position: absolute;">
+        welcome/hello,goodday!!!!.png
+      </button>
+      <dialog id="welcome/hello,goodday!!!!.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="welcome/hello,goodday!!!!.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="welcome/to" data-fileviewer="" data-draggable="" style="top: 323.992px; left: 2476.76px; position: absolute;">
+        welcome/to/
+      </button>
+      <dialog id="welcome/to" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>welcome/to/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="would-you-like-to/find-out.jpeg" data-fileviewer="" data-draggable="" style="top: 319px; left: 1577.61px; position: absolute;">
+        would-you-like-to/find-out.jpeg
+      </button>
+      <dialog id="would-you-like-to/find-out.jpeg" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="would-you-like-to/find-out.jpeg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="welcome/to/my" data-fileviewer="" data-draggable="" style="top: 658.992px; left: 675.406px; position: absolute;">
+        welcome/to/my/
+      </button>
+      <dialog id="welcome/to/my" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>welcome/to/my/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="welcome/to/my/computer" data-fileviewer="" data-draggable="" style="top: 748px; left: 882.031px; position: absolute;">
+        welcome/to/my/computer/
+      </button>
+      <dialog id="welcome/to/my/computer" class="fileviewer" data-draggable="" style="top: 852.484px; left: 982.031px; position: absolute;" open="">
+        <pre>welcome/to/my/computer/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+      <section aria-label="furniture">
+        <img class="furniture-item" src="furniture/TYPE0conglom01.gif" draggable="false" data-draggable="" style="top: 1520px; left: 3921px; position: absolute;">
+        <img class="furniture-item" src="furniture/TYPEan.gif" draggable="false" data-draggable="" style="top: 391px; left: 1558px; position: absolute;">
+        <img class="furniture-item" src="furniture/TYPEbd.gif" draggable="false" data-draggable="" style="top: 2097px; left: 1691px; position: absolute;">
+        <img class="furniture-item" src="furniture/TYPEcf.gif" draggable="false" data-draggable="" style="top: 678px; left: 3667px; position: absolute;">
+        <img class="furniture-item" src="furniture/TYPEcg.gif" draggable="false" data-draggable="" style="top: 345.984px; left: 2560.99px; position: absolute;">
+        <img class="furniture-item" src="furniture/TYPEfs.gif" draggable="false" data-draggable="" style="top: 138px; left: 388.992px; position: absolute;">
+        <img class="furniture-item" src="furniture/TYPEgj.gif" draggable="false" data-draggable="" style="top: 2426px; left: 4961px; position: absolute;">
+        <img class="furniture-item" src="furniture/TYPEil.gif" draggable="false" data-draggable="" style="top: 1757px; left: 2991px; position: absolute;">
+        <img class="furniture-item" src="furniture/TYPEtf.gif" draggable="false" data-draggable="" style="top: 4095px; left: 1988px; position: absolute;">
+        <img class="furniture-item" src="furniture/stalag01.png" draggable="false" data-draggable="" style="top: 2563px; left: 1916px; position: absolute;">
+      </section>
+    </main>
+  
+
+
+<script>// This code and approach has been generously borrowed from:
+// https://dev.to/adamcoster/create-a-live-reload-server-for-front-end-development-3gnp
+// and tweaked with Typescript
+(() => {
+    // This port should match the websocket port defined in `dev-server.js`
+    const socketUrl = 'ws://localhost:6800';
+    let socket = new WebSocket(socketUrl);
+    socket.addEventListener('close', () => {
+        // Then the server has been turned off,
+        // either due to file-change-triggered reboot,
+        // or to truly being turned off.
+        // Attempt to re-establish a connection until it works,
+        // failing after a few seconds (at that point things are likely
+        // turned off/permanantly broken instead of rebooting)
+        const interAttemptTimeoutMilliseconds = 100;
+        const maxDisconnectedTimeMilliseconds = 3000;
+        const maxAttempts = Math.round(maxDisconnectedTimeMilliseconds / interAttemptTimeoutMilliseconds);
+        let attempts = 0;
+        const reloadIfCanConnect = () => {
+            attempts++;
+            if (attempts > maxAttempts) {
+                console.error("Could not reconnect to dev server.");
+                return;
+            }
+            socket = new WebSocket(socketUrl);
+            socket.addEventListener('error', () => setTimeout(reloadIfCanConnect, interAttemptTimeoutMilliseconds));
+            socket.addEventListener('open', () => location.reload());
+        };
+        reloadIfCanConnect();
+    });
+})();
+//# sourceMappingURL=client-websocket.js.map</script><protonpass-root-5aec data-protonpass-role="root" data-protonpass-theme="os"></protonpass-root-5aec></body></html>

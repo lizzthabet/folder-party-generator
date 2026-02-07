@@ -11,61 +11,86 @@ type Options = {
   appendFile: boolean
   directory: string
   displayInstructions: boolean
+  furniture: string
   overwriteFile: boolean
+  theme: string
   randomPlacement: boolean
 }
 
 const CURRENT_DIRECTORY = '.'
-const FILES_TO_IGNORE = new Set([
-  '.DS_Store', // Silly MacOS files
-  'generate.js', // The folder party generator script
-  'furniture', // Folder with images to be treated as furniture
-  'theme' // Folder with theme-specific content that shouldn't be treated as content
-])
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g
-const FURNITURE_FOLDER = 'furniture'
-const THEME_CONTENT_FOLDER = 'theme'
+const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?.*/
+const INDEX_FILE_REGEX = /^index[_|-]?.*\.html/
+const DEFAULT_FURNITURE_FOLDER = 'furniture'
+const DEFAULT_THEME_FOLDER = 'theme'
 const DEFAULT_OUTPUT_FILENAME = "index"
 const MAX_RANDOM_HEIGHT = 1250;
 const MAX_RANDOM_WIDTH = 2500;
 const HTML_TITLE = "welcome to a place on my computer i've created just for you"
 // Environment variables that can be set
 // to configure folder party generation
-const FOLDER_ENV_VAR = 'FOLDER'
-const OVERWRITE_INDEX_ENV_VAR = 'OVERWRITE'
-const APPEND_INDEX_ENV_VAR = 'APPEND'
-const RANDOM_POSITION_ENV_VAR = 'RANDOM_POSITION'
-const INSTRUCTIONS_ENV_VAR = 'INSTRUCTIONS'
+type EnvVar = 'FOLDER' | 'FURNITURE' | 'THEME' | 'OVERWRITE' | 'APPEND' | 'RANDOM' | 'INSTRUCTIONS'
+const ENV_OPTIONS: {[Property in EnvVar]: string} = {
+  FOLDER: 'FOLDER',
+  FURNITURE: 'FURNITURE',
+  THEME: 'THEME',
+  OVERWRITE: 'OVERWRITE',
+  APPEND: 'APPEND',
+  RANDOM: 'RANDOM',
+  INSTRUCTIONS: 'INSTRUCTIONS',
+}
+
+const FILES_TO_IGNORE = [
+  /^\.DS_Store$/, // Silly MacOS files
+  /^generate\.js$/, // The folder party generator script
+  /^\.env$/, // Dot env file
+  THEME_OR_FURNITURE_REGEX, // Folders for "furniture" and "theme" (optionally followed by a hyphen or underscore)
+  INDEX_FILE_REGEX, // Previous folder party html files
+]
 
 function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
+  // Default values for options
   const options: Options = {
     appendFile: false,
     directory: CURRENT_DIRECTORY,
+    furniture: DEFAULT_FURNITURE_FOLDER,
+    theme: DEFAULT_THEME_FOLDER,
     displayInstructions: true,
     overwriteFile: false,
     randomPlacement: false,
   }
-  const folderName: string | undefined = e[FOLDER_ENV_VAR]
+
+  const folderName: string | undefined = e[ENV_OPTIONS.FOLDER]
   if (folderName) {
     options.directory = normalize(folderName)
   }
 
-  const overwrite: string | undefined = e[OVERWRITE_INDEX_ENV_VAR]
+  const furnitureFolder: string | undefined = e[ENV_OPTIONS.FURNITURE]
+  if (furnitureFolder) {
+    options.furniture = normalize(furnitureFolder)
+  }
+
+  const themeFolder: string | undefined = e[ENV_OPTIONS.THEME]
+  if (themeFolder) {
+    options.furniture = normalize(themeFolder)
+  }
+
+  const overwrite: string | undefined = e[ENV_OPTIONS.OVERWRITE]
   if (overwrite) {
     options.overwriteFile = parseBool(overwrite)
   }
 
-  const append: string | undefined = e[APPEND_INDEX_ENV_VAR]
+  const append: string | undefined = e[ENV_OPTIONS.APPEND]
   if (append) {
     options.appendFile = parseBool(append)
   }
 
-  const random: string | undefined = e[RANDOM_POSITION_ENV_VAR]
+  const random: string | undefined = e[ENV_OPTIONS.RANDOM]
   if (random) {
     options.randomPlacement = parseBool(random)
   }
 
-  const instructions: string | undefined = e[INSTRUCTIONS_ENV_VAR]
+  const instructions: string | undefined = e[ENV_OPTIONS.INSTRUCTIONS]
   if (instructions) {
     options.displayInstructions = parseBool(instructions)
   }
@@ -132,7 +157,6 @@ type TemplateInput = {
   displayInstructions?: boolean
   existingFiles?: Set<string>
   existingFileContent?: string
-  existingIndex?: FileData
   randomPlacement?: boolean
 }
 
@@ -147,6 +171,10 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
 
   // If new files should be appended to the existing html file,
   // get the file contents and a list of files already included in it
+
+  // TODO: This logic may get more complicated is someone is swapping furniture and theme;
+  // it doesn't currently support keeping your file arrangements, but swapping theme and furniture.
+  // TODO: Add support for reading from the most recent index file, in case there are multiple.
   if (options.appendFile) {
     try {
       const fullPath = join(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`)
@@ -159,10 +187,23 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     }
   }
 
+  /**
+   * This is what file data looks like here
+   * (since I'm always forgetting):
+    {
+      path: 'furniture/table.png',
+      parsed: { root: '', dir: 'furniture', base: 'table.png', ext: '.png', name: 'table' }
+    }
+   */
+
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    // Skip file if it's ignored globally
-    if (FILES_TO_IGNORE.has(file.parsed.base)) {
+    // Skip file if it's ignored globally; this filters out files
+    // and directories, (but not files inside an ignored directory)
+    // if (FILES_TO_IGNORE.has(file.parsed.base)) {
+    //   continue
+    // }
+    if (FILES_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
       continue
     }
     // Skip file if it's already been included in the existing html
@@ -178,14 +219,17 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     // within special folders like "furniture" are sorted correctly,
     // even if they appear in subfolders
     const parsedDirPath = file.parsed.dir.split(sep)
-    const parsedBaseDir = parsedDirPath[0] ?? ""
-    if (parsedBaseDir.toLowerCase() === FURNITURE_FOLDER) {
+    const parsedBaseDir = (parsedDirPath[0] ?? "").toLowerCase()
+    // Add file to furniture if it matches the furniture directory
+    if (parsedBaseDir === options.furniture) {
       input.furniture.push(file)
-    } else if (parsedBaseDir.toLowerCase() === THEME_CONTENT_FOLDER) {
+    // Add file to theme if it matches the theme directory
+    } else if (parsedBaseDir === options.theme) {
       input.theme.push(file)
-    } else if (file.path === `${DEFAULT_OUTPUT_FILENAME}.html`) {
-      input.existingIndex = file
-    } else {
+    // Finally, add file to folder party content if it isn't in a theme 
+    // or furniture folder (since there may be other theme or furniture
+    // directories that aren't currently in use)
+    } else if (!THEME_OR_FURNITURE_REGEX.test(parsedBaseDir)) {
       input.files.push(file)
     }
   }

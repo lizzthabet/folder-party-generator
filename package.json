@@ -10,8 +10,9 @@
     "build": "tsc",
     "lint": "eslint . --ext .ts",
     "start": "npm run build",
-    "test": "npm run build && OVERWRITE=true FOLDER=generator/test/testdata node generator/dist/generate.js",
-    "theme.dev": "PORT=2350 FOLDER=public/theme-builder npx nodemon --watch public/theme-builder --ext js,html,css dev-server.js"
+    "test": "npm run build && node --env-file-if-exists=generator/test/testdata/.env generator/dist/generate.js",
+    "theme.dev": "PORT=2350 FOLDER=public/theme-builder npx nodemon --watch public/theme-builder --ext js,html,css dev-server.js",
+    "preview.dev": "PORT=2360 FOLDER=public/preview npx nodemon --watch public/preview --ext js,html,css dev-server.js"
   },
   "author": "lizz thabet",
   "devDependencies": {

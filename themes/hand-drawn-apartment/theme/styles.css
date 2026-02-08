@@ -1,0 +1,32 @@
+:root {
+    --page-bg: #d2d2d2;
+    --page-bg-image: none;
+    --button-bg: #d2d2d2;
+    --button-color: blue;
+    --button-font: 'Times New Roman', Times, serif;
+    --button-focus-bg: purple;
+    --button-focus-border-color: none;
+    --button-focus-color: white;
+    --button-font-style: normal;
+    --button-font-size: 1rem;
+    --button-font-weight: normal;
+    --button-text-decoration: underline;
+    --button-padding: 5px;
+    --button-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+    --button-border-color: none;
+    --button-border-radius: 8px;
+    --button-border-style: none;
+    --button-border-width: 0px;
+    --dialog-border-color: #333333;
+    --dialog-border-radius: 8px;
+    --dialog-border-style: dotted;
+    --dialog-border-width: 2px;
+    --dialog-bg: #dfdfdf;
+    --dialog-button-bg: #dfdfdf;
+    --dialog-button-color: #333333;
+    --dialog-button-font: monospace;
+    --dialog-button-font-size: 0.80rem;
+    --dialog-button-focus-bg: purple;
+    --dialog-button-focus-color: white;
+    --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+  }

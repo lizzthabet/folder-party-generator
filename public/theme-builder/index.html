@@ -38,6 +38,7 @@
       --dialog-button-font-size: 0.80rem;
       --dialog-button-focus-bg: purple;
       --dialog-button-focus-color: white;
+      --dialog-button-padding: unset;
       --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
     }
 
@@ -142,6 +143,9 @@
       color: var(--dialog-button-color);
       font-family: var(--dialog-button-font);
       font-size: var(--dialog-button-font-size);
+      padding: var(--dialog-button-padding);
+      /* border radius */
+      /* padding */
       /* set */
       border: none;
       border-radius: 5px;
@@ -314,6 +318,7 @@
       "dialog-border-width": valueToPx,
       "dialog-button-font": selectToFontProperty,
       "dialog-button-font-size": valueToRem,
+      "dialog-button-padding": valueToPx,
       "dialog-shadow-blur": composeBoxShadow,
       "dialog-shadow-color": composeBoxShadow,
       "dialog-shadow-position-x": composeBoxShadow,
@@ -398,6 +403,7 @@
       "dialog-border-width": pxToValue,
       "dialog-button-font": fontToValue,
       "dialog-button-font-size": remToValue,
+      "dialog-button-padding": pxToValue,
       "dialog-shadow-blur": composeValueFromBoxShadow,
       "dialog-shadow-color": composeValueFromBoxShadow,
       "dialog-shadow-position-x": composeValueFromBoxShadow,
@@ -829,6 +835,11 @@
       <label for="dialog-button-font-size">
         button font size
         <input id="dialog-button-font-size" type="number" value="0.8" min="0.5" max="8" step="0.125" data-controls="--dialog-button-font-size" /> rem
+      </label>
+
+      <label for="dialog-button-padding">
+        button padding
+        <input id="dialog-button-padding" type="number" value="3" min="0" max="100" step="0.25" data-controls="--dialog-button-padding" /> px
       </label>
 
       <fieldset>

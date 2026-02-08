@@ -322,6 +322,7 @@ function createStyle({ displayInstructions }) {
         --dialog-button-font-size: 0.80rem;
         --dialog-button-focus-bg: purple;
         --dialog-button-focus-color: white;
+        --dialog-button-padding: unset;
         --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
       }
 
@@ -405,6 +406,7 @@ function createStyle({ displayInstructions }) {
         color: var(--dialog-button-color);
         font-family: var(--dialog-button-font);
         font-size: var(--dialog-button-font-size);
+        padding: var(--dialog-button-padding);
         /* set */
         border: none;
         border-radius: 5px;

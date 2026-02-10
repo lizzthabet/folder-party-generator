@@ -75,6 +75,21 @@
       margin-top: var(--basic-margin);
     }
 
+    details + details {
+      margin-top: calc(var(--basic-margin) * 2);
+    }
+
+    details > summary {
+      background-color: lch(from var(--page-bg) calc(l - 10) c h);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-style: italic;
+      font-weight: bold;
+      margin-bottom: var(--basic-margin);
+      padding: 10px;
+    }
+
     header {
       margin-bottom: 1rem;
       max-width: var(--page-max-width);
@@ -634,7 +649,7 @@
     <h1>folder party ✐ theme builder</h1>
   </header>
   <section class="">
-    <p class="intro">welcome to the theme builder. <code>◕‿◕</code> here you can customize the core elements of a folder party website and download the css styles to use. any feedback is very welcome!</p>
+    <p class="intro">welcome to the theme builder. <code>◕‿◕</code> here you can customize the core elements of a folder party website and download the css styles to use.</p>
     <div class="big-buttons center">
       <button class="big-save" onclick="saveTheme()">save styles</button>
       <button class="big-save" onclick="reset()">reset</button>
@@ -658,122 +673,133 @@
 
     <button id="filename" class="filename">folder/filename.png</button>
     <section>
-      <label for="filename-bg-color">
-        background color
-        <input id="filename-bg-color" type="color" value="#d3d3d3" data-controls="--button-bg" />
-      </label>
-
-      <label for="filename-color">
-        color
-        <input id="filename-color" type="color" value="#0000ff" data-controls="--button-color" />
-      </label>
-
-      <fieldset>
-        <legend>when clicked</legend>
-        <label for="click-style">
-          see "clicked" style
-          <input id="click-style" type="checkbox" />
-        </label>
-        <label for="filename-bg-color_click">
+      <details>
+        <summary>Filename button: colors</summary>
+        <label for="filename-bg-color">
           background color
-          <input id="filename-bg-color_click" type="color" value="#800080" data-controls="--button-focus-bg"/>
+          <input id="filename-bg-color" type="color" value="#d3d3d3" data-controls="--button-bg" />
         </label>
-        <label for="filename-color_click">
+  
+        <label for="filename-color">
           color
-          <input id="filename-color_click" type="color" value="#ffffff" data-controls="--button-focus-color" />
+          <input id="filename-color" type="color" value="#0000ff" data-controls="--button-color" />
         </label>
-      </fieldset>
+  
+        <fieldset>
+          <legend>when clicked</legend>
+          <label for="click-style">
+            see "clicked" style
+            <input id="click-style" type="checkbox" />
+          </label>
+          <label for="filename-bg-color_click">
+            background color
+            <input id="filename-bg-color_click" type="color" value="#800080" data-controls="--button-focus-bg"/>
+          </label>
+          <label for="filename-color_click">
+            color
+            <input id="filename-color_click" type="color" value="#ffffff" data-controls="--button-focus-color" />
+          </label>
+        </fieldset>
+      </details>
 
-      <label for="filename-font" class="margin-top">
-        font family
-        <select id="filename-font" data-controls="--button-font">
-          <option value="serif" selected>serif #1</option>
-          <option value="serif-2">serif #2</option>
-          <option value="sans-serif">sans-serif #1</option>
-          <option value="sans-serif-2">sans-serif #2</option>
-          <option value="monospace">monospace</option>
-        </select>
-      </label>
+      <details>
+        <summary>Filename button: fonts</summary>
+        <label for="filename-font-size">
+          font size
+          <input id="filename-font-size" type="number" value="1" min="0.5" max="8" step="0.125" data-controls="--button-font-size" /> rem
+        </label>
 
-      <label for="filename-font-size">
-        font size
-        <input id="filename-font-size" type="number" value="1" min="0.5" max="8" step="0.125" data-controls="--button-font-size" /> rem
-      </label>
-
-      <fieldset>
-        <legend>font style</legend>
-        <label for="filename-font-bold">
-          <input type="checkbox" id="filename-font-bold" data-controls="--button-font-weight" />
-          bold
-        </label>
-        <label for="filename-font-italic">
-          <input type="checkbox" id="filename-font-italic" data-controls="--button-font-style" />
-          italic
-        </label>
-        <label for="filename-font-underline">
-          <input type="checkbox" id="filename-font-underline" data-controls="--button-text-decoration" checked />
-          underline
-        </label>
-      </fieldset>
-
-      <label for="filename-padding">
-        padding
-        <input id="filename-padding" type="number" value="5" min="0" max="100" step="0.25" data-controls="--button-padding" /> px
-      </label>
-
-      <fieldset>
-        <legend>box shadow</legend>
-        <label for="filename-shadow-position-x">
-          position (horizontal)
-          <input id="filename-shadow-position-x" type="number" value="5" min="-100" max="100" step="1" data-controls="--button-box-shadow" data-shadow-property="position-x" /> px
-        </label>
-        <label for="filename-shadow-position-y">
-          position (vertical)
-          <input id="filename-shadow-position-y" type="number" value="5" min="-100" max="100" step="1" data-controls="--button-box-shadow" data-shadow-property="position-y" /> px
-        </label>
-        <label for="filename-shadow-blur">
-          blur
-          <input id="filename-shadow-blur" type="number" value="5" min="0" max="100" step="1" data-controls="--button-box-shadow" data-shadow-property="blur" /> px
-        </label>
-        <label for="filename-shadow-spread">
-          spread
-          <input id="filename-shadow-spread" type="number" value="5" min="0" max="100" step="1" data-controls="--button-box-shadow" data-shadow-property="spread" /> px
-        </label>
-        <label for="filename-shadow-color">
-          color
-          <input id="filename-shadow-color" type="color" value="#333333" data-controls="--button-box-shadow" data-shadow-property="color" />
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>border</legend>
-        <label for="filename-border-style" class="margin-top">
-          border style
-          <select id="filename-border-style" data-controls="--button-border-style">
-            <option value="none" selected>none</option>
-            <option value="dotted">dotted</option>
-            <option value="dashed">dashed</option>
-            <option value="solid">solid</option>
-            <option value="double">double</option>
-            <option value="groove">groove</option>
-            <option value="ridge">ridge</option>
-            <option value="inset">inset</option>
-            <option value="outset">outset</option>
+        <label for="filename-font" class="margin-top">
+          font family
+          <select id="filename-font" data-controls="--button-font">
+            <option value="serif" selected>serif #1</option>
+            <option value="serif-2">serif #2</option>
+            <option value="sans-serif">sans-serif #1</option>
+            <option value="sans-serif-2">sans-serif #2</option>
+            <option value="monospace">monospace</option>
           </select>
         </label>
-        <label for="filename-border-width">
-          width
-          <input id="filename-border-width" type="number" value="0" min="0" max="100" step="1" data-controls="--button-border-width" /> px
+
+        <fieldset>
+          <legend>font style</legend>
+          <label for="filename-font-bold">
+            <input type="checkbox" id="filename-font-bold" data-controls="--button-font-weight" />
+            bold
+          </label>
+          <label for="filename-font-italic">
+            <input type="checkbox" id="filename-font-italic" data-controls="--button-font-style" />
+            italic
+          </label>
+          <label for="filename-font-underline">
+            <input type="checkbox" id="filename-font-underline" data-controls="--button-text-decoration" checked />
+            underline
+          </label>
+        </fieldset>
+      </details>
+
+      <details>
+        <summary>Filename button: padding & borders</summary>
+        <label for="filename-padding">
+          padding
+          <input id="filename-padding" type="number" value="5" min="0" max="100" step="0.25" data-controls="--button-padding" /> px
         </label>
-        <label for="filename-border-radius">
-          radius
-          <input id="filename-border-radius" type="number" value="8" min="0" max="100" step="1" data-controls="--button-border-radius" /> px
-        </label>
-        <label for="filename-border-color">
-          color
-          <input id="filename-border-color" type="color" value="#333333" data-controls="--button-border-color" />
-        </label>
-      </fieldset>
+  
+        <fieldset>
+          <legend>box shadow</legend>
+          <label for="filename-shadow-position-x">
+            position (horizontal)
+            <input id="filename-shadow-position-x" type="number" value="5" min="-100" max="100" step="1" data-controls="--button-box-shadow" data-shadow-property="position-x" /> px
+          </label>
+          <label for="filename-shadow-position-y">
+            position (vertical)
+            <input id="filename-shadow-position-y" type="number" value="5" min="-100" max="100" step="1" data-controls="--button-box-shadow" data-shadow-property="position-y" /> px
+          </label>
+          <label for="filename-shadow-blur">
+            blur
+            <input id="filename-shadow-blur" type="number" value="5" min="0" max="100" step="1" data-controls="--button-box-shadow" data-shadow-property="blur" /> px
+          </label>
+          <label for="filename-shadow-spread">
+            spread
+            <input id="filename-shadow-spread" type="number" value="5" min="0" max="100" step="1" data-controls="--button-box-shadow" data-shadow-property="spread" /> px
+          </label>
+          <label for="filename-shadow-color">
+            color
+            <input id="filename-shadow-color" type="color" value="#333333" data-controls="--button-box-shadow" data-shadow-property="color" />
+          </label>
+        </fieldset>
+  
+        <fieldset>
+          <legend>border</legend>
+          <label for="filename-border-style" class="margin-top">
+            border style
+            <select id="filename-border-style" data-controls="--button-border-style">
+              <option value="none" selected>none</option>
+              <option value="dotted">dotted</option>
+              <option value="dashed">dashed</option>
+              <option value="solid">solid</option>
+              <option value="double">double</option>
+              <option value="groove">groove</option>
+              <option value="ridge">ridge</option>
+              <option value="inset">inset</option>
+              <option value="outset">outset</option>
+            </select>
+          </label>
+          <label for="filename-border-width">
+            width
+            <input id="filename-border-width" type="number" value="0" min="0" max="100" step="1" data-controls="--button-border-width" /> px
+          </label>
+          <label for="filename-border-radius">
+            radius
+            <input id="filename-border-radius" type="number" value="8" min="0" max="100" step="1" data-controls="--button-border-radius" /> px
+          </label>
+          <label for="filename-border-color">
+            color
+            <input id="filename-border-color" type="color" value="#333333" data-controls="--button-border-color" />
+          </label>
+        </fieldset>
+      </details>
+      
+
 
       <!-- <p><i>Coming soon</i></p>
       <ul>
@@ -787,114 +813,120 @@
       <button id="dialog-button" class="close-fileviewer">close</button>
     </dialog>
     <section>
-      <label for="dialog-bg-color">
-        background color
-        <input id="dialog-bg-color" type="color" value="#dfdfdf" data-controls="--dialog-bg" />
-      </label>
-
-      <label for="dialog-button-bg-color">
-        button background color
-        <input id="dialog-button-bg-color" type="color" value="#dfdfdf" data-controls="--dialog-button-bg" />
-      </label>
-
-      <label for="dialog-button-color">
-        button color
-        <input id="dialog-button-color" type="color" value="#333333" data-controls="--dialog-button-color" />
-      </label>
-
-       <fieldset>
-        <legend>when clicked</legend>
-
-        <label for="click-style-dialog-button">
-          see "clicked" style
-          <input id="click-style-dialog-button" type="checkbox" />
-        </label>
-
-        <label for="dialog-button-bg-color_click">
+      <details>
+        <summary>File viewer</summary>
+        <label for="dialog-bg-color">
           background color
-          <input id="dialog-button-bg-color_click" type="color" value="#800080" data-controls="--dialog-button-focus-bg"/>
+          <input id="dialog-bg-color" type="color" value="#dfdfdf" data-controls="--dialog-bg" />
         </label>
   
-        <label for="dialog-button-color_click">
-          color
-          <input id="dialog-button-color_click" type="color" value="#ffffff" data-controls="--dialog-button-focus-color" />
-        </label>
-      </fieldset>
+        <fieldset>
+          <legend>box shadow</legend>
+          <label for="dialog-shadow-position-x">
+            position (horizontal)
+            <input id="dialog-shadow-position-x" type="number" value="5" min="-100" max="100" step="1" data-controls="--dialog-box-shadow" data-shadow-property="position-x" /> px
+          </label>
+          <label for="dialog-shadow-position-y">
+            position (vertical)
+            <input id="dialog-shadow-position-y" type="number" value="5" min="-100" max="100" step="1" data-controls="--dialog-box-shadow" data-shadow-property="position-y" /> px
+          </label>
+          <label for="dialog-shadow-blur">
+            blur
+            <input id="dialog-shadow-blur" type="number" value="5" min="0" max="100" step="1" data-controls="--dialog-box-shadow" data-shadow-property="blur" /> px
+          </label>
+          <label for="dialog-shadow-spread">
+            spread
+            <input id="dialog-shadow-spread" type="number" value="5" min="0" max="100" step="1" data-controls="--dialog-box-shadow" data-shadow-property="spread" /> px
+          </label>
+          <label for="dialog-shadow-color">
+            color
+            <input id="dialog-shadow-color" type="color" value="#333333" data-controls="--dialog-box-shadow" data-shadow-property="color" />
+          </label>
+        </fieldset>
+  
+        <fieldset>
+          <legend>border</legend>
+          <label for="dialog-border-style" class="margin-top">
+            border style
+            <select id="dialog-border-style" data-controls="--dialog-border-style">
+              <option value="none">none</option>
+              <option value="dotted" selected>dotted</option>
+              <option value="dashed">dashed</option>
+              <option value="solid">solid</option>
+              <option value="double">double</option>
+              <option value="groove">groove</option>
+              <option value="ridge">ridge</option>
+              <option value="inset">inset</option>
+              <option value="outset">outset</option>
+            </select>
+          </label>
+          <label for="dialog-border-width">
+            width
+            <input id="dialog-border-width" type="number" value="2" min="0" max="100" step="1" data-controls="--dialog-border-width" /> px
+          </label>
+          <label for="dialog-border-radius">
+            radius
+            <input id="dialog-border-radius" type="number" value="8" min="0" max="100" step="1" data-controls="--dialog-border-radius" /> px
+          </label>
+          <label for="dialog-border-color">
+            color
+            <input id="dialog-border-color" type="color" value="#333333" data-controls="--dialog-border-color" />
+          </label>
+        </fieldset>
+      </details>
 
-      <label for="dialog-button-font" class="margin-top">
-        button font family
-        <select id="dialog-button-font" data-controls="--dialog-button-font">
-          <option value="serif">serif #1</option>
-          <option value="serif-2">serif #2</option>
-          <option value="sans-serif">sans-serif #1</option>
-          <option value="sans-serif-2">sans-serif #2</option>
-          <option value="monospace" selected>monospace</option>
-        </select>
-      </label>
+      <details>
+        <summary>File viewer: close button</summary>
+        <label for="dialog-button-bg-color">
+        button background color
+        <input id="dialog-button-bg-color" type="color" value="#dfdfdf" data-controls="--dialog-button-bg" />
+        </label>
 
-      <label for="dialog-button-font-size">
-        button font size
-        <input id="dialog-button-font-size" type="number" value="0.8" min="0.5" max="8" step="0.125" data-controls="--dialog-button-font-size" /> rem
-      </label>
+        <label for="dialog-button-color">
+          button color
+          <input id="dialog-button-color" type="color" value="#333333" data-controls="--dialog-button-color" />
+        </label>
 
-      <label for="dialog-button-padding">
-        button padding
-        <input id="dialog-button-padding" type="number" value="3" min="0" max="100" step="0.25" data-controls="--dialog-button-padding" /> px
-      </label>
+        <fieldset>
+          <legend>when clicked</legend>
 
-      <fieldset>
-        <legend>box shadow</legend>
-        <label for="dialog-shadow-position-x">
-          position (horizontal)
-          <input id="dialog-shadow-position-x" type="number" value="5" min="-100" max="100" step="1" data-controls="--dialog-box-shadow" data-shadow-property="position-x" /> px
-        </label>
-        <label for="dialog-shadow-position-y">
-          position (vertical)
-          <input id="dialog-shadow-position-y" type="number" value="5" min="-100" max="100" step="1" data-controls="--dialog-box-shadow" data-shadow-property="position-y" /> px
-        </label>
-        <label for="dialog-shadow-blur">
-          blur
-          <input id="dialog-shadow-blur" type="number" value="5" min="0" max="100" step="1" data-controls="--dialog-box-shadow" data-shadow-property="blur" /> px
-        </label>
-        <label for="dialog-shadow-spread">
-          spread
-          <input id="dialog-shadow-spread" type="number" value="5" min="0" max="100" step="1" data-controls="--dialog-box-shadow" data-shadow-property="spread" /> px
-        </label>
-        <label for="dialog-shadow-color">
-          color
-          <input id="dialog-shadow-color" type="color" value="#333333" data-controls="--dialog-box-shadow" data-shadow-property="color" />
-        </label>
-      </fieldset>
+          <label for="click-style-dialog-button">
+            see "clicked" style
+            <input id="click-style-dialog-button" type="checkbox" />
+          </label>
 
-      <fieldset>
-        <legend>border</legend>
-        <label for="dialog-border-style" class="margin-top">
-          border style
-          <select id="dialog-border-style" data-controls="--dialog-border-style">
-            <option value="none">none</option>
-            <option value="dotted" selected>dotted</option>
-            <option value="dashed">dashed</option>
-            <option value="solid">solid</option>
-            <option value="double">double</option>
-            <option value="groove">groove</option>
-            <option value="ridge">ridge</option>
-            <option value="inset">inset</option>
-            <option value="outset">outset</option>
+          <label for="dialog-button-bg-color_click">
+            background color
+            <input id="dialog-button-bg-color_click" type="color" value="#800080" data-controls="--dialog-button-focus-bg"/>
+          </label>
+    
+          <label for="dialog-button-color_click">
+            color
+            <input id="dialog-button-color_click" type="color" value="#ffffff" data-controls="--dialog-button-focus-color" />
+          </label>
+        </fieldset>
+
+        <label for="dialog-button-font" class="margin-top">
+          button font family
+          <select id="dialog-button-font" data-controls="--dialog-button-font">
+            <option value="serif">serif #1</option>
+            <option value="serif-2">serif #2</option>
+            <option value="sans-serif">sans-serif #1</option>
+            <option value="sans-serif-2">sans-serif #2</option>
+            <option value="monospace" selected>monospace</option>
           </select>
         </label>
-        <label for="dialog-border-width">
-          width
-          <input id="dialog-border-width" type="number" value="2" min="0" max="100" step="1" data-controls="--dialog-border-width" /> px
+
+        <label for="dialog-button-font-size">
+          button font size
+          <input id="dialog-button-font-size" type="number" value="0.8" min="0.5" max="8" step="0.125" data-controls="--dialog-button-font-size" /> rem
         </label>
-        <label for="dialog-border-radius">
-          radius
-          <input id="dialog-border-radius" type="number" value="8" min="0" max="100" step="1" data-controls="--dialog-border-radius" /> px
+
+        <label for="dialog-button-padding">
+          button padding
+          <input id="dialog-button-padding" type="number" value="3" min="0" max="100" step="0.25" data-controls="--dialog-button-padding" /> px
         </label>
-        <label for="dialog-border-color">
-          color
-          <input id="dialog-border-color" type="color" value="#333333" data-controls="--dialog-border-color" />
-        </label>
-      </fieldset>
+      </details>
 
       <!-- <p><i>Coming soon</i></p>
       <ul>

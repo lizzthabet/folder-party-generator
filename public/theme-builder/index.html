@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>folder party ✐ theme builder</title>
+  <link rel="icon" href="favicon.png" type="image/x-icon" />
   <style>
     :root {
       /* --- customizable --- */
@@ -14,13 +15,13 @@
       --button-color: blue;
       --button-font: 'Times New Roman', Times, serif;
       --button-focus-bg: purple;
-      --button-focus-border-color: none; /* todo: add a control for this pls */
+      --button-focus-border-color: unset;
       --button-focus-color: white;
       --button-font-style: normal;
       --button-font-size: 1rem;
       --button-font-weight: normal;
       --button-text-decoration: underline;
-      --button-padding: 5px;
+      --button-padding: 5px 5px;
       --button-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
       --button-border-color: none;
       --button-border-radius: 8px;
@@ -33,13 +34,15 @@
       --dialog-border-width: 2px;
       --dialog-bg: #dfdfdf;
       --dialog-button-bg: #dfdfdf;
+      --dialog-button-border-radius: 5px;
       --dialog-button-color: #333333;
       --dialog-button-font: monospace;
       --dialog-button-font-size: 0.80rem;
       --dialog-button-focus-bg: purple;
       --dialog-button-focus-color: white;
-      --dialog-button-padding: unset;
+      --dialog-button-padding: 1px 4px;
       --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+      --dialog-padding: 16px;
     }
 
     body {
@@ -75,7 +78,19 @@
       margin-top: var(--basic-margin);
     }
 
+    fieldset > legend {
+      margin-left: -18px;
+    }
+
+    legend + label {
+       margin-top: calc(var(--basic-margin) * 0.5);
+    }
+
     details + details {
+      margin-top: var(--basic-margin);
+    }
+
+    details[open] + details {
       margin-top: calc(var(--basic-margin) * 2);
     }
 
@@ -159,11 +174,9 @@
       font-family: var(--dialog-button-font);
       font-size: var(--dialog-button-font-size);
       padding: var(--dialog-button-padding);
-      /* border radius */
-      /* padding */
+      border-radius: var(--dialog-button-border-radius);
       /* set */
       border: none;
-      border-radius: 5px;
       float: right;
       margin: 0.5rem -0.5rem -0.5rem 0.5rem;
       text-transform: uppercase;
@@ -176,7 +189,6 @@
       background-color: var(--dialog-button-focus-bg);
       color: var(--dialog-button-focus-color);
       /* set */
-      border-radius: 5px;
       outline: none;
     }
 
@@ -192,6 +204,7 @@
       border-radius: var(--dialog-border-radius);
       border-width: var(--dialog-border-width);
       box-shadow: var(--dialog-box-shadow);
+      padding: var(--dialog-padding);
       /* set */
       z-index: 2;
     }
@@ -213,6 +226,7 @@
   <script>
     const DATA_CONTROLS = "data-controls"
     const DATA_SHADOW_PROPERTY = "data-shadow-property"
+    const DATA_PADDING_PROPERTY = "data-padding-direction"
     const FONT_SELECT_TO_PROPERTY = {
       "serif": "Times New Roman', Times, serif",
       "serif-2": "Georgia, 'Times New Roman', Times, serif",
@@ -296,7 +310,7 @@
       const cssVarName = element.getAttribute(DATA_CONTROLS)
       const boxShadowProperty = element.getAttribute(DATA_SHADOW_PROPERTY)
       if (!boxShadowProperty) {
-        console.warn(`missing 'data-shadow-property' for ${element.id}`)
+        console.warn(`missing '${DATA_SHADOW_PROPERTY}' for ${element.id}`)
         return "none"
       }
 
@@ -320,8 +334,35 @@
           cssValues[4] = element.value
           break
         default:
-          console.warn(`missing 'data-shadow-property' for ${element.id}`)
+          console.warn(`missing '${DATA_SHADOW_PROPERTY}' for ${element.id}`)
           return "none"
+      }
+
+      return cssValues.join(" ")
+    }
+
+    /** @type {valueTransformer} */
+    const composePadding = (element) => {
+      const cssVarName = element.getAttribute(DATA_CONTROLS)
+      const paddingDirection = element.getAttribute(DATA_PADDING_PROPERTY)
+      if (!paddingDirection) {
+        console.warn(`missing '${DATA_PADDING_PROPERTY}' for ${element.id}`)
+        return "0"
+      }
+
+      const cssVarString = window.getComputedStyle(document.documentElement).getPropertyValue(cssVarName)
+      const cssValues = cssShorthandToList(cssVarString)
+      // This assumes that the shorthand has two number values (top/bottom, left/right)
+      switch (paddingDirection) {
+        case "tb":
+          cssValues[0] = valueToPx(element)
+          break
+        case "lr":
+          cssValues[1] = valueToPx(element)
+          break
+        default:
+          console.warn(`missing '${DATA_PADDING_PROPERTY}' for ${element.id}`)
+          return "0"
       }
 
       return cssValues.join(" ")
@@ -331,9 +372,13 @@
     const valueTransformers = {
       "dialog-border-radius": valueToPx,
       "dialog-border-width": valueToPx,
+      "dialog-button-border-radius": valueToPx,
       "dialog-button-font": selectToFontProperty,
       "dialog-button-font-size": valueToRem,
-      "dialog-button-padding": valueToPx,
+      "dialog-button-padding-lr": composePadding,
+      "dialog-button-padding-tb": composePadding,
+      "dialog-padding-lr": composePadding,
+      "dialog-padding-tb": composePadding,
       "dialog-shadow-blur": composeBoxShadow,
       "dialog-shadow-color": composeBoxShadow,
       "dialog-shadow-position-x": composeBoxShadow,
@@ -346,7 +391,8 @@
       "filename-font-italic": (element) => element.checked ? "italic" : "normal",
       "filename-font-size": valueToRem,
       "filename-font-underline": (element) => element.checked ? "underline" : "none",
-      "filename-padding": valueToPx,
+      "filename-padding-lr": composePadding,
+      "filename-padding-tb": composePadding,
       "filename-shadow-blur": composeBoxShadow,
       "filename-shadow-color": composeBoxShadow,
       "filename-shadow-position-x": composeBoxShadow,
@@ -385,7 +431,7 @@
     const composeValueFromBoxShadow = (input, style) => {
       const boxShadowProperty = input.getAttribute(DATA_SHADOW_PROPERTY)
       if (!boxShadowProperty) {
-        console.warn(`missing 'data-shadow-property' for ${element.id}`)
+        console.warn(`missing '${DATA_SHADDOW_PROPERTY}' for ${input.id}`)
       }
 
       const cssValues = cssShorthandToList(style)
@@ -408,7 +454,35 @@
           defaultReverseTransformer(input, cssValues[4])
           return
         default:
-          console.warn(`missing 'data-shadow-property' for ${element.id}`)
+          console.warn(`missing '${DATA_SHADDOW_PROPERTY}' for ${input.id}`)
+      }
+    }
+
+    /** @type {reverseValueTransformer} */
+    const composeValueFromPadding = (input, style) => {
+      const paddingDirection = input.getAttribute(DATA_PADDING_PROPERTY)
+      if (!paddingDirection) {
+        console.warn(`missing '${DATA_PADDING_PROPERTY}' for ${input.id}`)
+      }
+
+      const cssValues = cssShorthandToList(style)
+      let inputValue = ""
+      // TODO: Make sure this can handle an absense of a second value
+      if (cssValues.length === 1) {
+        pxToValue(input, cssValues[0])
+        return
+      }
+
+      // This assumes that the shorthand has two numbers (top/bottom, left/right)
+      switch (paddingDirection) {
+        case "tb":
+          pxToValue(input, cssValues[0])
+          return
+        case "lr":
+          pxToValue(input, cssValues[1])
+          return
+        default:
+          console.warn(`missing '${DATA_PADDING_PROPERTY}' for ${input.id}`)
       }
     }
 
@@ -416,9 +490,13 @@
     const reverseValueTransformers = {
       "dialog-border-radius": pxToValue,
       "dialog-border-width": pxToValue,
+      "dialog-button-border-radius": pxToValue,
       "dialog-button-font": fontToValue,
       "dialog-button-font-size": remToValue,
-      "dialog-button-padding": pxToValue,
+      "dialog-button-padding-lr": composeValueFromPadding,
+      "dialog-button-padding-tb": composeValueFromPadding,
+      "dialog-padding-lr": composeValueFromPadding,
+      "dialog-padding-tb": composeValueFromPadding,
       "dialog-shadow-blur": composeValueFromBoxShadow,
       "dialog-shadow-color": composeValueFromBoxShadow,
       "dialog-shadow-position-x": composeValueFromBoxShadow,
@@ -431,7 +509,8 @@
       "filename-font-italic": fontStyleToValue,
       "filename-font-size": remToValue,
       "filename-font-underline": fontStyleToValue,
-      "filename-padding": pxToValue,
+      "filename-padding-lr": composeValueFromPadding,
+      "filename-padding-tb": composeValueFromPadding,
       "filename-shadow-blur": composeValueFromBoxShadow,
       "filename-shadow-color": composeValueFromBoxShadow,
       "filename-shadow-position-x": composeValueFromBoxShadow,
@@ -699,6 +778,10 @@
             color
             <input id="filename-color_click" type="color" value="#ffffff" data-controls="--button-focus-color" />
           </label>
+          <label for="filename-border-color_click">
+            border color <i>(if border)</i>
+            <input id="filename-border-color_click" type="color" value="#ffffff" data-controls="--button-focus-border-color" />
+          </label>
         </fieldset>
       </details>
 
@@ -739,10 +822,18 @@
 
       <details>
         <summary>Filename button: padding & borders</summary>
-        <label for="filename-padding">
-          padding
-          <input id="filename-padding" type="number" value="5" min="0" max="100" step="0.25" data-controls="--button-padding" /> px
-        </label>
+        <fieldset>
+          <legend>padding</legend> 
+          <label for="filename-padding-tb">
+            top / bottom
+            <input id="filename-padding-tb" type="number" value="5" min="0" max="100" step="0.25" data-controls="--button-padding" data-padding-direction="tb" /> px
+          </label>
+  
+          <label for="filename-padding-lr">
+            left / right
+            <input id="filename-padding-lr" type="number" value="5" min="0" max="100" step="0.25" data-controls="--button-padding" data-padding-direction="lr" /> px
+          </label>
+        </fieldset>
   
         <fieldset>
           <legend>box shadow</legend>
@@ -798,8 +889,6 @@
           </label>
         </fieldset>
       </details>
-      
-
 
       <!-- <p><i>Coming soon</i></p>
       <ul>
@@ -819,6 +908,19 @@
           background color
           <input id="dialog-bg-color" type="color" value="#dfdfdf" data-controls="--dialog-bg" />
         </label>
+
+        <fieldset>
+          <legend>padding</legend>
+          <label for="dialog-padding-tb">
+            top / bottom
+            <input id="dialog-padding-tb" type="number" value="16" min="0" max="100" step="0.25" data-controls="--dialog-padding" data-padding-direction="tb" /> px
+          </label>
+  
+          <label for="dialog-padding-lr">
+            left / right
+            <input id="dialog-padding-lr" type="number" value="16" min="0" max="100" step="0.25" data-controls="--dialog-padding" data-padding-direction="lr" /> px
+          </label>
+        </fieldset>
   
         <fieldset>
           <legend>box shadow</legend>
@@ -846,7 +948,7 @@
   
         <fieldset>
           <legend>border</legend>
-          <label for="dialog-border-style" class="margin-top">
+          <label for="dialog-border-style">
             border style
             <select id="dialog-border-style" data-controls="--dialog-border-style">
               <option value="none">none</option>
@@ -922,10 +1024,23 @@
           <input id="dialog-button-font-size" type="number" value="0.8" min="0.5" max="8" step="0.125" data-controls="--dialog-button-font-size" /> rem
         </label>
 
-        <label for="dialog-button-padding">
-          button padding
-          <input id="dialog-button-padding" type="number" value="3" min="0" max="100" step="0.25" data-controls="--dialog-button-padding" /> px
+        <label for="dialog-button-border-radius">
+          button radius
+          <input id="dialog-button-border-radius" type="number" value="5" min="0" max="100" step="1" data-controls="--dialog-button-border-radius" /> px
         </label>
+
+        <fieldset>
+          <legend>padding</legend>
+          <label for="dialog-button-padding-tb">
+            top / bottom
+            <input id="dialog-button-padding-tb" type="number" value="1" min="0" max="100" step="0.25" data-controls="--dialog-button-padding" data-padding-direction="tb" /> px
+          </label>
+  
+          <label for="dialog-button-padding-lr">
+            left / right
+            <input id="dialog-button-padding-lr" type="number" value="4" min="0" max="100" step="0.25" data-controls="--dialog-button-padding" data-padding-direction="lr" /> px
+          </label>
+        </fieldset>
       </details>
 
       <!-- <p><i>Coming soon</i></p>

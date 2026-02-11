@@ -387,13 +387,15 @@ function createStyle({ displayInstructions }: TemplateOptions): string {
         --dialog-border-width: 2px;
         --dialog-bg: #dfdfdf;
         --dialog-button-bg: #dfdfdf;
+        --dialog-button-border-radius: 5px;
         --dialog-button-color: #333333;
         --dialog-button-font: monospace;
         --dialog-button-font-size: 0.80rem;
         --dialog-button-focus-bg: purple;
         --dialog-button-focus-color: white;
-        --dialog-button-padding: unset;
+        --dialog-button-padding: 1px 4px;
         --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+        --dialog-padding: 16px;
       }
 
       html {
@@ -465,6 +467,7 @@ function createStyle({ displayInstructions }: TemplateOptions): string {
         border-radius: var(--dialog-border-radius);
         border-width: var(--dialog-border-width);
         box-shadow: var(--dialog-box-shadow);
+        padding: var(--dialog-padding);
         /* set */
         width: max-content; /* Size dialogs in Firefox to fit their content */
         z-index: 2;
@@ -477,9 +480,9 @@ function createStyle({ displayInstructions }: TemplateOptions): string {
         font-family: var(--dialog-button-font);
         font-size: var(--dialog-button-font-size);
         padding: var(--dialog-button-padding);
+        border-radius: var(--dialog-button-border-radius);
         /* set */
         border: none;
-        border-radius: 5px;
         float: right;
         margin: 0.5rem -0.5rem -0.5rem 0.5rem;
         text-transform: uppercase;
@@ -491,7 +494,6 @@ function createStyle({ displayInstructions }: TemplateOptions): string {
         background-color: var(--dialog-button-focus-bg);
         color: var(--dialog-button-focus-color);
         /* set */
-        border-radius: 5px;
         outline: none;
       }
 

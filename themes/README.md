@@ -1,4 +1,4 @@
-# folder party theme directory
+# folder party theme library
 
 ## how to use a theme
 
@@ -23,7 +23,7 @@ The folder party generator script will automatically use the `furniture` and `th
 
 Once you download a theme, you can customize it by adding or removing furniture files, editing the css styles, or mix-and-matching different styles with furniture sets.
 
-<!-- ### working with multiple themes -->
+<!-- TODO: ### working with multiple themes -->
 
 ## themes
 

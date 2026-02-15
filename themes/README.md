@@ -29,8 +29,20 @@ Once you download a theme, you can customize it by adding or removing furniture 
 
 Each theme has been lovingly crafted by artists from many different practices around the question: "if you were to host a gathering on your computer, what would it look like?"
 
-### hand-drawn apartment by [lizz](https://lizz.website)
-<!-- designed by [Lizz Thabet](https://lizz.website) -->
+### Ammama's House (kolam party)
+_Designed by [Aarati Akkapeddi](https://aarati.online)_
+
+Kolams (or Muggulu ముగ్గు) are intricate drawings created using rice flour, typically made by women in South India each morning at the thresholds of their homes. These designs often begin with a matrix of dots, around which looping lines form mathematically complex patterns. This practice evokes the idea of thresholds, domestic rituals, and the separation between public and private space. For this reason, I chose to create kolam 'tiles' for my furniture that can be rearranged to develop continuous kolam designs. The backgrounds you can choose from are images I took at the threshold of my grandmother's house in Chennai.
+
+Rearrange the tiles to create a kolam design that welcomes guests and brings good energy into your space.
+
+[visit a preview](https://makeyour.computer/preview/ammamas-house)  
+[download theme files](./ammamas-house)  
+
+![a gif of the artist rearranging the kolam tiles of their theme to create intricate designs](./ammamas-house/preview.gif)
+
+### hand-drawn apartment
+_Designed by [Lizz Thabet](https://lizz.website)_
 
 A collection of simple line drawings of furniture based on the artist's apartment. There are couches, rugs, tables, chairs, flowers, and other furnishings to arrange different spaces. The styles take inspiration from browser defaults, with a special love for "visited hyperlink purple."
 

@@ -5,7 +5,7 @@ const node_path_1 = require("node:path");
 const node_process_1 = require("node:process");
 const CURRENT_DIRECTORY = '.';
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g;
-const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?.*/;
+const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?[^.].*/;
 const INDEX_FILE_REGEX = /^index[_|-]?.*\.html/;
 const DEFAULT_FURNITURE_FOLDER = 'furniture';
 const DEFAULT_THEME_FOLDER = 'theme';
@@ -22,6 +22,7 @@ const ENV_OPTIONS = {
     RANDOM: 'RANDOM',
     INSTRUCTIONS: 'INSTRUCTIONS',
 };
+// TODO: add .git ?
 const FILES_TO_IGNORE = [
     /^\.DS_Store$/, // Silly MacOS files
     /^generate\.js$/, // The folder party generator script
@@ -50,7 +51,7 @@ function getOptionsFromEnv(e) {
     }
     const themeFolder = e[ENV_OPTIONS.THEME];
     if (themeFolder) {
-        options.furniture = (0, node_path_1.normalize)(themeFolder);
+        options.theme = (0, node_path_1.normalize)(themeFolder);
     }
     const overwrite = e[ENV_OPTIONS.OVERWRITE];
     if (overwrite) {
@@ -124,7 +125,7 @@ function sortFilesIntoInput(files, options) {
     // If new files should be appended to the existing html file,
     // get the file contents and a list of files already included in it
     // TODO: This logic may get more complicated is someone is swapping furniture and theme;
-    // it doesn't currently support keeping your file arrangements, but swapping theme and furniture.
+    // it doesn't currently support keeping your file arrangements while swapping theme and furniture.
     // TODO: Add support for reading from the most recent index file, in case there are multiple.
     if (options.appendFile) {
         try {
@@ -150,9 +151,6 @@ function sortFilesIntoInput(files, options) {
         const file = files[i];
         // Skip file if it's ignored globally; this filters out files
         // and directories, (but not files inside an ignored directory)
-        // if (FILES_TO_IGNORE.has(file.parsed.base)) {
-        //   continue
-        // }
         if (FILES_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
             continue;
         }
@@ -180,6 +178,9 @@ function sortFilesIntoInput(files, options) {
         }
         else if (!THEME_OR_FURNITURE_REGEX.test(parsedBaseDir)) {
             input.files.push(file);
+        }
+        else {
+            // console.debug("> > * ignoring file:", file.path)
         }
     }
     console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);

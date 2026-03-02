@@ -19,7 +19,7 @@ type Options = {
 
 const CURRENT_DIRECTORY = '.'
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g
-const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?.*/
+const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?[^.].*/
 const INDEX_FILE_REGEX = /^index[_|-]?.*\.html/
 const DEFAULT_FURNITURE_FOLDER = 'furniture'
 const DEFAULT_THEME_FOLDER = 'theme'
@@ -40,6 +40,7 @@ const ENV_OPTIONS: {[Property in EnvVar]: string} = {
   INSTRUCTIONS: 'INSTRUCTIONS',
 }
 
+// TODO: add .git ?
 const FILES_TO_IGNORE = [
   /^\.DS_Store$/, // Silly MacOS files
   /^generate\.js$/, // The folder party generator script
@@ -72,7 +73,7 @@ function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
 
   const themeFolder: string | undefined = e[ENV_OPTIONS.THEME]
   if (themeFolder) {
-    options.furniture = normalize(themeFolder)
+    options.theme = normalize(themeFolder)
   }
 
   const overwrite: string | undefined = e[ENV_OPTIONS.OVERWRITE]
@@ -173,7 +174,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
   // get the file contents and a list of files already included in it
 
   // TODO: This logic may get more complicated is someone is swapping furniture and theme;
-  // it doesn't currently support keeping your file arrangements, but swapping theme and furniture.
+  // it doesn't currently support keeping your file arrangements while swapping theme and furniture.
   // TODO: Add support for reading from the most recent index file, in case there are multiple.
   if (options.appendFile) {
     try {
@@ -200,9 +201,6 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     const file = files[i]
     // Skip file if it's ignored globally; this filters out files
     // and directories, (but not files inside an ignored directory)
-    // if (FILES_TO_IGNORE.has(file.parsed.base)) {
-    //   continue
-    // }
     if (FILES_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
       continue
     }
@@ -231,6 +229,8 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     // directories that aren't currently in use)
     } else if (!THEME_OR_FURNITURE_REGEX.test(parsedBaseDir)) {
       input.files.push(file)
+    } else {
+      // console.debug("> > * ignoring file:", file.path)
     }
   }
 

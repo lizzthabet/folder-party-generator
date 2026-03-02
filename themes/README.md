@@ -50,3 +50,17 @@ visit a preview _(coming soon)_
 [download theme files](./hand-drawn-apartment/)  
 
 ![a screenshot of black and white line drawings of furniture arranged on a webpage with gray buttons that have blue text with the file paths of folder party content](./hand-drawn-apartment/preview.jpg)
+
+### under spiraling stars
+_Designed by [raya marie hazell](https://rayais.online) ([@rayahazell_](https://instagram.com/rayahazell_))_
+
+under spiraling stars, stones become altars, fallen petals pathways to portals and forgotten archives. in the open tabs, the ghosts of what we discard, the forgotten files are oracles, reflections of our dreams. as the stars of us slip through the surface of the sea and tumble in the churn of the earth, as we sparkle in orbit and caper around unfallen leaves, we are remembering and recalling, sketching forward and twisting back in a whirlpool constellation. 
+
+**special instructions from raya:**
+- select one of the backgrounds from the `theme/backgrounds` folder: in red constellation (default), on a shimmer sea, from a forest starlight, or in tumbling terratory
+- please be mindful that much of the furniture is made from my own home. please make yourself at home and move in, but also treat what you find with care and curiosity as you remix them.
+
+[visit a preview](https://makeyour.computer/preview/under-spiraling-stars)  
+[download theme files](./under-spiraling-stars/)  
+
+![a screenshot of a rectangular panes stacked on top of each other, each one filled with a different earthy red texture. the panes are set against a dark red background with white sparkling stars arranged around the space.](./under-spiraling-stars/preview.png)

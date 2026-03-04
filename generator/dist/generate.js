@@ -19,7 +19,7 @@ const ENV_OPTIONS = {
     THEME: 'THEME',
     OVERWRITE: 'OVERWRITE',
     APPEND: 'APPEND',
-    RANDOM: 'RANDOM',
+    RANDOM_LAYOUT: 'RANDOM_LAYOUT',
     INSTRUCTIONS: 'INSTRUCTIONS',
 };
 // TODO: add .git ?
@@ -39,7 +39,7 @@ function getOptionsFromEnv(e) {
         theme: DEFAULT_THEME_FOLDER,
         displayInstructions: true,
         overwriteFile: false,
-        randomPlacement: false,
+        randomLayout: false,
     };
     const folderName = e[ENV_OPTIONS.FOLDER];
     if (folderName) {
@@ -61,9 +61,9 @@ function getOptionsFromEnv(e) {
     if (append) {
         options.appendFile = parseBool(append);
     }
-    const random = e[ENV_OPTIONS.RANDOM];
+    const random = e[ENV_OPTIONS.RANDOM_LAYOUT];
     if (random) {
-        options.randomPlacement = parseBool(random);
+        options.randomLayout = parseBool(random);
     }
     const instructions = e[ENV_OPTIONS.INSTRUCTIONS];
     if (instructions) {
@@ -120,7 +120,7 @@ function sortFilesIntoInput(files, options) {
         furniture: [],
         theme: [],
         displayInstructions: options.displayInstructions,
-        randomPlacement: options.randomPlacement,
+        randomLayout: options.randomLayout,
     };
     // If new files should be appended to the existing html file,
     // get the file contents and a list of files already included in it
@@ -257,7 +257,7 @@ function generateTemplate(input) {
     if (typeof input.appendToIndex === "number") {
         const beforeNewContent = input.existingFileContent.slice(0, input.appendToIndex + 1);
         const afterNewContent = input.existingFileContent.slice(input.appendToIndex + 1);
-        const newContent = input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n") + "\n      ";
+        const newContent = input.files.map((f) => createButtonDialogPair(f, { randomLayout: input.randomLayout })).join("\n") + "\n      ";
         return beforeNewContent + newContent + afterNewContent;
     }
     return createHtmlDocument(input);
@@ -783,8 +783,8 @@ function createBody(input) {
         <button class="instructions" onclick="downloadWholePage(true)">save & finalize <span>(without instructions)</span></button>
       </div>
     </header>` : ""}
-    <main>${input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n")}
-      ${createFurniture(input.furniture, { randomPlacement: input.randomPlacement })}
+    <main>${input.files.map((f) => createButtonDialogPair(f, { randomLayout: input.randomLayout })).join("\n")}
+      ${createFurniture(input.furniture, { randomLayout: input.randomLayout })}
     </main>
   </body>`;
 }
@@ -803,7 +803,7 @@ function createButton(file, options) {
     return `<button
         class="filename"
         aria-haspopup="dialog"
-        aria-controls="${file.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? `
+        aria-controls="${file.path}"${(options === null || options === void 0 ? void 0 : options.randomLayout) ? `
         style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : ""}
         data-fileviewer
         data-draggable>
@@ -820,7 +820,7 @@ function createDialog(file) {
 function createFurniture(furniture, options) {
     return `<section aria-label="furniture">
         ${furniture.map(item => {
-        return `<img class="furniture-item" src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
+        return `<img class="furniture-item" src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomLayout) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
     }).join("\n        ")}
       </section>`;
 }

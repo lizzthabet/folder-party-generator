@@ -14,7 +14,7 @@ type Options = {
   furniture: string
   overwriteFile: boolean
   theme: string
-  randomPlacement: boolean
+  randomLayout: boolean
 }
 
 const CURRENT_DIRECTORY = '.'
@@ -29,14 +29,14 @@ const MAX_RANDOM_WIDTH = 2500;
 const HTML_TITLE = "welcome to a place on my computer i've created just for you"
 // Environment variables that can be set
 // to configure folder party generation
-type EnvVar = 'FOLDER' | 'FURNITURE' | 'THEME' | 'OVERWRITE' | 'APPEND' | 'RANDOM' | 'INSTRUCTIONS'
+type EnvVar = 'FOLDER' | 'FURNITURE' | 'THEME' | 'OVERWRITE' | 'APPEND' | 'RANDOM_LAYOUT' | 'INSTRUCTIONS'
 const ENV_OPTIONS: {[Property in EnvVar]: string} = {
   FOLDER: 'FOLDER',
   FURNITURE: 'FURNITURE',
   THEME: 'THEME',
   OVERWRITE: 'OVERWRITE',
   APPEND: 'APPEND',
-  RANDOM: 'RANDOM',
+  RANDOM_LAYOUT: 'RANDOM_LAYOUT',
   INSTRUCTIONS: 'INSTRUCTIONS',
 }
 
@@ -58,7 +58,7 @@ function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
     theme: DEFAULT_THEME_FOLDER,
     displayInstructions: true,
     overwriteFile: false,
-    randomPlacement: false,
+    randomLayout: false,
   }
 
   const folderName: string | undefined = e[ENV_OPTIONS.FOLDER]
@@ -86,9 +86,9 @@ function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
     options.appendFile = parseBool(append)
   }
 
-  const random: string | undefined = e[ENV_OPTIONS.RANDOM]
+  const random: string | undefined = e[ENV_OPTIONS.RANDOM_LAYOUT]
   if (random) {
-    options.randomPlacement = parseBool(random)
+    options.randomLayout = parseBool(random)
   }
 
   const instructions: string | undefined = e[ENV_OPTIONS.INSTRUCTIONS]
@@ -158,7 +158,7 @@ type TemplateInput = {
   displayInstructions?: boolean
   existingFiles?: Set<string>
   existingFileContent?: string
-  randomPlacement?: boolean
+  randomLayout?: boolean
 }
 
 function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput {
@@ -167,7 +167,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     furniture: [],
     theme: [],
     displayInstructions: options.displayInstructions,
-    randomPlacement: options.randomPlacement,
+    randomLayout: options.randomLayout,
   }
 
   // If new files should be appended to the existing html file,
@@ -319,7 +319,7 @@ function generateTemplate(input: TemplateInput): string {
   if (typeof input.appendToIndex === "number") {
     const beforeNewContent = input.existingFileContent.slice(0, input.appendToIndex + 1)
     const afterNewContent = input.existingFileContent.slice(input.appendToIndex + 1)
-    const newContent = input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n") + "\n      "
+    const newContent = input.files.map((f) => createButtonDialogPair(f, { randomLayout: input.randomLayout })).join("\n") + "\n      "
     return beforeNewContent + newContent + afterNewContent
   }
 
@@ -352,7 +352,7 @@ ${stylesheetBlock}
 }
 
 type TemplateOptions = Pick<TemplateInput, "displayInstructions">
-type FileOptions = Pick<TemplateInput, "randomPlacement" | "displayInstructions">
+type FileOptions = Pick<TemplateInput, "randomLayout" | "displayInstructions">
 
 // Styles (plus, specific styles for each media content)
 function createStyle({ displayInstructions }: TemplateOptions): string {
@@ -854,8 +854,8 @@ function createBody(input: TemplateInput): string {
         <button class="instructions" onclick="downloadWholePage(true)">save & finalize <span>(without instructions)</span></button>
       </div>
     </header>`: ""}
-    <main>${input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n")}
-      ${createFurniture(input.furniture, { randomPlacement: input.randomPlacement })}
+    <main>${input.files.map((f) => createButtonDialogPair(f, { randomLayout: input.randomLayout })).join("\n")}
+      ${createFurniture(input.furniture, { randomLayout: input.randomLayout })}
     </main>
   </body>`
 }
@@ -878,7 +878,7 @@ function createButton(file: FileData, options?: FileOptions): string {
   return `<button
         class="filename"
         aria-haspopup="dialog"
-        aria-controls="${file.path}"${ options?.randomPlacement ? `
+        aria-controls="${file.path}"${ options?.randomLayout ? `
         style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : "" }
         data-fileviewer
         data-draggable>
@@ -897,7 +897,7 @@ function createDialog(file: FileData): string {
 function createFurniture(furniture: FileData[], options?: FileOptions) {
   return `<section aria-label="furniture">
         ${furniture.map(item => {
-          return `<img class="furniture-item" src="${item.path}"${options?.randomPlacement ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`
+          return `<img class="furniture-item" src="${item.path}"${options?.randomLayout ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`
         }).join("\n        ")}
       </section>`
 }

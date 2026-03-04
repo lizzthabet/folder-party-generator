@@ -68,7 +68,7 @@ There are a few environment variables you can define before running the script t
 
 `APPEND`: option to append new files to an existing `index.html` file in your folder party, `true` / `1` or `false` / `0`, defaults to `false`. If you want to both overwrite and append to the existing `index.html` file, you'll need to set both `OVERWRITE=1 APPEND=1` when running the script. Note: this option doesn't currently support changing the theme or furniture set for an existing `index.html` file.
 
-`RANDOM`: option to position furniture and folder party items randomly on the page, `true` / `1` or `false` / `0`, defaults to `false`
+`RANDOM_LAYOUT`: option to position furniture and folder party items randomly on the page, `true` / `1` or `false` / `0`, defaults to `false`
 
 `INSTRUCTIONS`: option to remove the instructions and "save" buttons that get added to the initial folder party website, `true` / `1` or `false` / `0`, defaults to `true`
 
@@ -80,14 +80,14 @@ There are a few environment variables you can define before running the script t
 
 You can specify the options as key-value pairs before running the script, like:
 ```
-FOLDER=./my-party OVERWRITE=true RANDOM=true node generate.js
+FOLDER=./my-party OVERWRITE=true RANDOM_LAYOUT=true node generate.js
 ```
 
 Alternatively, you can save an `.env` file with these values in the same format `KEY=VALUE`, separated by newlines, like:
 ```env
 FOLDER=./my-party   # To specify the folder directory, if generate script is not in that directory
 OVERWRITE=true      # To overwrite an existing "index.html" file in your folder party directory
-RANDOM=true         # To place the folder party elements randomly on the page 
+RANDOM_LAYOUT=true         # To place the folder party elements randomly on the page 
 ```
 
 If you're using an `.env` file, you'll need to run the generator script with the [`--env-file` option](https://nodejs.org/api/cli.html#--env-filefile) and specify the file's location, like:

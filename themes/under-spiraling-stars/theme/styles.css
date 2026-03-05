@@ -45,3 +45,8 @@
   --dialog-button-focus-color: #fef9ea;
   --dialog-box-shadow: 0 0 12px 0 rgba(202, 191, 145, 0.2);
 }
+
+/* Increase the width for filenames */
+button.filename {
+  max-width: 350px;
+}

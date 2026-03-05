@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_fs_1 = require("node:fs");
 const node_path_1 = require("node:path");
 const node_process_1 = require("node:process");
+const promises_1 = require("node:timers/promises");
 const node_util_1 = require("node:util");
 const CURRENT_DIRECTORY = '.';
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g;
@@ -889,11 +890,17 @@ function parseBool(varValue) {
 }
 function sleep(ms, cb) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield new Promise((res) => setTimeout(res, ms));
+        // When debugging, don't delay !
+        if (process.env["NODE_DEBUG"]) {
+            if (cb) {
+                cb();
+            }
+            return Promise.resolve();
+        }
+        yield (0, promises_1.setTimeout)(ms);
         if (cb) {
             cb();
         }
-        return;
     });
 }
 //# sourceMappingURL=generate.js.map

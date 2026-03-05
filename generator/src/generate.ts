@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { normalize, parse, ParsedPath, sep, join } from 'node:path'
 import { env } from 'node:process'
+import { setTimeout } from 'node:timers/promises'
 import { debuglog } from 'node:util'
 
 type FileData = {
@@ -958,9 +959,16 @@ function parseBool(varValue: string): boolean {
 }
 
 async function sleep(ms: number, cb?: () => void) {
-  await new Promise((res) => setTimeout(res, ms))
+  // When debugging, don't delay !
+  if (process.env["NODE_DEBUG"]) {
+    if (cb) {
+      cb()
+    }
+    return Promise.resolve()
+  }
+
+  await setTimeout(ms)
   if (cb) {
     cb()
   }
-  return
 }

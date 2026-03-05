@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_fs_1 = require("node:fs");
 const node_path_1 = require("node:path");
 const node_process_1 = require("node:process");
+const node_util_1 = require("node:util");
 const CURRENT_DIRECTORY = '.';
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g;
 const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?[^.].*/;
@@ -30,17 +31,24 @@ const FILES_TO_IGNORE = [
     THEME_OR_FURNITURE_REGEX, // Folders for "furniture" and "theme" (optionally followed by a hyphen or underscore)
     INDEX_FILE_REGEX, // Previous folder party html files
 ];
+// Create a logger for verbose debugging and pre-defined formatting,
+// enabled with NODE_DEBUG=generator
+const logLevelDebug = (() => {
+    const logDebug = (0, node_util_1.debuglog)("generator");
+    return (...data) => logDebug("* [debug] * >", ...data);
+})();
+// Default values for configuration options
+const defaultOptions = {
+    appendFile: false,
+    directory: CURRENT_DIRECTORY,
+    displayInstructions: true,
+    furniture: DEFAULT_FURNITURE_FOLDER,
+    overwriteFile: false,
+    randomLayout: false,
+    theme: DEFAULT_THEME_FOLDER,
+};
 function getOptionsFromEnv(e) {
-    // Default values for options
-    const options = {
-        appendFile: false,
-        directory: CURRENT_DIRECTORY,
-        furniture: DEFAULT_FURNITURE_FOLDER,
-        theme: DEFAULT_THEME_FOLDER,
-        displayInstructions: true,
-        overwriteFile: false,
-        randomLayout: false,
-    };
+    const options = Object.assign({}, defaultOptions);
     const folderName = e[ENV_OPTIONS.FOLDER];
     if (folderName) {
         options.directory = (0, node_path_1.normalize)(folderName);
@@ -126,9 +134,9 @@ function sortFilesIntoInput(files, options) {
     // get the file contents and a list of files already included in it
     // TODO: This logic may get more complicated is someone is swapping furniture and theme;
     // it doesn't currently support keeping your file arrangements while swapping theme and furniture.
-    // TODO: Add support for reading from the most recent index file, in case there are multiple.
     if (options.appendFile) {
         try {
+            // TODO: Add support for reading from the most recent index file, in case there are multiple.
             const fullPath = (0, node_path_1.join)(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`);
             input.existingFileContent = readFileContent(fullPath);
             input.existingFiles = parseFilesFromHtml(input.existingFileContent);
@@ -152,6 +160,7 @@ function sortFilesIntoInput(files, options) {
         // Skip file if it's ignored globally; this filters out files
         // and directories, (but not files inside an ignored directory)
         if (FILES_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
+            logLevelDebug("ignoring file:", file.path);
             continue;
         }
         // Skip file if it's already been included in the existing html
@@ -180,7 +189,7 @@ function sortFilesIntoInput(files, options) {
             input.files.push(file);
         }
         else {
-            // console.debug("> > * ignoring file:", file.path)
+            logLevelDebug("ignoring file:", file.path);
         }
     }
     console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);
@@ -224,6 +233,12 @@ function websiteFilePath({ directory, options, }) {
 
                       ~ * ~ * ~ * ~
 `);
+        Object.keys(defaultOptions).filter((key) => {
+            const current = options[key];
+            if (defaultOptions[key] !== current) {
+                logLevelDebug(`"${key}" is set to "${current}"`);
+            }
+        });
         const { directory } = options;
         console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
             "current directory" : directory}`);

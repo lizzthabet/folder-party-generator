@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { normalize, parse, ParsedPath, sep, join } from 'node:path'
 import { env } from 'node:process'
+import { debuglog } from 'node:util'
 
 type FileData = {
   path: string
@@ -49,17 +50,26 @@ const FILES_TO_IGNORE = [
   INDEX_FILE_REGEX, // Previous folder party html files
 ]
 
+// Create a logger for verbose debugging and pre-defined formatting,
+// enabled with NODE_DEBUG=generator
+const logLevelDebug = (() => {
+  const logDebug = debuglog("generator")
+  return (...data: unknown[]) => logDebug("* [debug] * >", ...data)
+})()
+
+// Default values for configuration options
+const defaultOptions: Options = {
+  appendFile: false,
+  directory: CURRENT_DIRECTORY,
+  displayInstructions: true,
+  furniture: DEFAULT_FURNITURE_FOLDER,
+  overwriteFile: false,
+  randomLayout: false,
+  theme: DEFAULT_THEME_FOLDER,
+}
+
 function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
-  // Default values for options
-  const options: Options = {
-    appendFile: false,
-    directory: CURRENT_DIRECTORY,
-    furniture: DEFAULT_FURNITURE_FOLDER,
-    theme: DEFAULT_THEME_FOLDER,
-    displayInstructions: true,
-    overwriteFile: false,
-    randomLayout: false,
-  }
+  const options = { ...defaultOptions }
 
   const folderName: string | undefined = e[ENV_OPTIONS.FOLDER]
   if (folderName) {
@@ -175,9 +185,9 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
 
   // TODO: This logic may get more complicated is someone is swapping furniture and theme;
   // it doesn't currently support keeping your file arrangements while swapping theme and furniture.
-  // TODO: Add support for reading from the most recent index file, in case there are multiple.
   if (options.appendFile) {
     try {
+      // TODO: Add support for reading from the most recent index file, in case there are multiple.
       const fullPath = join(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`)
       input.existingFileContent = readFileContent(fullPath)
       input.existingFiles = parseFilesFromHtml(input.existingFileContent)
@@ -202,6 +212,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     // Skip file if it's ignored globally; this filters out files
     // and directories, (but not files inside an ignored directory)
     if (FILES_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
+      logLevelDebug("ignoring file:", file.path)
       continue
     }
     // Skip file if it's already been included in the existing html
@@ -230,7 +241,7 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     } else if (!THEME_OR_FURNITURE_REGEX.test(parsedBaseDir)) {
       input.files.push(file)
     } else {
-      // console.debug("> > * ignoring file:", file.path)
+      logLevelDebug("ignoring file:", file.path)
     }
   }
 
@@ -286,6 +297,14 @@ function websiteFilePath({
 
                       ~ * ~ * ~ * ~
 `)
+
+    Object.keys(defaultOptions).filter((key: keyof Options) => {
+      const current = options[key]
+      if (defaultOptions[key] !== current) {
+        logLevelDebug(`"${key}" is set to "${current}"`)
+      }
+    })
+
     const { directory } = options
     console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ? 
       "current directory": directory}`)

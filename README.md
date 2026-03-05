@@ -62,6 +62,8 @@ There are a few environment variables you can define before running the script t
 
 ### options
 
+`NODE_DEBUG=generator`: turns on extra logging when the script runs to help debug unexpected behavior
+
 `FOLDER`: the path to the files that should be used to generate your folder party, relative to the directory where the script run; defaults to the current directory
 
 `OVERWRITE`: option to overwrite an existing `index.html` file in your folder party, `true` / `1` or `false` / `0`, defaults to `false`

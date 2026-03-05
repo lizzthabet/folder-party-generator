@@ -23,11 +23,11 @@ const ENV_OPTIONS = {
     RANDOM_LAYOUT: 'RANDOM_LAYOUT',
     INSTRUCTIONS: 'INSTRUCTIONS',
 };
-// TODO: add .git ?
 const FILES_TO_IGNORE = [
     /^\.DS_Store$/, // Silly MacOS files
     /^generate\.js$/, // The folder party generator script
     /^\.env$/, // Dot env file
+    /^\.git$/, // Git directory
     THEME_OR_FURNITURE_REGEX, // Folders for "furniture" and "theme" (optionally followed by a hyphen or underscore)
     INDEX_FILE_REGEX, // Previous folder party html files
 ];

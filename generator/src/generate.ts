@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { normalize, parse, ParsedPath, sep, join } from 'node:path'
 import { env } from 'node:process'
+import { setTimeout } from 'node:timers/promises'
 import { debuglog } from 'node:util'
 
 type FileData = {
@@ -171,7 +172,7 @@ type TemplateInput = {
   randomLayout?: boolean
 }
 
-function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput {
+async function sortFilesIntoInput(files: FileData[], options: Options): Promise<TemplateInput> {
   const input: TemplateInput = {
     files: [],
     furniture: [],
@@ -245,16 +246,19 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     }
   }
 
+  await sleep(500)
   console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "": "s"} of folder party content`)
+  await sleep(500)
   console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "": "s"} of furniture`)
+  await sleep(500)
   console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "": "s"} of styles & theming`)
 
   return input
 }
 
-function template(files: string[], options: Options): { content: string, templateInput: TemplateInput } {
+async function template(files: string[], options: Options): Promise<{ content: string, templateInput: TemplateInput }> {
   const data: FileData[] = files.map(f => ({ path: f, parsed: parse(f) }))
-  const templateInput = sortFilesIntoInput(data, options)
+  const templateInput = await sortFilesIntoInput(data, options)
   if (options.appendFile) {
     const newFiles = templateInput.files.length
     console.info(`> > adding ${newFiles} file${newFiles === 1 ? '': 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`)
@@ -285,15 +289,19 @@ function websiteFilePath({
   return join(directory, `${filename}.html`)
 }
 
-(function main() {
+(async function main() {
   try {
     const options = getOptionsFromEnv(env)
     console.info(`
                       welcome to the
- .-   .   .                    .                         .       
--|-.-.| .-| .-,.-.  .-..-. .-.-|-. .  .-..-,.-..-,.-..-.-|-.-..-.
- ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|  \`-|\`'-' '\`'-'  \`-\`-'-\`-''  
-                    '            \`-'  \`-'                        
+
+             .-   .   .                    .
+            -|-.-.| .-| .-,.-.  .-..-. .-.-|-. .
+             ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|
+                               .'            \`-'
+                .-..-,.-..-,.-..-.-|-.-..-.
+                \`-|\`'-' '\`'-'  \`-\`-'-\`-''
+                \`-'
 
                       ~ * ~ * ~ * ~
 `)
@@ -306,14 +314,18 @@ function websiteFilePath({
     })
 
     const { directory } = options
+    await sleep(1000)
     console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ? 
       "current directory": directory}`)
     const files = listFilesInDir(directory)
+    await sleep(1000)
     console.info(`> > found ${files.length} files for your folder party`)
-    const { content } = template(files, options)
+    const { content } = await template(files, options)
     const filePath = websiteFilePath({ directory, options })
     writeFileSync(filePath, content, { encoding: 'utf-8' })
+    await sleep(1000)
     console.info(`> > saving folder party website: ${filePath}`)
+    await sleep(1500)
     console.info(`
   ----------------------------------------------------------
   | now that your folder party website is created, you'll  |
@@ -322,7 +334,9 @@ function websiteFilePath({
   | once you've gotten everything exactly where you'd like |
   | it to be, save a copy of your final folder party site. |
   ----------------------------------------------------------
-
+`)
+  await sleep(500)
+  console.log(`
                 ~ * ~ happy hosting ~ * ~
 `)
   } catch (err) {
@@ -941,5 +955,20 @@ function parseBool(varValue: string): boolean {
     default:
       console.warn(`* * warning: unexpected env var value: ${varValue}`)
       return false
+  }
+}
+
+async function sleep(ms: number, cb?: () => void) {
+  // When debugging, don't delay !
+  if (process.env["NODE_DEBUG"]) {
+    if (cb) {
+      cb()
+    }
+    return Promise.resolve()
+  }
+
+  await setTimeout(ms)
+  if (cb) {
+    cb()
   }
 }

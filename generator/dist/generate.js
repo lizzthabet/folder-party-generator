@@ -16,7 +16,7 @@ const promises_1 = require("node:timers/promises");
 const node_util_1 = require("node:util");
 const CURRENT_DIRECTORY = '.';
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g;
-const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?[^.].*/;
+const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?/;
 const INDEX_FILE_REGEX = /^index[_|-]?.*\.html/;
 const DEFAULT_FURNITURE_FOLDER = 'furniture';
 const DEFAULT_THEME_FOLDER = 'theme';
@@ -33,13 +33,15 @@ const ENV_OPTIONS = {
     RANDOM_LAYOUT: 'RANDOM_LAYOUT',
     INSTRUCTIONS: 'INSTRUCTIONS',
 };
-const FILES_TO_IGNORE = [
-    /^\.DS_Store$/, // Silly MacOS files
+const PATHS_TO_IGNORE = [
+    /\.DS_Store$/, // Silly MacOS files
     /^generate\.js$/, // The folder party generator script
-    /^\.env$/, // Dot env file
-    /^\.git$/, // Git directory
-    THEME_OR_FURNITURE_REGEX, // Folders for "furniture" and "theme" (optionally followed by a hyphen or underscore)
+    /\.env$/, // Dot env file
+    /^\.git.*?$/, // Git directory and all its contents
     INDEX_FILE_REGEX, // Previous folder party html files
+];
+const DIRS_TO_IGNORE = [
+    THEME_OR_FURNITURE_REGEX, // Folders for "furniture" and "theme" (optionally followed by a hyphen or underscore)
 ];
 // Create a logger for verbose debugging and pre-defined formatting,
 // enabled with NODE_DEBUG=generator
@@ -168,11 +170,18 @@ function sortFilesIntoInput(files, options) {
          */
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            // Skip file if it's ignored globally; this filters out files
-            // and directories, (but not files inside an ignored directory)
-            if (FILES_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
-                logLevelDebug("ignoring file:", file.path);
+            // Skip file if its path matches a global ignore
+            if (PATHS_TO_IGNORE.some((regex) => regex.test(file.path))) {
+                logLevelDebug("ignoring path:", file.path);
                 continue;
+            }
+            // Skip directories if it matches a global ignore, but keep the files inside them;
+            // This is used for special folders like "theme" and "furniture"
+            if (file.parsed.ext == "") {
+                if (DIRS_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
+                    logLevelDebug("ignoring dir:", file.parsed.base);
+                    continue;
+                }
             }
             // Skip file if it's already been included in the existing html
             if (options.appendFile &&
@@ -200,7 +209,7 @@ function sortFilesIntoInput(files, options) {
                 input.files.push(file);
             }
             else {
-                logLevelDebug("ignoring file:", file.path);
+                logLevelDebug("skipping file:", file.path);
             }
         }
         yield sleep(500);

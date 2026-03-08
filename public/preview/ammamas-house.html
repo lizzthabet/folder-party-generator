@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>theme preview: Ammama's House</title>
+
+    <style>
+      :root {
+        /* Variables for easy customization */
+        /* --- page --- */
+        --page-bg: #d2d2d2;
+        --page-bg-image: none;
+        /* --- filename buttons --- */
+        --button-bg: #d2d2d2;
+        --button-color: blue;
+        --button-font: 'Times New Roman', Times, serif;
+        --button-focus-bg: purple;
+        --button-focus-border-color: none;
+        --button-focus-color: white;
+        --button-font-style: normal;
+        --button-font-size: 1rem;
+        --button-font-weight: normal;
+        --button-text-decoration: underline;
+        --button-padding: 5px;
+        --button-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+        --button-border-color: none;
+        --button-border-radius: 8px;
+        --button-border-style: none;
+        --button-border-width: 0px;
+        /* --- fileviewer dialogs --- */
+        --dialog-border-color: #333333;
+        --dialog-border-radius: 8px;
+        --dialog-border-style: dotted;
+        --dialog-border-width: 2px;
+        --dialog-bg: #dfdfdf;
+        --dialog-button-bg: #dfdfdf;
+        --dialog-button-border-radius: 5px;
+        --dialog-button-color: #333333;
+        --dialog-button-font: monospace;
+        --dialog-button-font-size: 0.80rem;
+        --dialog-button-focus-bg: purple;
+        --dialog-button-focus-color: white;
+        --dialog-button-padding: 1px 4px;
+        --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+        --dialog-padding: 16px;
+      }
+
+      html {
+        background-color: var(--page-bg);
+        background-image: var(--page-bg-image);
+      }
+
+      /* Styles for draggable elements */
+
+      /* display inline-block so that elements are
+      positioned absolutely next to each other when
+      the document loads EXCEPT for dialog elements
+      which manage their own display + visibility */
+      [data-draggable]:not(dialog) {
+        display: inline-block;
+      }
+
+      [data-draggable] {
+        user-select: none;
+        margin: 0;
+        padding: 1rem;
+      }
+
+      [data-draggable]:hover {
+        cursor: move;
+      }
+
+      /* Styles for filenames */
+      button.filename {
+        /* customizable */
+        background-color: var(--button-bg);
+        border-color: var(--button-border-color);
+        border-radius: var(--button-border-radius);
+        border-style: var(--button-border-style);
+        border-width: var(--button-border-width);
+        box-shadow: var(--button-box-shadow);
+        color: var(--button-color);
+        font-family: var(--button-font);
+        font-size: var(--button-font-size);
+        font-style: var(--button-font-style);
+        font-weight: var(--button-font-weight);
+        padding: var(--button-padding);
+        text-decoration: var(--button-text-decoration);
+        /* set */
+        height: max-content;
+        max-width: 250px;
+        overflow-wrap: anywhere;
+        text-align: center;
+        width: max-content;
+        z-index: 1;
+      }
+
+      button.filename:focus {
+        /* customizable */
+        background-color: var(--button-focus-bg);
+        border-color: var(--button-focus-border-color);
+        color: var(--button-focus-color);
+        /* set */
+        outline: none;
+        text-decoration: none;
+      }
+
+      /* Styles for dialogs and dialog buttons */
+      dialog.fileviewer[open] {
+        /* customizable */
+        background-color: var(--dialog-bg);
+        border-color: var(--dialog-border-color);
+        border-style: var(--dialog-border-style);
+        border-radius: var(--dialog-border-radius);
+        border-width: var(--dialog-border-width);
+        box-shadow: var(--dialog-box-shadow);
+        padding: var(--dialog-padding);
+        /* set */
+        width: max-content; /* Size dialogs in Firefox to fit their content */
+        z-index: 2;
+      }
+
+      button.close-fileviewer {
+        /* customizable */
+        background-color: var(--dialog-button-bg);
+        color: var(--dialog-button-color);
+        font-family: var(--dialog-button-font);
+        font-size: var(--dialog-button-font-size);
+        padding: var(--dialog-button-padding);
+        border-radius: var(--dialog-button-border-radius);
+        /* set */
+        border: none;
+        float: right;
+        margin: 0.5rem -0.5rem -0.5rem 0.5rem;
+        text-transform: uppercase;
+      }
+
+      button.close-fileviewer:active,
+      button.close-fileviewer:focus {
+        /* customizable */
+        background-color: var(--dialog-button-focus-bg);
+        color: var(--dialog-button-focus-color);
+        /* set */
+        outline: none;
+      }
+
+      /* Styles for embedded media */
+      /* Note: the *-text classes are useful for content
+      that browsers won't expand to fit the max sizes,
+      like text and html */
+      object {
+        /* Set a global max size so content
+        isn't TOO big */
+        max-width: 600px;
+        max-height: 600px;
+      }
+
+      object.tiny {
+        max-height: 60px;
+        max-width: 175px;
+      }
+
+      object.tiny-text {
+        height: 60px;
+        width: 175px;
+      }
+
+      object.small {
+        max-height: 250px;
+        max-width: 150px;
+      }
+
+      object.small-text {
+        height: 100px;
+        width: 150px;
+      }
+
+      object.medium {
+        max-height: 300px;
+        max-width: 400px;
+      }
+
+      object.medium-text {
+        height: 300px;
+        width: 400px;
+      }
+
+      object.large {
+        max-width: 500px;
+        max-height: 500px;
+      }
+
+      object.large-text {
+        width: 500px;
+        height: 500px;
+      }
+
+      /* Styles for furniture */
+      section[aria-label="furniture"] > img {
+        z-index: 0;
+      }
+
+      /* Styles used only for instructions
+         (and can be deleted for final site) */
+
+      dialog.instructions {
+        background-color: buttonface;
+        border-radius: 10px;
+        box-shadow: 0 0 20px 0px #2c2c2c;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 1.1rem;
+        line-height: 1.25;
+        margin: 2rem auto;
+        max-width: 550px;
+        z-index: 3;
+      }
+
+      dialog.instructions > h1 {
+        font-family: monospace;
+        font-size: 1.7rem;
+        text-align: center;
+        margin: 1rem auto 3rem;
+      }
+
+      dialog.instructions > details {
+        background-color: white;
+        border: 1.5px dashed gray;
+        border-radius: 10px;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        width: fit-content;
+      }
+
+      dialog.instructions > details > summary {
+        font-size: 1.3rem;
+        cursor: pointer;
+      }
+
+      dialog.instructions > details > p {
+        margin-bottom: 0;
+      }
+
+      dialog.instructions > form[method="dialog"] {
+        float: right;
+        width: fit-content;
+      }
+
+      dialog.instructions > form[method="dialog"] > button {
+        font-size: 1.1rem;
+        border-radius: 5px;
+        border-width: 1.5px;
+      }
+
+      p.instructions.warning {
+        border-top: 1px dashed gray;
+        margin-bottom: 0;
+        margin-top: 1.5rem;
+        padding: 0.75rem;
+      }
+      
+      p.instructions.highlight {
+        background-color: buttonface;
+        border-radius: 10px;
+        padding: 0.75rem;
+      }
+
+      div.instructions[role="menubar"] {
+        background: radial-gradient(
+          ellipse,
+          rgba(0, 0, 0, 0.5) 0%,
+          rgba(255, 255, 255, 0) 60%
+        );
+        bottom: 0;
+        position: fixed;
+        right: 0;
+        padding: 2rem;
+        z-index: 3;
+      }
+
+      button.instructions {
+        border-radius: 5px;
+        font-size: 1.5rem;
+        padding: 0.5rem 1rem;
+      }
+
+      button.instructions + button.instructions {
+        margin-left: 0.5rem;
+      }
+
+      button.instructions > span {
+        display: block;
+        font-size: 1rem;
+      }
+    </style>
+
+    <script>
+      function positionInPlace(element) {
+        const { top, left } = element.getBoundingClientRect()
+        const { scrollX, scrollY } = window
+        setTopLeft(element, top + scrollY, left + scrollX)
+      }
+
+      function setTopLeft(element, top, left) {
+        element.style.setProperty("top", top + "px")
+        element.style.setProperty("left", left + "px")
+      }
+
+      function setPositionAbsolute(element) {
+        element.style.setProperty("position", "absolute")
+      }
+
+      const MOUSE_BUTTON_MAIN = 0
+      function moveOnMouseDown(event) {
+        // Use the currentTarget for calculating position, because it's the
+        // element that has the "data-draggable" property on it. The target
+        // may be another element inside of it.
+        const { currentTarget, pageX, pageY, clientX, clientY, button } = event
+        // Don't continue if the main mouse button (left click) is not used;
+        // this prevents funny behavior on right or middle click
+        if (button !== undefined && button !== MOUSE_BUTTON_MAIN) {
+          return
+        }
+        const { left, top } = currentTarget.getBoundingClientRect()
+        const shiftX = clientX - left
+        const shiftY = clientY - top
+
+        function moveTo(pageX, pageY) {
+          const newLeft = pageX - shiftX + "px"
+          const newTop = pageY - shiftY + "px"
+          currentTarget.style.setProperty("left", newLeft)
+          currentTarget.style.setProperty("top", newTop)
+        }
+
+        function onMouseMove(event) {
+          moveTo(event.pageX, event.pageY)
+        }
+
+        function onMouseUp(event) {
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      // To distinguish between moving an element and clicking an element,
+      // this handler is triggered by the "mousedown" instead of "click" event,
+      // so it can listen for "mousemove" events and ignore them.
+      function openViewerOnMouseDown(event) {
+        // Don't continue if the main mouse button (left click) is not used;
+        // this prevents funny behavior on right or middle click
+        if (event.button !== undefined && event.button !== MOUSE_BUTTON_MAIN) {
+          return
+        }
+
+        let elementHasMoved = false
+        function onMouseMove(event) {
+          elementHasMoved = true
+        }
+
+        function onMouseUp(event) {
+          if (elementHasMoved !== true) {
+            onClick(event)
+          }
+          document.removeEventListener("mousemove", onMouseMove)
+          document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      // Because click events are handled through the "mousedown" trigger,
+      // the default button behavior of space and enter keys triggering a
+      // click need to be added manually
+      function openViewerOnKeyPress(event) {
+        if (event.code === 'Enter' || event.code === 'Space') {
+          onClick(event)
+        }
+      }
+
+      function onClick(event) {
+        const dialogId = event.target.getAttribute("aria-controls")
+        if (!dialogId) {
+          return
+        }
+        const dialog = document.getElementById(dialogId)
+        if (!dialog) {
+          return
+        }
+        if (dialog.open === false) {
+          const { top, left, height, width } = event.target.getBoundingClientRect()
+          const { scrollX, scrollY } = window
+          setTopLeft(dialog, top + height + scrollY + 10, left + scrollX)
+          setPositionAbsolute(dialog)
+          dialog.show()
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", (_event) => {
+        // Add drag-to-move functionality
+        const draggable = document.querySelectorAll("[data-draggable]")
+        draggable.forEach((ele) => ele.addEventListener("mousedown", moveOnMouseDown))
+        
+        // Add file viewer functionality to draggable elements
+        const fileViewers = document.querySelectorAll("[data-fileviewer][data-draggable]")
+        fileViewers.forEach((ele) => {
+          ele.addEventListener("mousedown", openViewerOnMouseDown)
+          ele.addEventListener("keypress", openViewerOnKeyPress)
+        })
+
+        // Add file viewer functionality to non-draggable elements;
+        // this is done separately from draggable elements, since there's
+        // extra logic to _not_ open the file viewer when the element is dragged
+        const staticFileViewers = document.querySelectorAll("[data-fileviewer]:not([data-draggable])")
+        staticFileViewers.forEach((ele) => ele.addEventListener("click", onClick))
+      })
+
+      // The following code needs to wait for all resources (especially images) to
+      // be loaded on the page to position them propertly; if a resource isn't loaded,
+      // it can't be positioned on the page with its height and width.
+      //
+      // This code is *only* needed if each draggable item doesn't already have a
+      // "top", "left", and "position: absolute" set in its inline style, like:
+      // `style="top: 575px; left: 413px; position: absolute;"`.
+      //
+      // If each draggable element on the page already has an inline position,
+      // it can be removed.
+      window.addEventListener("load", (_event) => {
+        const draggable = document.querySelectorAll("[data-draggable]")
+        // Position each element absolutely so document flow isn't changed
+        // when one element is moved
+        draggable.forEach(positionInPlace)
+        draggable.forEach(setPositionAbsolute)
+      })
+
+      // The following code is only used for the instructions and "save" party
+      // layout buttons. It can safely be removed when your party layout is finalized.
+      function downloadWholePage(removeInstructions = false) {
+        const removedElements = []
+        let url
+        try {
+          if (removeInstructions) {
+            const toRemove = ["header"]
+            toRemove.forEach((selector) => {
+              const elements = document.querySelectorAll(selector)
+              elements.forEach((e) => {
+                removedElements.push(e)
+                e.remove()
+              })
+            })
+          }
+          const page = document.documentElement.outerHTML
+          const blob = new Blob([page], { type: "text/html" });
+          url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = removeInstructions ? "party.html" : "party-draft.html";
+          link.click();
+        } catch (err) {
+          console.err("ERROR: failed to save file", err)
+          console.info("instead, you can copy the html document directly from the 'Inspector' view.")
+        } finally {
+          // Add back elements that have been removed
+          removedElements.forEach((e) => document.body.appendChild(e))
+          // For memory management
+          URL.revokeObjectURL(url)
+        }
+      }
+    </script>
+
+    <!-- Theme styles -->
+    <link href="theme_ammamas-house/styles.css" rel="stylesheet">
+  </head>
+
+  <body>
+    
+    <main>
+      <button class="filename" aria-haspopup="dialog" aria-controls="END, REALLY.png" data-fileviewer="" data-draggable="" style="top: 676.992px; left: 3405.99px; position: absolute;">
+        END, REALLY.png
+      </button>
+      <dialog id="END, REALLY.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="END, REALLY.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="Snapchat-20140727061648.jpg" data-fileviewer="" data-draggable="" style="top: 1152.99px; left: 1992.81px; position: absolute;">
+        Snapchat-20140727061648.jpg
+      </button>
+      <dialog id="Snapchat-20140727061648.jpg" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="Snapchat-20140727061648.jpg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="____welcome" data-fileviewer="" data-draggable="" style="top: 344px; left: 427.016px; position: absolute;">
+        ____welcome/
+      </button>
+      <dialog id="____welcome" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>____welcome/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="___to" data-fileviewer="" data-draggable="" style="top: 381px; left: 399.016px; position: absolute;">
+        ___to/
+      </button>
+      <dialog id="___to" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>___to/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="__my" data-fileviewer="" data-draggable="" style="top: 419px; left: 442.156px; position: absolute;">
+        __my/
+      </button>
+      <dialog id="__my" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>__my/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="_folder" data-fileviewer="" data-draggable="" style="top: 460px; left: 492.094px; position: absolute;">
+        _folder/
+      </button>
+      <dialog id="_folder" class="fileviewer" data-draggable="" open="" style="top: 507px; left: 402.094px; position: absolute;">
+        <pre>_folder/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="and here are my files.txt" data-fileviewer="" data-draggable="" style="top: 533px; left: 572.75px; position: absolute;">
+        and here are my files.txt
+      </button>
+      <dialog id="and here are my files.txt" class="fileviewer" data-draggable="" style="top: 574px; left: 572.75px; position: absolute;">
+        <object class="file" data="and here are my files.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="and.md" data-fileviewer="" data-draggable="" style="top: 965px; left: 217.641px; position: absolute;">
+        and.md
+      </button>
+      <dialog id="and.md" class="fileviewer" data-draggable="" open="" style="top: 1006px; left: 217.641px; position: absolute;">
+        <object class="file" data="and.md" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="begin.md" data-fileviewer="" data-draggable="" style="top: 730px; left: 301.625px; position: absolute;">
+        begin.md
+      </button>
+      <dialog id="begin.md" class="fileviewer" data-draggable="" style="top: 792px; left: 405.625px; position: absolute;">
+        <object class="file" data="begin.md" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="down" data-fileviewer="" data-draggable="" style="top: 827px; left: 1301.62px; position: absolute;">
+        down/
+      </button>
+      <dialog id="down" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>down/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="good photo of the earth.JPG" data-fileviewer="" data-draggable="" style="top: 1384px; left: 1734.99px; position: absolute;">
+        good photo of the earth.JPG
+      </button>
+      <dialog id="good photo of the earth.JPG" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="good photo of the earth.JPG" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="good tree photo.jpg" data-fileviewer="" data-draggable="" style="top: 194px; left: 1325.06px; position: absolute;">
+        good tree photo.jpg
+      </button>
+      <dialog id="good tree photo.jpg" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="good tree photo.jpg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="idk.jpg" data-fileviewer="" data-draggable="" style="top: 895px; left: 3061.46px; position: absolute;">
+        idk.jpg
+      </button>
+      <dialog id="idk.jpg" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="idk.jpg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="what Love looks like.png" data-fileviewer="" data-draggable="" style="top: 934px; left: 891.625px; position: absolute;">
+        what Love looks like.png
+      </button>
+      <dialog id="what Love looks like.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="what Love looks like.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="____welcome/hello,goodday!!!!.png" data-fileviewer="" data-draggable="" style="top: 759px; left: 1771.02px; position: absolute;">
+        ____welcome/hello,goodday!!!!.png
+      </button>
+      <dialog id="____welcome/hello,goodday!!!!.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="____welcome/hello,goodday!!!!.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="____welcome/you-are-here.txt" data-fileviewer="" data-draggable="" style="top: 128px; left: 1429.91px; position: absolute;">
+        ____welcome/you-are-here.txt
+      </button>
+      <dialog id="____welcome/you-are-here.txt" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="____welcome/you-are-here.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="___to/unnamed.jpg" data-fileviewer="" data-draggable="" style="top: 1744px; left: 1205.11px; position: absolute;">
+        ___to/unnamed.jpg
+      </button>
+      <dialog id="___to/unnamed.jpg" class="fileviewer" data-draggable="" style="top: 79.9844px; left: 1052.11px; position: absolute;">
+        <object class="file" data="___to/unnamed.jpg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="___to/what could have been.png" data-fileviewer="" data-draggable="" style="top: 615.977px; left: 1040.98px; position: absolute;">
+        ___to/what could have been.png
+      </button>
+      <dialog id="___to/what could have been.png" class="fileviewer" data-draggable="" style="top: 656.945px; left: 1040.98px; position: absolute;">
+        <object class="file" data="___to/what could have been.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="__my/1391546931043.jpg" data-fileviewer="" data-draggable="" style="top: 1064.97px; left: 1564.91px; position: absolute;">
+        __my/1391546931043.jpg
+      </button>
+      <dialog id="__my/1391546931043.jpg" class="fileviewer" data-draggable="" style="top: 339.953px; left: 971.906px; position: absolute;">
+        <object class="file" data="__my/1391546931043.jpg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="__my/responses.png" data-fileviewer="" data-draggable="" style="top: 258.977px; left: 2651.67px; position: absolute;">
+        __my/responses.png
+      </button>
+      <dialog id="__my/responses.png" class="fileviewer" data-draggable="" style="top: 376.945px; left: 2696.67px; position: absolute;">
+        <object class="file" data="__my/responses.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="_folder/fiveouttafive.png" data-fileviewer="" data-draggable="" style="top: 380.977px; left: 1752.58px; position: absolute;">
+        _folder/fiveouttafive.png
+      </button>
+      <dialog id="_folder/fiveouttafive.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="_folder/fiveouttafive.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="down/here" data-fileviewer="" data-draggable="" style="top: 1992.98px; left: 430.922px; position: absolute;">
+        down/here/
+      </button>
+      <dialog id="down/here" class="fileviewer" data-draggable="" style="top: 110.969px; left: 739.922px; position: absolute;">
+        <pre>down/here/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="down/here/BIG GLITCH.png" data-fileviewer="" data-draggable="" style="top: 1311.98px; left: 3127.6px; position: absolute;">
+        down/here/BIG GLITCH.png
+      </button>
+      <dialog id="down/here/BIG GLITCH.png" class="fileviewer" data-draggable="" style="top: 1118.45px; left: 2503.09px; position: absolute;">
+        <object class="file" data="down/here/BIG GLITCH.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+<section aria-label="furniture">
+        <img src="furniture_ammamas-house/1.gif" draggable="false" data-draggable="" style="top: 1242px; left: 1070px; position: absolute;">
+        <img src="furniture_ammamas-house/1_copy1.gif" draggable="false" data-draggable="" style="top: 899px; left: 1744px; position: absolute;">
+        <img src="furniture_ammamas-house/1_copy2.gif" draggable="false" data-draggable="" style="top: 1140px; left: 971px; position: absolute;">
+        <img src="furniture_ammamas-house/1_copy3.gif" draggable="false" data-draggable="" style="top: 1000px; left: 1843px; position: absolute;">
+        <img src="furniture_ammamas-house/2.gif" draggable="false" data-draggable="" style="top: 1000px; left: 1743px; position: absolute;">
+        <img src="furniture_ammamas-house/2_copy1.gif" draggable="false" data-draggable="" style="top: 116px; left: 688px; position: absolute;">
+        <img src="furniture_ammamas-house/2_copy2.gif" draggable="false" data-draggable="" style="top: 142px; left: 660px; position: absolute;">
+        <img src="furniture_ammamas-house/2_copy3.gif" draggable="false" data-draggable="" style="top: 1142px; left: 1070px; position: absolute;">
+        <img src="furniture_ammamas-house/2_copy4.gif" draggable="false" data-draggable="" style="top: 1243px; left: 1170px; position: absolute;">
+        <img src="furniture_ammamas-house/2_copy5.gif" draggable="false" data-draggable="" style="top: 1096px; left: 1843px; position: absolute;">
+        <img src="furniture_ammamas-house/2_copy6.gif" draggable="false" data-draggable="" style="top: 170px; left: 632px; position: absolute;">
+        <img src="furniture_ammamas-house/2a.gif" draggable="false" data-draggable="" style="top: 900px; left: 1841px; position: absolute;">
+        <img src="furniture_ammamas-house/3.gif" draggable="false" data-draggable="" style="top: 1043px; left: 1070px; position: absolute;">
+        <img src="furniture_ammamas-house/3_copy1.gif" draggable="false" data-draggable="" style="top: 287px; left: 1436px; position: absolute;">
+        <img src="furniture_ammamas-house/3_copy2.gif" draggable="false" data-draggable="" style="top: 217px; left: 2375px; position: absolute;">
+        <img src="furniture_ammamas-house/3_copy3.gif" draggable="false" data-draggable="" style="top: 800px; left: 1743px; position: absolute;">
+        <img src="furniture_ammamas-house/3a.gif" draggable="false" data-draggable="" style="top: 1666px; left: 1907px; position: absolute;">
+        <img src="furniture_ammamas-house/3a_copy1.gif" draggable="false" data-draggable="" style="top: 997px; left: 1942px; position: absolute;">
+        <img src="furniture_ammamas-house/3a_copy2.gif" draggable="false" data-draggable="" style="top: 317px; left: 2484px; position: absolute;">
+        <img src="furniture_ammamas-house/3a_copy3.gif" draggable="false" data-draggable="" style="top: 333px; left: 1495px; position: absolute;">
+        <img src="furniture_ammamas-house/3b.gif" draggable="false" data-draggable="" style="top: 1338px; left: 1069px; position: absolute;">
+        <img src="furniture_ammamas-house/3b_copy1.gif" draggable="false" data-draggable="" style="top: 1100px; left: 1746px; position: absolute;">
+        <img src="furniture_ammamas-house/3b_copy2.gif" draggable="false" data-draggable="" style="top: 382px; left: 1437px; position: absolute;">
+        <img src="furniture_ammamas-house/3b_copy3.gif" draggable="false" data-draggable="" style="top: 1196px; left: 1843px; position: absolute;">
+        <img src="furniture_ammamas-house/3c.gif" draggable="false" data-draggable="" style="top: 311px; left: 2286px; position: absolute;">
+        <img src="furniture_ammamas-house/3c_copy1.gif" draggable="false" data-draggable="" style="top: 1573px; left: 1552px; position: absolute;">
+        <img src="furniture_ammamas-house/3c_copy2.gif" draggable="false" data-draggable="" style="top: 334px; left: 1381px; position: absolute;">
+        <img src="furniture_ammamas-house/3c_copy3.gif" draggable="false" data-draggable="" style="top: 1097px; left: 1646px; position: absolute;">
+        <img src="furniture_ammamas-house/4.gif" draggable="false" data-draggable="" style="top: 248px; left: 1359px; position: absolute;">
+        <img src="furniture_ammamas-house/4_copy1.gif" draggable="false" data-draggable="" style="top: 1570px; left: 1895px; position: absolute;">
+        <img src="furniture_ammamas-house/4_copy2.gif" draggable="false" data-draggable="" style="top: 1043px; left: 970px; position: absolute;">
+        <img src="furniture_ammamas-house/4_copy3.gif" draggable="false" data-draggable="" style="top: 737px; left: 2622px; position: absolute;">
+        <img src="furniture_ammamas-house/4a.gif" draggable="false" data-draggable="" style="top: 737px; left: 2719px; position: absolute;">
+        <img src="furniture_ammamas-house/4a_copy1.gif" draggable="false" data-draggable="" style="top: 250px; left: 1519px; position: absolute;">
+        <img src="furniture_ammamas-house/4a_copy2.gif" draggable="false" data-draggable="" style="top: 1549px; left: 2483px; position: absolute;">
+        <img src="furniture_ammamas-house/4a_copy3.gif" draggable="false" data-draggable="" style="top: 1576px; left: 1805px; position: absolute;">
+        <img src="furniture_ammamas-house/4b.gif" draggable="false" data-draggable="" style="top: 414px; left: 1524px; position: absolute;">
+        <img src="furniture_ammamas-house/4b_copy1.gif" draggable="false" data-draggable="" style="top: 1343px; left: 1176px; position: absolute;">
+        <img src="furniture_ammamas-house/4b_copy2.gif" draggable="false" data-draggable="" style="top: 836px; left: 2721px; position: absolute;">
+        <img src="furniture_ammamas-house/4b_copy3.gif" draggable="false" data-draggable="" style="top: 1557px; left: 2272px; position: absolute;">
+        <img src="furniture_ammamas-house/4c.gif" draggable="false" data-draggable="" style="top: 123px; left: 3043px; position: absolute;">
+        <img src="furniture_ammamas-house/4c_copy1.gif" draggable="false" data-draggable="" style="top: 835px; left: 2623px; position: absolute;">
+        <img src="furniture_ammamas-house/4c_copy2.gif" draggable="false" data-draggable="" style="top: 417px; left: 1355px; position: absolute;">
+        <img src="furniture_ammamas-house/4c_copy3.gif" draggable="false" data-draggable="" style="top: 1673px; left: 1805px; position: absolute;">
+        <img src="furniture_ammamas-house/5.gif" draggable="false" data-draggable="" style="top: 753px; left: 269px; position: absolute;">
+        <img src="furniture_ammamas-house/5_copy1.gif" draggable="false" data-draggable="" style="top: 68px; left: 1838px; position: absolute;">
+        <img src="furniture_ammamas-house/5_copy2.gif" draggable="false" data-draggable="" style="top: 590px; left: 2137px; position: absolute;">
+        <img src="furniture_ammamas-house/5_copy3.gif" draggable="false" data-draggable="" style="top: 948px; left: 1267px; position: absolute;">
+        <img src="furniture_ammamas-house/5a.gif" draggable="false" data-draggable="" style="top: 1365px; left: 289px; position: absolute;">
+        <img src="furniture_ammamas-house/5a_copy1.gif" draggable="false" data-draggable="" style="top: 1046px; left: 1168px; position: absolute;">
+        <img src="furniture_ammamas-house/5a_copy2.gif" draggable="false" data-draggable="" style="top: 1455px; left: 286px; position: absolute;">
+        <img src="furniture_ammamas-house/5a_copy3.gif" draggable="false" data-draggable="" style="top: 898px; left: 1945px; position: absolute;">
+        <img src="furniture_ammamas-house/5b.gif" draggable="false" data-draggable="" style="top: 689px; left: 2143px; position: absolute;">
+        <img src="furniture_ammamas-house/5b_copy1.gif" draggable="false" data-draggable="" style="top: 1440px; left: 872px; position: absolute;">
+        <img src="furniture_ammamas-house/5b_copy2.gif" draggable="false" data-draggable="" style="top: 414px; left: 2385px; position: absolute;">
+        <img src="furniture_ammamas-house/5b_copy3.gif" draggable="false" data-draggable="" style="top: 885px; left: 271px; position: absolute;">
+        <img src="furniture_ammamas-house/5c.gif" draggable="false" data-draggable="" style="top: 899px; left: 1644px; position: absolute;">
+        <img src="furniture_ammamas-house/5c_copy1.gif" draggable="false" data-draggable="" style="top: 1436px; left: 191px; position: absolute;">
+        <img src="furniture_ammamas-house/5c_copy2.gif" draggable="false" data-draggable="" style="top: 1341px; left: 970px; position: absolute;">
+        <img src="furniture_ammamas-house/5c_copy3.gif" draggable="false" data-draggable="" style="top: 1345px; left: 182px; position: absolute;">
+        <img src="furniture_ammamas-house/6.gif" draggable="false" data-draggable="" style="top: 315px; left: 2385px; position: absolute;">
+        <img src="furniture_ammamas-house/6_copy1.gif" draggable="false" data-draggable="" style="top: 562px; left: 913px; position: absolute;">
+        <img src="furniture_ammamas-house/6_copy2.gif" draggable="false" data-draggable="" style="top: 364px; left: 261px; position: absolute;">
+        <img src="furniture_ammamas-house/6_copy3.gif" draggable="false" data-draggable="" style="top: 820px; left: 271px; position: absolute;">
+      </section>
+    </main>
+  </body>
+</html>

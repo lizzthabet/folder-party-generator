@@ -1,54 +1,91 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_fs_1 = require("node:fs");
 const node_path_1 = require("node:path");
 const node_process_1 = require("node:process");
+const promises_1 = require("node:timers/promises");
+const node_util_1 = require("node:util");
 const CURRENT_DIRECTORY = '.';
-const FILES_TO_IGNORE = new Set([
-    '.DS_Store', // Silly MacOS files
-    'generate.js', // The folder party generator script
-    'furniture', // Folder with images to be treated as furniture
-    'theme' // Folder with theme-specific content that shouldn't be treated as content
-]);
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g;
-const FURNITURE_FOLDER = 'furniture';
-const THEME_CONTENT_FOLDER = 'theme';
+const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?/;
+const INDEX_FILE_REGEX = /^index[_|-]?.*\.html/;
+const DEFAULT_FURNITURE_FOLDER = 'furniture';
+const DEFAULT_THEME_FOLDER = 'theme';
 const DEFAULT_OUTPUT_FILENAME = "index";
 const MAX_RANDOM_HEIGHT = 1250;
 const MAX_RANDOM_WIDTH = 2500;
 const HTML_TITLE = "welcome to a place on my computer i've created just for you";
-// Environment variables that can be set
-// to configure folder party generation
-const FOLDER_ENV_VAR = 'FOLDER';
-const OVERWRITE_INDEX_ENV_VAR = 'OVERWRITE';
-const APPEND_INDEX_ENV_VAR = 'APPEND';
-const RANDOM_POSITION_ENV_VAR = 'RANDOM_POSITION';
-const INSTRUCTIONS_ENV_VAR = 'INSTRUCTIONS';
+const ENV_OPTIONS = {
+    FOLDER: 'FOLDER',
+    FURNITURE: 'FURNITURE',
+    THEME: 'THEME',
+    OVERWRITE: 'OVERWRITE',
+    APPEND: 'APPEND',
+    RANDOM_LAYOUT: 'RANDOM_LAYOUT',
+    INSTRUCTIONS: 'INSTRUCTIONS',
+};
+const PATHS_TO_IGNORE = [
+    /\.DS_Store$/, // Silly MacOS files
+    /^generate\.js$/, // The folder party generator script
+    /\.env$/, // Dot env file
+    /^\.git.*?$/, // Git directory and all its contents
+    INDEX_FILE_REGEX, // Previous folder party html files
+];
+const DIRS_TO_IGNORE = [
+    THEME_OR_FURNITURE_REGEX, // Folders for "furniture" and "theme" (optionally followed by a hyphen or underscore)
+];
+// Create a logger for verbose debugging and pre-defined formatting,
+// enabled with NODE_DEBUG=generator
+const logLevelDebug = (() => {
+    const logDebug = (0, node_util_1.debuglog)("generator");
+    return (...data) => logDebug("* [debug] * >", ...data);
+})();
+// Default values for configuration options
+const defaultOptions = {
+    appendFile: false,
+    directory: CURRENT_DIRECTORY,
+    displayInstructions: true,
+    furniture: DEFAULT_FURNITURE_FOLDER,
+    overwriteFile: false,
+    randomLayout: false,
+    theme: DEFAULT_THEME_FOLDER,
+};
 function getOptionsFromEnv(e) {
-    const options = {
-        appendFile: false,
-        directory: CURRENT_DIRECTORY,
-        displayInstructions: true,
-        overwriteFile: false,
-        randomPlacement: false,
-    };
-    const folderName = e[FOLDER_ENV_VAR];
+    const options = Object.assign({}, defaultOptions);
+    const folderName = e[ENV_OPTIONS.FOLDER];
     if (folderName) {
         options.directory = (0, node_path_1.normalize)(folderName);
     }
-    const overwrite = e[OVERWRITE_INDEX_ENV_VAR];
+    const furnitureFolder = e[ENV_OPTIONS.FURNITURE];
+    if (furnitureFolder) {
+        options.furniture = (0, node_path_1.normalize)(furnitureFolder);
+    }
+    const themeFolder = e[ENV_OPTIONS.THEME];
+    if (themeFolder) {
+        options.theme = (0, node_path_1.normalize)(themeFolder);
+    }
+    const overwrite = e[ENV_OPTIONS.OVERWRITE];
     if (overwrite) {
         options.overwriteFile = parseBool(overwrite);
     }
-    const append = e[APPEND_INDEX_ENV_VAR];
+    const append = e[ENV_OPTIONS.APPEND];
     if (append) {
         options.appendFile = parseBool(append);
     }
-    const random = e[RANDOM_POSITION_ENV_VAR];
+    const random = e[ENV_OPTIONS.RANDOM_LAYOUT];
     if (random) {
-        options.randomPlacement = parseBool(random);
+        options.randomLayout = parseBool(random);
     }
-    const instructions = e[INSTRUCTIONS_ENV_VAR];
+    const instructions = e[ENV_OPTIONS.INSTRUCTIONS];
     if (instructions) {
         options.displayInstructions = parseBool(instructions);
     }
@@ -97,71 +134,103 @@ function getAppendIndex(content) {
     return content.length - 1;
 }
 function sortFilesIntoInput(files, options) {
-    var _a;
-    const input = {
-        files: [],
-        furniture: [],
-        theme: [],
-        displayInstructions: options.displayInstructions,
-        randomPlacement: options.randomPlacement,
-    };
-    // If new files should be appended to the existing html file,
-    // get the file contents and a list of files already included in it
-    if (options.appendFile) {
-        try {
-            const fullPath = (0, node_path_1.join)(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`);
-            input.existingFileContent = readFileContent(fullPath);
-            input.existingFiles = parseFilesFromHtml(input.existingFileContent);
-            input.appendToIndex = getAppendIndex(input.existingFileContent);
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        const input = {
+            files: [],
+            furniture: [],
+            theme: [],
+            displayInstructions: options.displayInstructions,
+            randomLayout: options.randomLayout,
+        };
+        // If new files should be appended to the existing html file,
+        // get the file contents and a list of files already included in it
+        // TODO: This logic may get more complicated is someone is swapping furniture and theme;
+        // it doesn't currently support keeping your file arrangements while swapping theme and furniture.
+        if (options.appendFile) {
+            try {
+                // TODO: Add support for reading from the most recent index file, in case there are multiple.
+                const fullPath = (0, node_path_1.join)(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`);
+                input.existingFileContent = readFileContent(fullPath);
+                input.existingFiles = parseFilesFromHtml(input.existingFileContent);
+                input.appendToIndex = getAppendIndex(input.existingFileContent);
+            }
+            catch (error) {
+                console.warn("> > unable to append new files to existing index.html:", error);
+                console.warn("> > creating new file instead of appending");
+            }
         }
-        catch (error) {
-            console.warn("> > unable to append new files to existing index.html:", error);
-            console.warn("> > creating new file instead of appending");
+        /**
+         * This is what file data looks like here
+         * (since I'm always forgetting):
+          {
+            path: 'furniture/table.png',
+            parsed: { root: '', dir: 'furniture', base: 'table.png', ext: '.png', name: 'table' }
+          }
+         */
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            // Skip file if its path matches a global ignore
+            if (PATHS_TO_IGNORE.some((regex) => regex.test(file.path))) {
+                logLevelDebug("ignoring path:", file.path);
+                continue;
+            }
+            // Skip directories if it matches a global ignore, but keep the files inside them;
+            // This is used for special folders like "theme" and "furniture"
+            if (file.parsed.ext == "") {
+                if (DIRS_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
+                    logLevelDebug("ignoring dir:", file.parsed.base);
+                    continue;
+                }
+            }
+            // Skip file if it's already been included in the existing html
+            if (options.appendFile &&
+                input.existingFiles &&
+                input.existingFiles.has(file.path)) {
+                continue;
+            }
+            // Categorize files based on their base folder path, so that any files
+            // within special folders like "furniture" are sorted correctly,
+            // even if they appear in subfolders
+            const parsedDirPath = file.parsed.dir.split(node_path_1.sep);
+            const parsedBaseDir = ((_a = parsedDirPath[0]) !== null && _a !== void 0 ? _a : "").toLowerCase();
+            // Add file to furniture if it matches the furniture directory
+            if (parsedBaseDir === options.furniture) {
+                input.furniture.push(file);
+                // Add file to theme if it matches the theme directory
+            }
+            else if (parsedBaseDir === options.theme) {
+                input.theme.push(file);
+                // Finally, add file to folder party content if it isn't in a theme 
+                // or furniture folder (since there may be other theme or furniture
+                // directories that aren't currently in use)
+            }
+            else if (!THEME_OR_FURNITURE_REGEX.test(parsedBaseDir)) {
+                input.files.push(file);
+            }
+            else {
+                logLevelDebug("skipping file:", file.path);
+            }
         }
-    }
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        // Skip file if it's ignored globally
-        if (FILES_TO_IGNORE.has(file.parsed.base)) {
-            continue;
-        }
-        // Skip file if it's already been included in the existing html
-        if (options.appendFile &&
-            input.existingFiles &&
-            input.existingFiles.has(file.path)) {
-            continue;
-        }
-        // Categorize files based on their base folder path, so that any files
-        // within special folders like "furniture" are sorted correctly,
-        // even if they appear in subfolders
-        const parsedDirPath = file.parsed.dir.split(node_path_1.sep);
-        const parsedBaseDir = (_a = parsedDirPath[0]) !== null && _a !== void 0 ? _a : "";
-        if (parsedBaseDir.toLowerCase() === FURNITURE_FOLDER) {
-            input.furniture.push(file);
-        }
-        else if (parsedBaseDir.toLowerCase() === THEME_CONTENT_FOLDER) {
-            input.theme.push(file);
-        }
-        else if (file.path === `${DEFAULT_OUTPUT_FILENAME}.html`) {
-            input.existingIndex = file;
-        }
-        else {
-            input.files.push(file);
-        }
-    }
-    console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);
-    console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "" : "s"} of furniture`);
-    console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "" : "s"} of styles & theming`);
-    return input;
+        yield sleep(500);
+        console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "" : "s"} of folder party content`);
+        yield sleep(500);
+        console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "" : "s"} of furniture`);
+        yield sleep(500);
+        console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "" : "s"} of styles & theming`);
+        return input;
+    });
 }
 function template(files, options) {
-    const data = files.map(f => ({ path: f, parsed: (0, node_path_1.parse)(f) }));
-    const templateInput = sortFilesIntoInput(data, options);
-    if (options.appendFile) {
-        const newFiles = templateInput.files.length;
-        console.info(`> > adding ${newFiles} file${newFiles === 1 ? '' : 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`);
-    }
-    return { templateInput, content: generateTemplate(templateInput) };
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = files.map(f => ({ path: f, parsed: (0, node_path_1.parse)(f) }));
+        const templateInput = yield sortFilesIntoInput(data, options);
+        if (options.appendFile) {
+            const newFiles = templateInput.files.length;
+            console.info(`> > adding ${newFiles} file${newFiles === 1 ? '' : 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`);
+        }
+        return { templateInput, content: generateTemplate(templateInput) };
+    });
 }
 function websiteFilePath({ directory, options, }) {
     let filename = DEFAULT_OUTPUT_FILENAME;
@@ -179,27 +248,42 @@ function websiteFilePath({ directory, options, }) {
     return (0, node_path_1.join)(directory, `${filename}.html`);
 }
 (function main() {
-    try {
-        const options = getOptionsFromEnv(node_process_1.env);
-        console.info(`
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const options = getOptionsFromEnv(node_process_1.env);
+            console.info(`
                       welcome to the
- .-   .   .                    .                         .       
--|-.-.| .-| .-,.-.  .-..-. .-.-|-. .  .-..-,.-..-,.-..-.-|-.-..-.
- ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|  \`-|\`'-' '\`'-'  \`-\`-'-\`-''  
-                    '            \`-'  \`-'                        
+
+             .-   .   .                    .
+            -|-.-.| .-| .-,.-.  .-..-. .-.-|-. .
+             ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|
+                               .'            \`-'
+                .-..-,.-..-,.-..-.-|-.-..-.
+                \`-|\`'-' '\`'-'  \`-\`-'-\`-''
+                \`-'
 
                       ~ * ~ * ~ * ~
 `);
-        const { directory } = options;
-        console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
-            "current directory" : directory}`);
-        const files = listFilesInDir(directory);
-        console.info(`> > found ${files.length} files for your folder party`);
-        const { content } = template(files, options);
-        const filePath = websiteFilePath({ directory, options });
-        (0, node_fs_1.writeFileSync)(filePath, content, { encoding: 'utf-8' });
-        console.info(`> > saving folder party website: ${filePath}`);
-        console.info(`
+            Object.keys(defaultOptions).filter((key) => {
+                const current = options[key];
+                if (defaultOptions[key] !== current) {
+                    logLevelDebug(`"${key}" is set to "${current}"`);
+                }
+            });
+            const { directory } = options;
+            yield sleep(1000);
+            console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ?
+                "current directory" : directory}`);
+            const files = listFilesInDir(directory);
+            yield sleep(1000);
+            console.info(`> > found ${files.length} files for your folder party`);
+            const { content } = yield template(files, options);
+            const filePath = websiteFilePath({ directory, options });
+            (0, node_fs_1.writeFileSync)(filePath, content, { encoding: 'utf-8' });
+            yield sleep(1000);
+            console.info(`> > saving folder party website: ${filePath}`);
+            yield sleep(1500);
+            console.info(`
   ----------------------------------------------------------
   | now that your folder party website is created, you'll  |
   | want to open up that .html file and start arranging.   |
@@ -207,14 +291,17 @@ function websiteFilePath({ directory, options, }) {
   | once you've gotten everything exactly where you'd like |
   | it to be, save a copy of your final folder party site. |
   ----------------------------------------------------------
-
+`);
+            yield sleep(500);
+            console.log(`
                 ~ * ~ happy hosting ~ * ~
 `);
-    }
-    catch (err) {
-        console.error("folder party creation failed:", err);
-        process.exit(1);
-    }
+        }
+        catch (err) {
+            console.error("folder party creation failed:", err);
+            process.exit(1);
+        }
+    });
 })();
 // Template logic * ~ * ~ *
 function generateTemplate(input) {
@@ -223,7 +310,7 @@ function generateTemplate(input) {
     if (typeof input.appendToIndex === "number") {
         const beforeNewContent = input.existingFileContent.slice(0, input.appendToIndex + 1);
         const afterNewContent = input.existingFileContent.slice(input.appendToIndex + 1);
-        const newContent = input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n") + "\n      ";
+        const newContent = input.files.map((f) => createButtonDialogPair(f, { randomLayout: input.randomLayout })).join("\n") + "\n      ";
         return beforeNewContent + newContent + afterNewContent;
     }
     return createHtmlDocument(input);
@@ -284,12 +371,15 @@ function createStyle({ displayInstructions }) {
         --dialog-border-width: 2px;
         --dialog-bg: #dfdfdf;
         --dialog-button-bg: #dfdfdf;
+        --dialog-button-border-radius: 5px;
         --dialog-button-color: #333333;
         --dialog-button-font: monospace;
         --dialog-button-font-size: 0.80rem;
         --dialog-button-focus-bg: purple;
         --dialog-button-focus-color: white;
+        --dialog-button-padding: 1px 4px;
         --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+        --dialog-padding: 16px;
       }
 
       html {
@@ -361,6 +451,7 @@ function createStyle({ displayInstructions }) {
         border-radius: var(--dialog-border-radius);
         border-width: var(--dialog-border-width);
         box-shadow: var(--dialog-box-shadow);
+        padding: var(--dialog-padding);
         /* set */
         width: max-content; /* Size dialogs in Firefox to fit their content */
         z-index: 2;
@@ -372,9 +463,10 @@ function createStyle({ displayInstructions }) {
         color: var(--dialog-button-color);
         font-family: var(--dialog-button-font);
         font-size: var(--dialog-button-font-size);
+        padding: var(--dialog-button-padding);
+        border-radius: var(--dialog-button-border-radius);
         /* set */
         border: none;
-        border-radius: 5px;
         float: right;
         margin: 0.5rem -0.5rem -0.5rem 0.5rem;
         text-transform: uppercase;
@@ -386,7 +478,6 @@ function createStyle({ displayInstructions }) {
         background-color: var(--dialog-button-focus-bg);
         color: var(--dialog-button-focus-color);
         /* set */
-        border-radius: 5px;
         outline: none;
       }
 
@@ -745,8 +836,8 @@ function createBody(input) {
         <button class="instructions" onclick="downloadWholePage(true)">save & finalize <span>(without instructions)</span></button>
       </div>
     </header>` : ""}
-    <main>${input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n")}
-      ${createFurniture(input.furniture, { randomPlacement: input.randomPlacement })}
+    <main>${input.files.map((f) => createButtonDialogPair(f, { randomLayout: input.randomLayout })).join("\n")}
+      ${createFurniture(input.furniture, { randomLayout: input.randomLayout })}
     </main>
   </body>`;
 }
@@ -765,7 +856,7 @@ function createButton(file, options) {
     return `<button
         class="filename"
         aria-haspopup="dialog"
-        aria-controls="${file.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? `
+        aria-controls="${file.path}"${(options === null || options === void 0 ? void 0 : options.randomLayout) ? `
         style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : ""}
         data-fileviewer
         data-draggable>
@@ -782,7 +873,7 @@ function createDialog(file) {
 function createFurniture(furniture, options) {
     return `<section aria-label="furniture">
         ${furniture.map(item => {
-        return `<img class="furniture-item" src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomPlacement) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
+        return `<img class="furniture-item" src="${item.path}"${(options === null || options === void 0 ? void 0 : options.randomLayout) ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`;
     }).join("\n        ")}
       </section>`;
 }
@@ -805,5 +896,20 @@ function parseBool(varValue) {
             console.warn(`* * warning: unexpected env var value: ${varValue}`);
             return false;
     }
+}
+function sleep(ms, cb) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // When debugging, don't delay !
+        if (process.env["NODE_DEBUG"]) {
+            if (cb) {
+                cb();
+            }
+            return Promise.resolve();
+        }
+        yield (0, promises_1.setTimeout)(ms);
+        if (cb) {
+            cb();
+        }
+    });
 }
 //# sourceMappingURL=generate.js.map

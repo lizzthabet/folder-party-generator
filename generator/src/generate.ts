@@ -1,6 +1,8 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { normalize, parse, ParsedPath, sep, join } from 'node:path'
 import { env } from 'node:process'
+import { setTimeout } from 'node:timers/promises'
+import { debuglog } from 'node:util'
 
 type FileData = {
   path: string
@@ -11,61 +13,99 @@ type Options = {
   appendFile: boolean
   directory: string
   displayInstructions: boolean
+  furniture: string
   overwriteFile: boolean
-  randomPlacement: boolean
+  theme: string
+  randomLayout: boolean
 }
 
 const CURRENT_DIRECTORY = '.'
-const FILES_TO_IGNORE = new Set([
-  '.DS_Store', // Silly MacOS files
-  'generate.js', // The folder party generator script
-  'furniture', // Folder with images to be treated as furniture
-  'theme' // Folder with theme-specific content that shouldn't be treated as content
-])
 const DIALOG_IDS_REGEX = /dialog\s?id="(.[^"]+)"/g
-const FURNITURE_FOLDER = 'furniture'
-const THEME_CONTENT_FOLDER = 'theme'
+const THEME_OR_FURNITURE_REGEX = /^(furniture|theme)[_|-]?/
+const INDEX_FILE_REGEX = /^index[_|-]?.*\.html/
+const DEFAULT_FURNITURE_FOLDER = 'furniture'
+const DEFAULT_THEME_FOLDER = 'theme'
 const DEFAULT_OUTPUT_FILENAME = "index"
 const MAX_RANDOM_HEIGHT = 1250;
 const MAX_RANDOM_WIDTH = 2500;
 const HTML_TITLE = "welcome to a place on my computer i've created just for you"
 // Environment variables that can be set
 // to configure folder party generation
-const FOLDER_ENV_VAR = 'FOLDER'
-const OVERWRITE_INDEX_ENV_VAR = 'OVERWRITE'
-const APPEND_INDEX_ENV_VAR = 'APPEND'
-const RANDOM_POSITION_ENV_VAR = 'RANDOM_POSITION'
-const INSTRUCTIONS_ENV_VAR = 'INSTRUCTIONS'
+type EnvVar = 'FOLDER' | 'FURNITURE' | 'THEME' | 'OVERWRITE' | 'APPEND' | 'RANDOM_LAYOUT' | 'INSTRUCTIONS'
+const ENV_OPTIONS: {[Property in EnvVar]: string} = {
+  FOLDER: 'FOLDER',
+  FURNITURE: 'FURNITURE',
+  THEME: 'THEME',
+  OVERWRITE: 'OVERWRITE',
+  APPEND: 'APPEND',
+  RANDOM_LAYOUT: 'RANDOM_LAYOUT',
+  INSTRUCTIONS: 'INSTRUCTIONS',
+}
+
+const PATHS_TO_IGNORE = [
+  /\.DS_Store$/, // Silly MacOS files
+  /^generate\.js$/, // The folder party generator script
+  /\.env$/, // Dot env file
+  /^\.git.*?$/, // Git directory and all its contents
+  INDEX_FILE_REGEX, // Previous folder party html files
+]
+
+const DIRS_TO_IGNORE = [
+  THEME_OR_FURNITURE_REGEX, // Folders for "furniture" and "theme" (optionally followed by a hyphen or underscore)
+]
+
+// Create a logger for verbose debugging and pre-defined formatting,
+// enabled with NODE_DEBUG=generator
+const logLevelDebug = (() => {
+  const logDebug = debuglog("generator")
+  return (...data: unknown[]) => logDebug("* [debug] * >", ...data)
+})()
+
+// Default values for configuration options
+const defaultOptions: Options = {
+  appendFile: false,
+  directory: CURRENT_DIRECTORY,
+  displayInstructions: true,
+  furniture: DEFAULT_FURNITURE_FOLDER,
+  overwriteFile: false,
+  randomLayout: false,
+  theme: DEFAULT_THEME_FOLDER,
+}
 
 function getOptionsFromEnv(e: NodeJS.ProcessEnv): Options {
-  const options: Options = {
-    appendFile: false,
-    directory: CURRENT_DIRECTORY,
-    displayInstructions: true,
-    overwriteFile: false,
-    randomPlacement: false,
-  }
-  const folderName: string | undefined = e[FOLDER_ENV_VAR]
+  const options = { ...defaultOptions }
+
+  const folderName: string | undefined = e[ENV_OPTIONS.FOLDER]
   if (folderName) {
     options.directory = normalize(folderName)
   }
 
-  const overwrite: string | undefined = e[OVERWRITE_INDEX_ENV_VAR]
+  const furnitureFolder: string | undefined = e[ENV_OPTIONS.FURNITURE]
+  if (furnitureFolder) {
+    options.furniture = normalize(furnitureFolder)
+  }
+
+  const themeFolder: string | undefined = e[ENV_OPTIONS.THEME]
+  if (themeFolder) {
+    options.theme = normalize(themeFolder)
+  }
+
+  const overwrite: string | undefined = e[ENV_OPTIONS.OVERWRITE]
   if (overwrite) {
     options.overwriteFile = parseBool(overwrite)
   }
 
-  const append: string | undefined = e[APPEND_INDEX_ENV_VAR]
+  const append: string | undefined = e[ENV_OPTIONS.APPEND]
   if (append) {
     options.appendFile = parseBool(append)
   }
 
-  const random: string | undefined = e[RANDOM_POSITION_ENV_VAR]
+  const random: string | undefined = e[ENV_OPTIONS.RANDOM_LAYOUT]
   if (random) {
-    options.randomPlacement = parseBool(random)
+    options.randomLayout = parseBool(random)
   }
 
-  const instructions: string | undefined = e[INSTRUCTIONS_ENV_VAR]
+  const instructions: string | undefined = e[ENV_OPTIONS.INSTRUCTIONS]
   if (instructions) {
     options.displayInstructions = parseBool(instructions)
   }
@@ -132,23 +172,26 @@ type TemplateInput = {
   displayInstructions?: boolean
   existingFiles?: Set<string>
   existingFileContent?: string
-  existingIndex?: FileData
-  randomPlacement?: boolean
+  randomLayout?: boolean
 }
 
-function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput {
+async function sortFilesIntoInput(files: FileData[], options: Options): Promise<TemplateInput> {
   const input: TemplateInput = {
     files: [],
     furniture: [],
     theme: [],
     displayInstructions: options.displayInstructions,
-    randomPlacement: options.randomPlacement,
+    randomLayout: options.randomLayout,
   }
 
   // If new files should be appended to the existing html file,
   // get the file contents and a list of files already included in it
+
+  // TODO: This logic may get more complicated is someone is swapping furniture and theme;
+  // it doesn't currently support keeping your file arrangements while swapping theme and furniture.
   if (options.appendFile) {
     try {
+      // TODO: Add support for reading from the most recent index file, in case there are multiple.
       const fullPath = join(options.directory, `${DEFAULT_OUTPUT_FILENAME}.html`)
       input.existingFileContent = readFileContent(fullPath)
       input.existingFiles = parseFilesFromHtml(input.existingFileContent)
@@ -159,11 +202,29 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     }
   }
 
+  /**
+   * This is what file data looks like here
+   * (since I'm always forgetting):
+    {
+      path: 'furniture/table.png',
+      parsed: { root: '', dir: 'furniture', base: 'table.png', ext: '.png', name: 'table' }
+    }
+   */
+
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    // Skip file if it's ignored globally
-    if (FILES_TO_IGNORE.has(file.parsed.base)) {
+    // Skip file if its path matches a global ignore
+    if (PATHS_TO_IGNORE.some((regex) => regex.test(file.path))) {
+      logLevelDebug("ignoring path:", file.path)
       continue
+    }
+    // Skip directories if it matches a global ignore, but keep the files inside them;
+    // This is used for special folders like "theme" and "furniture"
+    if (file.parsed.ext == "") {
+      if (DIRS_TO_IGNORE.some((regex) => regex.test(file.parsed.base))) {
+        logLevelDebug("ignoring dir:", file.parsed.base)
+        continue
+      }
     }
     // Skip file if it's already been included in the existing html
     if (
@@ -178,28 +239,36 @@ function sortFilesIntoInput(files: FileData[], options: Options): TemplateInput 
     // within special folders like "furniture" are sorted correctly,
     // even if they appear in subfolders
     const parsedDirPath = file.parsed.dir.split(sep)
-    const parsedBaseDir = parsedDirPath[0] ?? ""
-    if (parsedBaseDir.toLowerCase() === FURNITURE_FOLDER) {
+    const parsedBaseDir = (parsedDirPath[0] ?? "").toLowerCase()
+    // Add file to furniture if it matches the furniture directory
+    if (parsedBaseDir === options.furniture) {
       input.furniture.push(file)
-    } else if (parsedBaseDir.toLowerCase() === THEME_CONTENT_FOLDER) {
+    // Add file to theme if it matches the theme directory
+    } else if (parsedBaseDir === options.theme) {
       input.theme.push(file)
-    } else if (file.path === `${DEFAULT_OUTPUT_FILENAME}.html`) {
-      input.existingIndex = file
-    } else {
+    // Finally, add file to folder party content if it isn't in a theme 
+    // or furniture folder (since there may be other theme or furniture
+    // directories that aren't currently in use)
+    } else if (!THEME_OR_FURNITURE_REGEX.test(parsedBaseDir)) {
       input.files.push(file)
+    } else {
+      logLevelDebug("skipping file:", file.path)
     }
   }
 
+  await sleep(500)
   console.info(`> > > ${input.files.length} file${input.files.length === 1 ? "": "s"} of folder party content`)
+  await sleep(500)
   console.info(`> > > ${input.furniture.length} file${input.furniture.length === 1 ? "": "s"} of furniture`)
+  await sleep(500)
   console.info(`> > > ${input.theme.length} file${input.theme.length === 1 ? "": "s"} of styles & theming`)
 
   return input
 }
 
-function template(files: string[], options: Options): { content: string, templateInput: TemplateInput } {
+async function template(files: string[], options: Options): Promise<{ content: string, templateInput: TemplateInput }> {
   const data: FileData[] = files.map(f => ({ path: f, parsed: parse(f) }))
-  const templateInput = sortFilesIntoInput(data, options)
+  const templateInput = await sortFilesIntoInput(data, options)
   if (options.appendFile) {
     const newFiles = templateInput.files.length
     console.info(`> > adding ${newFiles} file${newFiles === 1 ? '': 's'} to existing ${DEFAULT_OUTPUT_FILENAME}.html`)
@@ -230,27 +299,43 @@ function websiteFilePath({
   return join(directory, `${filename}.html`)
 }
 
-(function main() {
+(async function main() {
   try {
     const options = getOptionsFromEnv(env)
     console.info(`
                       welcome to the
- .-   .   .                    .                         .       
--|-.-.| .-| .-,.-.  .-..-. .-.-|-. .  .-..-,.-..-,.-..-.-|-.-..-.
- ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|  \`-|\`'-' '\`'-'  \`-\`-'-\`-''  
-                    '            \`-'  \`-'                        
+
+             .-   .   .                    .
+            -|-.-.| .-| .-,.-.  .-..-. .-.-|-. .
+             ' \`-''-\`-'-\`'-'    |-'\`-\`-'   '-'-|
+                               .'            \`-'
+                .-..-,.-..-,.-..-.-|-.-..-.
+                \`-|\`'-' '\`'-'  \`-\`-'-\`-''
+                \`-'
 
                       ~ * ~ * ~ * ~
 `)
+
+    Object.keys(defaultOptions).filter((key: keyof Options) => {
+      const current = options[key]
+      if (defaultOptions[key] !== current) {
+        logLevelDebug(`"${key}" is set to "${current}"`)
+      }
+    })
+
     const { directory } = options
+    await sleep(1000)
     console.info(`> > generating folder party from ${directory === CURRENT_DIRECTORY ? 
       "current directory": directory}`)
     const files = listFilesInDir(directory)
+    await sleep(1000)
     console.info(`> > found ${files.length} files for your folder party`)
-    const { content } = template(files, options)
+    const { content } = await template(files, options)
     const filePath = websiteFilePath({ directory, options })
     writeFileSync(filePath, content, { encoding: 'utf-8' })
+    await sleep(1000)
     console.info(`> > saving folder party website: ${filePath}`)
+    await sleep(1500)
     console.info(`
   ----------------------------------------------------------
   | now that your folder party website is created, you'll  |
@@ -259,7 +344,9 @@ function websiteFilePath({
   | once you've gotten everything exactly where you'd like |
   | it to be, save a copy of your final folder party site. |
   ----------------------------------------------------------
-
+`)
+  await sleep(500)
+  console.log(`
                 ~ * ~ happy hosting ~ * ~
 `)
   } catch (err) {
@@ -275,7 +362,7 @@ function generateTemplate(input: TemplateInput): string {
   if (typeof input.appendToIndex === "number") {
     const beforeNewContent = input.existingFileContent.slice(0, input.appendToIndex + 1)
     const afterNewContent = input.existingFileContent.slice(input.appendToIndex + 1)
-    const newContent = input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n") + "\n      "
+    const newContent = input.files.map((f) => createButtonDialogPair(f, { randomLayout: input.randomLayout })).join("\n") + "\n      "
     return beforeNewContent + newContent + afterNewContent
   }
 
@@ -308,7 +395,7 @@ ${stylesheetBlock}
 }
 
 type TemplateOptions = Pick<TemplateInput, "displayInstructions">
-type FileOptions = Pick<TemplateInput, "randomPlacement" | "displayInstructions">
+type FileOptions = Pick<TemplateInput, "randomLayout" | "displayInstructions">
 
 // Styles (plus, specific styles for each media content)
 function createStyle({ displayInstructions }: TemplateOptions): string {
@@ -343,12 +430,15 @@ function createStyle({ displayInstructions }: TemplateOptions): string {
         --dialog-border-width: 2px;
         --dialog-bg: #dfdfdf;
         --dialog-button-bg: #dfdfdf;
+        --dialog-button-border-radius: 5px;
         --dialog-button-color: #333333;
         --dialog-button-font: monospace;
         --dialog-button-font-size: 0.80rem;
         --dialog-button-focus-bg: purple;
         --dialog-button-focus-color: white;
+        --dialog-button-padding: 1px 4px;
         --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+        --dialog-padding: 16px;
       }
 
       html {
@@ -420,6 +510,7 @@ function createStyle({ displayInstructions }: TemplateOptions): string {
         border-radius: var(--dialog-border-radius);
         border-width: var(--dialog-border-width);
         box-shadow: var(--dialog-box-shadow);
+        padding: var(--dialog-padding);
         /* set */
         width: max-content; /* Size dialogs in Firefox to fit their content */
         z-index: 2;
@@ -431,9 +522,10 @@ function createStyle({ displayInstructions }: TemplateOptions): string {
         color: var(--dialog-button-color);
         font-family: var(--dialog-button-font);
         font-size: var(--dialog-button-font-size);
+        padding: var(--dialog-button-padding);
+        border-radius: var(--dialog-button-border-radius);
         /* set */
         border: none;
-        border-radius: 5px;
         float: right;
         margin: 0.5rem -0.5rem -0.5rem 0.5rem;
         text-transform: uppercase;
@@ -445,7 +537,6 @@ function createStyle({ displayInstructions }: TemplateOptions): string {
         background-color: var(--dialog-button-focus-bg);
         color: var(--dialog-button-focus-color);
         /* set */
-        border-radius: 5px;
         outline: none;
       }
 
@@ -806,8 +897,8 @@ function createBody(input: TemplateInput): string {
         <button class="instructions" onclick="downloadWholePage(true)">save & finalize <span>(without instructions)</span></button>
       </div>
     </header>`: ""}
-    <main>${input.files.map((f) => createButtonDialogPair(f, { randomPlacement: input.randomPlacement })).join("\n")}
-      ${createFurniture(input.furniture, { randomPlacement: input.randomPlacement })}
+    <main>${input.files.map((f) => createButtonDialogPair(f, { randomLayout: input.randomLayout })).join("\n")}
+      ${createFurniture(input.furniture, { randomLayout: input.randomLayout })}
     </main>
   </body>`
 }
@@ -830,7 +921,7 @@ function createButton(file: FileData, options?: FileOptions): string {
   return `<button
         class="filename"
         aria-haspopup="dialog"
-        aria-controls="${file.path}"${ options?.randomPlacement ? `
+        aria-controls="${file.path}"${ options?.randomLayout ? `
         style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;"` : "" }
         data-fileviewer
         data-draggable>
@@ -849,7 +940,7 @@ function createDialog(file: FileData): string {
 function createFurniture(furniture: FileData[], options?: FileOptions) {
   return `<section aria-label="furniture">
         ${furniture.map(item => {
-          return `<img class="furniture-item" src="${item.path}"${options?.randomPlacement ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`
+          return `<img class="furniture-item" src="${item.path}"${options?.randomLayout ? ` style="position: absolute; top: ${randomInt(0, MAX_RANDOM_HEIGHT)}px; left: ${randomInt(0, MAX_RANDOM_WIDTH)}px;" ` : " "}draggable="false" data-draggable />`
         }).join("\n        ")}
       </section>`
 }
@@ -874,5 +965,20 @@ function parseBool(varValue: string): boolean {
     default:
       console.warn(`* * warning: unexpected env var value: ${varValue}`)
       return false
+  }
+}
+
+async function sleep(ms: number, cb?: () => void) {
+  // When debugging, don't delay !
+  if (process.env["NODE_DEBUG"]) {
+    if (cb) {
+      cb()
+    }
+    return Promise.resolve()
+  }
+
+  await setTimeout(ms)
+  if (cb) {
+    cb()
   }
 }

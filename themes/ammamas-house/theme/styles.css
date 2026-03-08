@@ -1,0 +1,50 @@
+:root {
+  /* customized css variables for theme */
+  --page-bg: #000000;
+  --page-bg-image: url("theme/background1.jpg");
+  --button-bg: #000000;
+  --button-color: #ffffff;
+  --button-focus-bg: #000000;
+  --button-font: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  --button-box-shadow: 0px 0px 0px 0px #ededed;
+  --button-border-radius: 0px;
+  --button-border-color: #ededed;
+  --button-border-width: 1px;
+  --dialog-bg: #000000;
+  --dialog-button-bg: #ffffff;
+  --dialog-button-color: #000000;
+  --dialog-button-focus-bg: #ffffff;
+  --dialog-button-focus-color: #000000;
+  --dialog-button-font: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  --dialog-box-shadow: 0px 0px 0px 0px #ededed;
+  --dialog-border-style: solid;
+  --dialog-border-radius: 0;
+  --dialog-border-color: #ededed;
+  --dialog-border-width: 1;
+  --button-border-style: solid;
+  --button-focus-color: #ededed;
+}
+
+/* Style for embedded media */
+object {
+  /* styling the content of an embedded object
+     isn't possible, since it's another document
+     context. by default, text documents will be
+     inherit styles from the browser's dark/light
+     mode, so the background color of the object
+     element needs to be responsive to ensure that
+     the font color is legible. */
+  background-color: light-dark(white, black);
+}
+
+/* Style for dialog pop-ups */
+dialog.fileviewer {
+  color: var(--button-color);
+}
+
+/* Style for furniture */
+img {
+  mix-blend-mode: hard-light;
+  height: 100px;
+  width: 100px;
+}

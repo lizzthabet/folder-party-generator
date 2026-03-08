@@ -1,0 +1,36 @@
+:root {
+  /* customized css variables for theme */
+  --page-bg: black;
+  --page-bg-image: url("theme/background.jpg");
+  --button-color: black;
+  --button-bg: #576059;
+  --button-focus-bg: blue;
+  --button-focus-color: black;
+  --button-font: 'Verdana', sans-serif;
+  --button-font-weight: normal;
+  --button-font-style: normal;
+  --button-text-decoration: none;
+  --button-padding: 35px;
+  --button-box-shadow: 19px 17px 3px 0px #46504d;
+  --button-border-style: none;
+  --button-border-width: 0;
+  --button-border-color: blue;
+  --button-border-radius: 0;
+  --dialog-bg: #a45d00;
+  --dialog-button-bg: #a45d00;
+  --dialog-button-color: blue;
+  --dialog-button-focus-bg: blue;
+  --dialog-button-focus-color: #a45d00;
+  --dialog-border-style: double;
+  --dialog-border-color: blue;
+  --dialog-border-width: 2;
+  --dialog-border-radius: 0;
+  --dialog-button-font: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  --dialog-button-font-size: 1.3rem;
+  --dialog-box-shadow: 94px 83px 5px 0 #333333bf;
+}
+
+/* increase width of filenames */
+button.filename {
+    max-width: 800px;
+}

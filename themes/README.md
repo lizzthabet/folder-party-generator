@@ -41,6 +41,26 @@ Rearrange the tiles to create a kolam design that welcomes guests and brings goo
 
 ![a gif of the artist rearranging the kolam tiles of their theme to create intricate designs](./ammamas-house/preview.gif)
 
+### badad
+_Designed by [Gabe Duggan](https://gabrielleduggan.com/)_
+
+'badad' is an inextricably trauma-informed response to nonconsensual surveillance across the land; land as body as being; being as material; material as vandalization of the datasphere.
+
+'badad' reflects on information formatting, dissemination, and processing, especially surrounding language (mutism/nonspeaking/hyperlexia/dyslexia etc.).
+
+We move a rock and carve our mark : stone circles, cairns, geoglyphs  
+We grind them to blow through self : cave painting, Sulawesi  
+Bury me there – 'I was here' : kofun, portal tomb, pyramid – scarification, Situationist International, graffiti  
+A claiming of space : hashtag, moon flag, URL, real estate  
+They’re trying to make maps of us : biometrics, Turing Tests  
+That sickened straight line cast as though a curse : “Indian Removal Act”, all and any human border  
+A claim of ownership upon the ever-unownable : survival through dissociation, fragmentation.  
+
+[visit a preview](https://makeyour.computer/preview/badad)  
+[download theme files](./badad/)  
+
+![a screenshot of a background image big pixelated green and dark blue colors. on top of it is an image of a road lined with vines isolated from its original background. in the foreground, big pixelated shapes resembling letters are arranged in a line.](./badad/preview.png)
+
 ### hand-drawn apartment
 _Designed by [Lizz Thabet](https://lizz.website)_
 

@@ -33,12 +33,15 @@
         --dialog-border-width: 2px;
         --dialog-bg: #dfdfdf;
         --dialog-button-bg: #dfdfdf;
+        --dialog-button-border-radius: 5px;
         --dialog-button-color: #333333;
         --dialog-button-font: monospace;
         --dialog-button-font-size: 0.80rem;
         --dialog-button-focus-bg: purple;
         --dialog-button-focus-color: white;
+        --dialog-button-padding: 1px 4px;
         --dialog-box-shadow: 5px 5px 5px 0 rgba(51, 51, 51, 0.75);
+        --dialog-padding: 16px;
       }
 
       html {
@@ -110,6 +113,7 @@
         border-radius: var(--dialog-border-radius);
         border-width: var(--dialog-border-width);
         box-shadow: var(--dialog-box-shadow);
+        padding: var(--dialog-padding);
         /* set */
         width: max-content; /* Size dialogs in Firefox to fit their content */
         z-index: 2;
@@ -121,9 +125,10 @@
         color: var(--dialog-button-color);
         font-family: var(--dialog-button-font);
         font-size: var(--dialog-button-font-size);
+        padding: var(--dialog-button-padding);
+        border-radius: var(--dialog-button-border-radius);
         /* set */
         border: none;
-        border-radius: 5px;
         float: right;
         margin: 0.5rem -0.5rem -0.5rem 0.5rem;
         text-transform: uppercase;
@@ -135,7 +140,6 @@
         background-color: var(--dialog-button-focus-bg);
         color: var(--dialog-button-focus-color);
         /* set */
-        border-radius: 5px;
         outline: none;
       }
 
@@ -466,176 +470,211 @@
     </script>
 
     <!-- Theme styles -->
-    <link href="theme/theme.css" rel="stylesheet">
+    <link href="theme_landscape/styles.css" rel="stylesheet">
   </head>
 
   <body>
     
     <main>
-      <button class="filename" aria-haspopup="dialog" aria-controls="Screen Shot 2021-03-09 at 10.19.53 PM.png" data-fileviewer="" data-draggable="" style="top: 991.953px; left: 4311.95px; position: absolute;">
-        Screen Shot 2021-03-09 at 10.19.53 PM.png
+      <button class="filename" aria-haspopup="dialog" aria-controls="END, REALLY.png" data-fileviewer="" data-draggable="" style="top: 3351px; left: 6872px; position: absolute;">
+        END, REALLY.png
       </button>
-      <dialog id="Screen Shot 2021-03-09 at 10.19.53 PM.png" class="fileviewer" data-draggable="" style="top: 1075.94px; left: 4315.45px; position: absolute;">
-        <object class="file" data="Screen Shot 2021-03-09 at 10.19.53 PM.png" draggable="false"></object>
+      <dialog id="END, REALLY.png" class="fileviewer" data-draggable="" style="top: 3703px; left: 6510px; position: absolute;" open="">
+        <object class="file" data="END, REALLY.png" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="future-feelings.txt" data-fileviewer="" data-draggable="" style="top: 1836.98px; left: 687.969px; position: absolute;">
-        future-feelings.txt
+      <button class="filename" aria-haspopup="dialog" aria-controls="Snapchat-20140727061648.jpg" data-fileviewer="" data-draggable="" style="top: 3407px; left: 1713.69px; position: absolute;">
+        Snapchat-20140727061648.jpg
       </button>
-      <dialog id="future-feelings.txt" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <object class="file" data="future-feelings.txt" draggable="false"></object>
+      <dialog id="Snapchat-20140727061648.jpg" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="Snapchat-20140727061648.jpg" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="hm" data-fileviewer="" data-draggable="" style="top: 4435px; left: 2311.88px; position: absolute;">
-        hm/
+      <button class="filename" aria-haspopup="dialog" aria-controls="____welcome" data-fileviewer="" data-draggable="" style="top: 418px; left: 536.312px; position: absolute;">
+        ____welcome/
       </button>
-      <dialog id="hm" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <pre>hm/ folder</pre>
+      <dialog id="____welcome" class="fileviewer" data-draggable="" style="top: 518px; left: 695.312px; position: absolute;" open="">
+        <pre>____welcome/ folder</pre>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="homegrown-sample.pdf" data-fileviewer="" data-draggable="" style="top: 3514.94px; left: 4060.55px; position: absolute;">
-        homegrown-sample.pdf
+      <button class="filename" aria-haspopup="dialog" aria-controls="___to" data-fileviewer="" data-draggable="" style="top: 564px; left: 368.438px; position: absolute;">
+        ___to/
       </button>
-      <dialog id="homegrown-sample.pdf" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <object class="file" data="homegrown-sample.pdf" draggable="false"></object>
+      <dialog id="___to" class="fileviewer" data-draggable="" style="top: 663.984px; left: 368.438px; position: absolute;">
+        <pre>___to/ folder</pre>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="i-am-an-aspiring-teacher.png" data-fileviewer="" data-draggable="" style="top: 836.969px; left: 2425.61px; position: absolute;">
-        i-am-an-aspiring-teacher.png
+      <button class="filename" aria-haspopup="dialog" aria-controls="__my" data-fileviewer="" data-draggable="" style="top: 730px; left: 946.25px; position: absolute;">
+        __my/
       </button>
-      <dialog id="i-am-an-aspiring-teacher.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <object class="file" data="i-am-an-aspiring-teacher.png" draggable="false"></object>
+      <dialog id="__my" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>__my/ folder</pre>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="new-file.txt" data-fileviewer="" data-draggable="" style="top: 1253.97px; left: 2724.56px; position: absolute;">
-        new-file.txt
+      <button class="filename" aria-haspopup="dialog" aria-controls="_folder" data-fileviewer="" data-draggable="" style="top: 523px; left: 1025.75px; position: absolute;">
+        _folder/
       </button>
-      <dialog id="new-file.txt" class="fileviewer" data-draggable="" style="top: 1235.45px; left: 1401.56px; position: absolute;">
-        <object class="file" data="new-file.txt" draggable="false"></object>
+      <dialog id="_folder" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>_folder/ folder</pre>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="not-all-features.png" data-fileviewer="" data-draggable="" style="top: 1304.96px; left: 1813.44px; position: absolute;">
-        not-all-features.png
+      <button class="filename" aria-haspopup="dialog" aria-controls="and here are my files.txt" data-fileviewer="" data-draggable="" style="top: 1712.98px; left: 2299.99px; position: absolute;">
+        and here are my files.txt
       </button>
-      <dialog id="not-all-features.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <object class="file" data="not-all-features.png" draggable="false"></object>
+      <dialog id="and here are my files.txt" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="and here are my files.txt" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="welcome" data-fileviewer="" data-draggable="" style="top: 1053.97px; left: 484.812px; position: absolute;">
-        welcome/
+      <button class="filename" aria-haspopup="dialog" aria-controls="and.md" data-fileviewer="" data-draggable="" style="top: 620px; left: 2173.25px; position: absolute;">
+        and.md
       </button>
-      <dialog id="welcome" class="fileviewer" data-draggable="" style="top: 964.969px; left: 390.812px; position: absolute;" open="">
-        <pre>welcome/ folder</pre>
+      <dialog id="and.md" class="fileviewer" data-draggable="" style="top: 644px; left: 1815.25px; position: absolute;" open="">
+        <object class="file" data="and.md" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="would-you-like-to" data-fileviewer="" data-draggable="" style="top: 2714.98px; left: 3332.88px; position: absolute;">
-        would-you-like-to/
+      <button class="filename" aria-haspopup="dialog" aria-controls="begin.md" data-fileviewer="" data-draggable="" style="top: 986px; left: 4461.31px; position: absolute;">
+        begin.md
       </button>
-      <dialog id="would-you-like-to" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <pre>would-you-like-to/ folder</pre>
+      <dialog id="begin.md" class="fileviewer" data-draggable="" style="top: 716px; left: 4180.31px; position: absolute;" open="">
+        <object class="file" data="begin.md" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="you-deserve-a.png" data-fileviewer="" data-draggable="" style="top: 3473.96px; left: 340.969px; position: absolute;">
-        you-deserve-a.png
+      <button class="filename" aria-haspopup="dialog" aria-controls="down" data-fileviewer="" data-draggable="" style="top: 1772px; left: 702.688px; position: absolute;">
+        down/
       </button>
-      <dialog id="you-deserve-a.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <object class="file" data="you-deserve-a.png" draggable="false"></object>
+      <dialog id="down" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <pre>down/ folder</pre>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="welcome/hello,goodday!!!!.png" data-fileviewer="" data-draggable="" style="top: 2498.49px; left: 1571.88px; position: absolute;">
-        welcome/hello,goodday!!!!.png
+      <button class="filename" aria-haspopup="dialog" aria-controls="good photo of the earth.JPG" data-fileviewer="" data-draggable="" style="top: 457.938px; left: 5003.81px; position: absolute;">
+        good photo of the earth.JPG
       </button>
-      <dialog id="welcome/hello,goodday!!!!.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <object class="file" data="welcome/hello,goodday!!!!.png" draggable="false"></object>
+      <dialog id="good photo of the earth.JPG" class="fileviewer" data-draggable="" style="top: 209.406px; left: 5713.31px; position: absolute;" open="">
+        <object class="file" data="good photo of the earth.JPG" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="welcome/to" data-fileviewer="" data-draggable="" style="top: 323.992px; left: 2476.76px; position: absolute;">
-        welcome/to/
+      <button class="filename" aria-haspopup="dialog" aria-controls="good tree photo.jpg" data-fileviewer="" data-draggable="" style="top: 2461px; left: 2356.44px; position: absolute;">
+        good tree photo.jpg
       </button>
-      <dialog id="welcome/to" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <pre>welcome/to/ folder</pre>
+      <dialog id="good tree photo.jpg" class="fileviewer" data-draggable="" style="top: 2610px; left: 2512.44px; position: absolute;" open="">
+        <object class="file" data="good tree photo.jpg" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="would-you-like-to/find-out.jpeg" data-fileviewer="" data-draggable="" style="top: 319px; left: 1577.61px; position: absolute;">
-        would-you-like-to/find-out.jpeg
+      <button class="filename" aria-haspopup="dialog" aria-controls="idk.jpg" data-fileviewer="" data-draggable="" style="top: 1549px; left: 2598.19px; position: absolute;">
+        idk.jpg
       </button>
-      <dialog id="would-you-like-to/find-out.jpeg" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <object class="file" data="would-you-like-to/find-out.jpeg" draggable="false"></object>
+      <dialog id="idk.jpg" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="idk.jpg" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="welcome/to/my" data-fileviewer="" data-draggable="" style="top: 658.992px; left: 675.406px; position: absolute;">
-        welcome/to/my/
+      <button class="filename" aria-haspopup="dialog" aria-controls="what Love looks like.png" data-fileviewer="" data-draggable="" style="top: 3775px; left: 755px; position: absolute;">
+        what Love looks like.png
       </button>
-      <dialog id="welcome/to/my" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
-        <pre>welcome/to/my/ folder</pre>
+      <dialog id="what Love looks like.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="what Love looks like.png" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
 
-      <button class="filename" aria-haspopup="dialog" aria-controls="welcome/to/my/computer" data-fileviewer="" data-draggable="" style="top: 748px; left: 882.031px; position: absolute;">
-        welcome/to/my/computer/
+      <button class="filename" aria-haspopup="dialog" aria-controls="____welcome/hello,goodday!!!!.png" data-fileviewer="" data-draggable="" style="top: 1506.94px; left: 1649.45px; position: absolute;">
+        ____welcome/hello,goodday!!!!.png
       </button>
-      <dialog id="welcome/to/my/computer" class="fileviewer" data-draggable="" style="top: 852.484px; left: 982.031px; position: absolute;" open="">
-        <pre>welcome/to/my/computer/ folder</pre>
+      <dialog id="____welcome/hello,goodday!!!!.png" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="____welcome/hello,goodday!!!!.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="____welcome/you-are-here.txt" data-fileviewer="" data-draggable="" style="top: 1751.97px; left: 1331.73px; position: absolute;">
+        ____welcome/you-are-here.txt
+      </button>
+      <dialog id="____welcome/you-are-here.txt" class="fileviewer" data-draggable="" style="top: 1849.97px; left: 1133.69px; position: absolute;" open="">
+        <object class="file" data="____welcome/you-are-here.txt" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="___to/unnamed.jpg" data-fileviewer="" data-draggable="" style="top: 947px; left: 2555.31px; position: absolute;">
+        ___to/unnamed.jpg
+      </button>
+      <dialog id="___to/unnamed.jpg" class="fileviewer" data-draggable="" style="top: 1046px; left: 2555.31px; position: absolute;">
+        <object class="file" data="___to/unnamed.jpg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="___to/what could have been.png" data-fileviewer="" data-draggable="" style="top: 259px; left: 2528.44px; position: absolute;">
+        ___to/what could have been.png
+      </button>
+      <dialog id="___to/what could have been.png" class="fileviewer" data-draggable="" style="top: 214px; left: 2902.1px; position: absolute;" open="">
+        <object class="file" data="___to/what could have been.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="__my/1391546931043.jpg" data-fileviewer="" data-draggable="" style="top: 2400px; left: 889.312px; position: absolute;">
+        __my/1391546931043.jpg
+      </button>
+      <dialog id="__my/1391546931043.jpg" class="fileviewer" data-draggable="" style="top: 0px; left: 0px; position: absolute;">
+        <object class="file" data="__my/1391546931043.jpg" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="__my/responses.png" data-fileviewer="" data-draggable="" style="top: 862px; left: 2327px; position: absolute;">
+        __my/responses.png
+      </button>
+      <dialog id="__my/responses.png" class="fileviewer" data-draggable="" style="top: 961px; left: 2327px; position: absolute;">
+        <object class="file" data="__my/responses.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="_folder/fiveouttafive.png" data-fileviewer="" data-draggable="" style="top: 2316.2px; left: 4426.59px; position: absolute;">
+        _folder/fiveouttafive.png
+      </button>
+      <dialog id="_folder/fiveouttafive.png" class="fileviewer" data-draggable="" style="top: 1781.45px; left: 3991.1px; position: absolute;">
+        <object class="file" data="_folder/fiveouttafive.png" draggable="false"></object>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="down/here" data-fileviewer="" data-draggable="" style="top: 966px; left: 278.312px; position: absolute;">
+        down/here/
+      </button>
+      <dialog id="down/here" class="fileviewer" data-draggable="" style="top: 842.996px; left: 148.301px; position: absolute;">
+        <pre>down/here/ folder</pre>
+        <form method="dialog"><button class="close-fileviewer">close</button></form>
+      </dialog>
+
+      <button class="filename" aria-haspopup="dialog" aria-controls="down/here/BIG GLITCH.png" data-fileviewer="" data-draggable="" style="top: 2752.2px; left: 4368.26px; position: absolute;">
+        down/here/BIG GLITCH.png
+      </button>
+      <dialog id="down/here/BIG GLITCH.png" class="fileviewer" data-draggable="" style="top: 2732.72px; left: 3815.8px; position: absolute;">
+        <object class="file" data="down/here/BIG GLITCH.png" draggable="false"></object>
         <form method="dialog"><button class="close-fileviewer">close</button></form>
       </dialog>
       <section aria-label="furniture">
-        <img class="furniture-item" src="furniture/TYPE0conglom01.gif" draggable="false" data-draggable="" style="top: 1520px; left: 3921px; position: absolute;">
-        <img class="furniture-item" src="furniture/TYPEan.gif" draggable="false" data-draggable="" style="top: 391px; left: 1558px; position: absolute;">
-        <img class="furniture-item" src="furniture/TYPEbd.gif" draggable="false" data-draggable="" style="top: 2097px; left: 1691px; position: absolute;">
-        <img class="furniture-item" src="furniture/TYPEcf.gif" draggable="false" data-draggable="" style="top: 678px; left: 3667px; position: absolute;">
-        <img class="furniture-item" src="furniture/TYPEcg.gif" draggable="false" data-draggable="" style="top: 345.984px; left: 2560.99px; position: absolute;">
-        <img class="furniture-item" src="furniture/TYPEfs.gif" draggable="false" data-draggable="" style="top: 138px; left: 388.992px; position: absolute;">
-        <img class="furniture-item" src="furniture/TYPEgj.gif" draggable="false" data-draggable="" style="top: 2426px; left: 4961px; position: absolute;">
-        <img class="furniture-item" src="furniture/TYPEil.gif" draggable="false" data-draggable="" style="top: 1757px; left: 2991px; position: absolute;">
-        <img class="furniture-item" src="furniture/TYPEtf.gif" draggable="false" data-draggable="" style="top: 4095px; left: 1988px; position: absolute;">
-        <img class="furniture-item" src="furniture/stalag01.png" draggable="false" data-draggable="" style="top: 2563px; left: 1916px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEan.png" draggable="false" data-draggable="" style="top: 401px; left: 2098px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEbd.png" draggable="false" data-draggable="" style="top: 1981px; left: 918px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEce.png" draggable="false" data-draggable="" style="top: 691.988px; left: 234.988px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEcg.png" draggable="false" data-draggable="" style="top: 732.922px; left: 2641.91px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEfs.png" draggable="false" data-draggable="" style="top: 3069px; left: 4685.94px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEft.png" draggable="false" data-draggable="" style="top: 352px; left: 6167px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEgj.png" draggable="false" data-draggable="" style="top: 2386.48px; left: 4940.48px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEil.png" draggable="false" data-draggable="" style="top: 792px; left: 4049px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEkx.png" draggable="false" data-draggable="" style="top: 648px; left: 936.996px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEmw.png" draggable="false" data-draggable="" style="top: 1627.98px; left: 2914.98px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEov.png" draggable="false" data-draggable="" style="top: 3568px; left: 737px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPErz.png" draggable="false" data-draggable="" style="top: 1773.95px; left: 1757.97px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEty.png" draggable="false" data-draggable="" style="top: 1225px; left: 4465px; position: absolute;">
+        <img class="furniture-item" src="furniture_landscape/TYPEvy.png" draggable="false" data-draggable="" style="top: 3566px; left: 323px; position: absolute;">
       </section>
     </main>
   
-
-
-<script>// This code and approach has been generously borrowed from:
-// https://dev.to/adamcoster/create-a-live-reload-server-for-front-end-development-3gnp
-// and tweaked with Typescript
-(() => {
-    // This port should match the websocket port defined in `dev-server.js`
-    const socketUrl = 'ws://localhost:6800';
-    let socket = new WebSocket(socketUrl);
-    socket.addEventListener('close', () => {
-        // Then the server has been turned off,
-        // either due to file-change-triggered reboot,
-        // or to truly being turned off.
-        // Attempt to re-establish a connection until it works,
-        // failing after a few seconds (at that point things are likely
-        // turned off/permanantly broken instead of rebooting)
-        const interAttemptTimeoutMilliseconds = 100;
-        const maxDisconnectedTimeMilliseconds = 3000;
-        const maxAttempts = Math.round(maxDisconnectedTimeMilliseconds / interAttemptTimeoutMilliseconds);
-        let attempts = 0;
-        const reloadIfCanConnect = () => {
-            attempts++;
-            if (attempts > maxAttempts) {
-                console.error("Could not reconnect to dev server.");
-                return;
-            }
-            socket = new WebSocket(socketUrl);
-            socket.addEventListener('error', () => setTimeout(reloadIfCanConnect, interAttemptTimeoutMilliseconds));
-            socket.addEventListener('open', () => location.reload());
-        };
-        reloadIfCanConnect();
-    });
-})();
-//# sourceMappingURL=client-websocket.js.map</script><protonpass-root-5aec data-protonpass-role="root" data-protonpass-theme="os"></protonpass-root-5aec></body></html>
+</body></html>
